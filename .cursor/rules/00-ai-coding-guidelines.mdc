@@ -5,7 +5,7 @@ alwaysApply: true
 
 # NGUYÊN TẮC CỐT LÕI DÀNH CHO AI ASSISTANT (SYSTEM INSTRUCTIONS)
 
-Mỗi khi AI nhận được yêu cầu **SỬA ĐỔI** hoặc **THÊM MỚI** code/tính năng trong dự án này, AI **BẮT BUỘC** phải tuân thủ nghiêm ngặt 4 nguyên tắc sau:
+Mỗi khi AI nhận được yêu cầu **SỬA ĐỔI** hoặc **THÊM MỚI** code/tính năng trong dự án này, AI **BẮT BUỘC** phải tuân thủ nghiêm ngặt 8 nguyên tắc sau:
 
 ## 1. KHẢO SÁT TOÀN DIỆN (Read Before Write)
 - Phải tự động kiểm tra, đọc hiểu lại toàn bộ luồng hoạt động (flow) của các module và file liên quan trước khi bắt tay vào viết code.
@@ -22,3 +22,26 @@ Mỗi khi AI nhận được yêu cầu **SỬA ĐỔI** hoặc **THÊM MỚI** 
 ## 4. ĐẢM BẢO TÍNH VẸN TOÀN DỮ LIỆU (Data Integrity)
 - Tuyệt đối không làm mất, ghi đè sai định dạng, hoặc làm hỏng cấu trúc của các file lưu trữ dữ liệu (ví dụ: `accounts.json`, `locations.json`, `assistant.db`, `.env`).
 - Khi can thiệp vào cách đọc/ghi dữ liệu, phải đảm bảo code mới tương thích ngược (backward compatible) với dữ liệu cũ đang tồn tại.
+
+## 5. GIAO THỨC LIÊN LẠC HỢP NHẤT (API Contract First)
+- Khi sửa đổi bất kỳ API nào ở Python (FastAPI) hoặc Node.js, AI BẮT BUỘC phải rà soát file gọi API ở phía còn lại (thường là các hàm axios hoặc fetch ở Frontend/Node.js) để đảm bảo cấu trúc JSON gửi đi và nhận về khớp nhau hoàn toàn.
+- Phải kiểm tra nghiêm ngặt kiểu dữ liệu của từng field (ví dụ: Python trả về `page_number` là `int` thì Node.js/Frontend không được xử lý như `string`).
+
+## 6. QUY CHUẨN XỬ LÝ LỖI (Standardized Error Handling)
+- Mọi đoạn code mới được thêm vào BẮT BUỘC phải nằm trong khối `try...catch` (Node.js/JS) hoặc `try...except` (Python).
+- Không được để xảy ra tình trạng "lỗi ngầm" (swallowed errors). Lỗi phải được log ra rõ ràng (console.error, logging.error) và trả về HTTP Status Code chuẩn xác (400, 401, 403, 404, 500) thay vì trả về text chung chung.
+
+## 7. KIỂM SOÁT PHÂN QUYỀN (Security Gatekeeping)
+- Khi thêm mới Endpoint (Backend) hoặc UI Route (Frontend), AI phải tự động tích hợp các Middleware/Logic phân quyền đã có sẵn (ví dụ: `isAdmin`, `authenticateToken`).
+- TUYỆT ĐỐI không mở ra các "cổng hậu" (backdoors) cho phép truy cập cơ sở dữ liệu, module RAG, hoặc quyền Upload mà không thông qua bước xác thực (JWT/Role).
+
+## 8. CHÚ THÍCH HỖ TRỢ ĐỒ ÁN (Report-Ready Documentation)
+- Mỗi khi viết lại một logic phức tạp mang tính học thuật (như thuật toán RAG, Agentic Fallback, Vector Search, Embedding), AI phải viết kèm Comment giải thích rõ ràng luồng chạy của thuật toán đó ở dạng chuẩn báo cáo đồ án.
+- Chú thích phải được viết sao cho sinh viên có thể copy/paste trực tiếp vào báo cáo Đồ Án mà không cần mất công dịch lại từ code sang text.
+
+---
+
+### BƯỚC BẮT BUỘC TRƯỚC KHI CODE: IMPACT ANALYSIS (PHÂN TÍCH TÁC ĐỘNG)
+Trước khi đưa ra bất kỳ đoạn code sửa đổi nào cho hệ thống Microservices, AI phải xuất ra một thông báo phân tích rủi ro ngắn gọn.
+**Ví dụ:** "Tui chuẩn bị sửa file \`rag_engine.py\` để thêm tính năng X. Việc này sẽ làm thay đổi cấu trúc trả về, tác động đến hàm \`processQuery\` ở \`agent.js\` của Node.js. Tui sẽ tiến hành cập nhật đồng bộ cả 2 file. Ông đồng ý không?"
+Chỉ khi người dùng đồng ý, AI mới tiến hành sinh code.

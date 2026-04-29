@@ -1,0 +1,39 @@
+---
+description: Nguyên tắc thiết kế và viết code UI/Frontend cao cấp cho dự án AI Study Hub
+alwaysApply: true
+globs: ["src/frontend/**/*", "*.html", "*.css", "*.js", "*.jsx", "*.ts", "*.tsx"]
+---
+
+# CHIẾN LƯỢC THIẾT KẾ UI/FRONTEND "PREMIUM AI STUDY HUB"
+
+Mỗi khi AI thực hiện thiết kế hoặc chỉnh sửa giao diện, AI **BẮT BUỘC** phải tuân thủ nghiêm ngặt các nguyên tắc dưới đây để đảm bảo tính thẩm mỹ cao cấp và trải nghiệm người dùng hoàn hảo.
+
+## 1. TECHNOLOGY & ARCHITECTURE (CÔNG NGHỆ)
+- **CSS Strategy:** Ưu tiên HTML5 Semantic và **Vanilla CSS (CSS thuần)**. Tuyệt đối không dùng Tailwind CSS trừ khi có yêu cầu đặc biệt. Sử dụng **CSS Variables** để quản lý màu sắc và spacing đồng bộ.
+- **Responsive:** Mọi layout phải được thiết kế theo hướng **Mobile-First** nhưng tối ưu cho **Desktop Split View** (Layout 2 cột đặc thù của dự án).
+- **Architecture:** Chia nhỏ giao diện thành các Component độc lập (Header, Sidebar, ChatWindow, PDFViewer) để dễ bảo trì.
+
+## 2. PREMIUM AESTHETICS (THẨM MỸ CAO CẤP)
+Thiết kế phải tạo hiệu ứng chuyên nghiệp, sạch sẽ theo phong cách Microsoft Copilot/NotebookLM.
+- **Màu sắc chủ đạo (Primary Color):** Ưu tiên sử dụng màu **Indigo (#6366f1)** hoặc **Emerald (#10b981)** xuyên suốt để tạo độ nhận diện cho "AI Study Hub".
+- **Glassmorphism:** Sử dụng hiệu ứng nền mờ (`backdrop-filter: blur(10px)`) kết hợp với border màu trắng/xám cực mảnh (0.5px - 1px) để tạo cảm giác hiện đại.
+- **Dark Mode Standard:** Sử dụng dải màu tối sâu (vd: `#0f172a`, `#1e293b`) kết hợp với chữ trắng ngà (Off-white: `#f8fafc`). Tuyệt đối không dùng màu đen thuần `#000`.
+- **Gradients:** Sử dụng dải màu mượt mà cho các thành phần nhấn mạnh (vd: `linear-gradient(135deg, #6366f1, #a855f7)`).
+- **Typography:** Ưu tiên font `Inter` hoặc `Poppins`. Cấu hình `line-height` từ 1.5 - 1.6 để tăng khả năng đọc cho các nội dung giáo trình dài.
+
+## 3. DYNAMIC & STREAMING UI (TƯƠNG TÁC SỐNG ĐỘNG)
+- **Micro-animations:** Buttons/Cards phải có hiệu ứng `transform: translateY(-2px)` và `box-shadow` khi hover. Chuyển động mượt mà bằng `transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1)`.
+- **AI Streaming Look:** Hiệu ứng chữ nhảy ra từng từ (Typewriter effect) cho câu trả lời của AI. Phải có icon Loading (Pulse animation) khi AI đang suy nghĩ.
+- **Source Interaction & PDF Highlight:** Khi bấm vào thẻ trích dẫn (Citation), giao diện phải cuộn mượt mà sang cột PDF Viewer. Đặc biệt, đoạn văn bản được trích dẫn trong PDF phải được bao quanh bởi một viền vàng mờ nhạt (highlight).
+
+## 4. API INTEGRATION & UX STATES
+AI không bao giờ được bỏ qua các trạng thái xử lý dữ liệu:
+- **Loading State:** Sử dụng **Skeleton Screens** thay vì chỉ dùng icon xoay (spinner) đơn điệu.
+- **Error State:** Thông báo lỗi phải lịch sự, có icon cảnh báo và nút "Thử lại". Phải hiển thị rõ thông báo khi hệ thống kích hoạt **Fallback sang Gemini**.
+- **Empty State:** Khi chưa có tài liệu, hiển thị hình minh họa (SVG) tinh tế kèm hướng dẫn "Kéo thả PDF vào đây để bắt đầu học tập".
+- **Phân quyền UI (Admin State):** Các nút/chức năng cấm (ví dụ: Upload) phải có CSS mờ (`opacity: 0.5`) hoặc hiển thị thông báo "Quyền hạn của bạn không cho phép" nếu sinh viên (role `student`) cố tình click vào.
+
+## 5. CHẤT LƯỢNG CODE & SEO
+- **Unique IDs:** Mọi nút bấm, form input phải có ID duy nhất (vd: `id="upload-pdf-input"`, `id="chat-submit-btn"`).
+- **Accessibility:** Sử dụng thẻ `aria-label`, đảm bảo độ tương phản màu sắc (Color Contrast) chuẩn WCAG.
+- **Semantic:** Luôn dùng `<article>` cho câu trả lời của AI và `<aside>` cho danh sách tài liệu.

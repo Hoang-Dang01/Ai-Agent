@@ -30,6 +30,7 @@ async function callOllamaWithStream(prompt, timeoutMs = 10000) {
         
         let firstTokenReceived = false;
         let fullContent = "";
+        let buffer = ""; // Thêm buffer để hứng dữ liệu bị cắt ngang
 
         while (true) {
             const { done, value } = await reader.read();
@@ -42,15 +43,22 @@ async function callOllamaWithStream(prompt, timeoutMs = 10000) {
                 console.log("🟢 [Local AI] Đã nhận First Token, tiếp tục Streaming...");
             }
 
-            const chunkStr = decoder.decode(value, { stream: true });
-            const lines = chunkStr.split('\n').filter(l => l.trim() !== '');
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            
+            // Giữ lại phần tử cuối cùng (có thể là JSON chưa hoàn chỉnh) vào buffer
+            buffer = lines.pop();
+
             for (let line of lines) {
+                if (line.trim() === '') continue;
                 try {
                     const parsed = JSON.parse(line);
                     if (parsed.message && parsed.message.content) {
                         fullContent += parsed.message.content;
                     }
-                } catch(e) {}
+                } catch(e) {
+                    console.error("Lỗi parse Stream JSON (Đã bắt được):", e.message);
+                }
             }
         }
         return fullContent;

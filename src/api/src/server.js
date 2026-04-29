@@ -6,6 +6,7 @@ const fs = require('fs');
 const { Server } = require('socket.io');
 const multer = require('multer');
 const { spawn } = require('child_process');
+const pdfParse = require('pdf-parse');
 
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const db = require('./db/database');
@@ -204,7 +205,18 @@ app.post('/api/generate-synthetic', authenticateToken, upload.single('document')
     }
 
     if (!req.file) {
-        return res.status(400).json({ error: "Vui lòng đính kèm file tài liệu (.txt, .md)." });
+        return res.status(400).json({ error: "Vui lòng đính kèm file tài liệu (.txt, .md, .pdf)." });
+    }
+
+    // Xử lý riêng nếu file upload là PDF (bóc tách chữ và ghi đè file text)
+    if (req.file.originalname.toLowerCase().endsWith('.pdf')) {
+        try {
+            const pdfData = await pdfParse(fs.readFileSync(req.file.path));
+            fs.writeFileSync(req.file.path, pdfData.text, 'utf-8');
+        } catch (err) {
+            console.error("Lỗi đọc PDF:", err);
+            return res.status(400).json({ error: "Không thể trích xuất nội dung từ file PDF này." });
+        }
     }
 
     const replyMsg = `Đã nhận được file **${req.file.originalname}**. Hệ thống đang khởi động luồng Python ngầm để sinh Synthetic Data. Vui lòng kiểm tra thư mục data/synthetic_datasets sau ít phút...`;
