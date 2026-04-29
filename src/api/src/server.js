@@ -22,12 +22,7 @@ app.use(express.json());
 // Gộp chung: Phục vụ Frontend trên cùng một cổng 3000
 app.use(express.static(path.join(__dirname, '../../frontend')));
 
-// Phục vụ giao diện Tool Mine Bot tại đường dẫn /tool-mine
-app.use('/tool-mine', express.static(path.join(__dirname, '../../tools/public')));
 
-// Tích hợp Router của Tool Mine Bot vào Express App
-const toolMineRouter = require('./tool_mine/tool_mine_router')(io);
-app.use(toolMineRouter);
 
 // Middleware xác thực JWT
 function authenticateToken(req, res, next) {
@@ -173,13 +168,7 @@ app.post('/api/crawl', authenticateToken, async (req, res) => {
     }
 });
 
-// Socket.io Events cho Tool Mine
-io.on('connection', (socket) => {
-    console.log('🔗 Tool Mine Web Panel đã kết nối!');
-    socket.on('disconnect', () => {
-        console.log('Thoát khỏi màn hình Tool Mine.');
-    });
-});
+
 
 // Routing về trang chủ cho các route không có API
 app.use((req, res) => {
