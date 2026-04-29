@@ -49,10 +49,13 @@ app.post('/api/register', async (req, res) => {
         return res.status(400).json({ error: "Username và Password hợp lệ (pass >= 6 ký tự)" });
     }
 
+    // Logic Đồ án: Nếu đăng ký tài khoản tên 'admin', tự động cấp quyền admin. Còn lại là student.
+    const role = (username.toLowerCase() === 'admin') ? 'admin' : 'student';
+
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        await db.execute('INSERT INTO users (username, password) VALUES (?, ?)', [username, hashedPassword]);
-        res.json({ success: true, message: "Đăng ký thành công!" });
+        await db.execute('INSERT INTO users (username, password, role) VALUES (?, ?, ?)', [username, hashedPassword, role]);
+        res.json({ success: true, message: `Đăng ký thành công tài khoản (${role})!` });
     } catch (err) {
         if (err.code === 'ER_DUP_ENTRY') {
             res.status(400).json({ error: "Tên đăng nhập đã tồn tại" });
@@ -76,8 +79,13 @@ app.post('/api/login', async (req, res) => {
         const validPassword = await bcrypt.compare(password, user.password);
         if (!validPassword) return res.status(400).json({ error: "Sai mật khẩu" });
 
-        const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '24h' });
-        res.json({ success: true, token, username: user.username });
+        // Ký token kèm theo role
+        const token = jwt.sign(
+            { id: user.id, username: user.username, role: user.role || 'student' }, 
+            process.env.JWT_SECRET, 
+            { expiresIn: '24h' }
+        );
+        res.json({ success: true, token, username: user.username, role: user.role || 'student' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Lỗi máy chủ" });

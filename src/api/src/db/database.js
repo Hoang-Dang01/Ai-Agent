@@ -27,9 +27,15 @@ async function initDB() {
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 username VARCHAR(255) UNIQUE NOT NULL,
                 password VARCHAR(255) NOT NULL,
+                role VARCHAR(50) DEFAULT 'student',
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
         `);
+        
+        // Đảm bảo update bảng cũ nếu tồn tại
+        try {
+            await pool.query("ALTER TABLE users ADD COLUMN role VARCHAR(50) DEFAULT 'student'");
+        } catch(e) { /* Đã có cột role rồi */ }
 
         await pool.query(`
             CREATE TABLE IF NOT EXISTS chats (

@@ -29,23 +29,43 @@ def generate_mock_test(topic: str, num_questions: int = 5):
     # Sử dụng Qwen 2.5
     llm = Ollama(model="qwen2.5:7b", temperature=0.3)
     
-    prompt = f"""Bạn là giảng viên đại học. Dựa vào TÀI LIỆU sau đây, hãy tạo ra {num_questions} câu hỏi trắc nghiệm về chủ đề "{topic}".
-    
-    Yêu cầu ĐỊNH DẠNG ĐẦU RA PHẢI LÀ MỘT MẢNG JSON HỢP LỆ. KHÔNG VIẾT THÊM BẤT KỲ VĂN BẢN NÀO KHÁC NGOÀI JSON.
-    Cấu trúc JSON:
-    [
-        {{
-            "question": "Nội dung câu hỏi",
-            "options": ["A. Lựa chọn 1", "B. Lựa chọn 2", "C. Lựa chọn 3", "D. Lựa chọn 4"],
-            "correct_answer": "A. Lựa chọn 1",
-            "explanation": "Giải thích ngắn gọn lý do tại sao đúng dựa trên tài liệu."
-        }}
-    ]
+    prompt = f"""# ROLE
+Bạn là một Giáo sư (Professor) chuyên đánh giá năng lực sinh viên đại học. Nhiệm vụ của bạn là đọc tài liệu cung cấp và tạo ra một bộ đề thi trắc nghiệm ({num_questions} câu) xuất sắc nhất về chủ đề "{topic}".
 
-    TÀI LIỆU:
-    {context}
-    
-    JSON:"""
+# CONTEXT
+Tôi cần xây dựng một bài kiểm tra (Mock Test) đa dạng độ khó để sinh viên ôn thi. Dữ liệu phải chính xác tuyệt đối, bám sát nội dung gốc và bao gồm cả giải thích chi tiết.
+
+# TASK
+Dựa trên tài liệu, hãy tạo ra mảng JSON chứa các câu hỏi trắc nghiệm theo phân bổ độ khó sau:
+- Câu Dễ: Hỏi về định nghĩa, sự kiện rõ ràng có trong tài liệu.
+- Câu Trung bình: Yêu cầu tóm tắt, hiểu quy trình hoặc phân tích nhỏ.
+- Câu Khó: Đòi hỏi suy luận logic từ tài liệu.
+
+# CONSTRAINTS (RÀNG BUỘC)
+1. ĐỊNH DẠNG ĐẦU RA PHẢI LÀ MỘT MẢNG JSON HỢP LỆ. KHÔNG VIẾT THÊM BẤT KỲ VĂN BẢN NÀO KHÁC (KỂ CẢ GIẢI THÍCH).
+2. Tuyệt đối không bịa đặt kiến thức nằm ngoài tài liệu. Nếu tài liệu không đủ ý, hãy ra câu hỏi dựa trên những gì có sẵn.
+3. Không sử dụng các cụm từ sáo rỗng như "Dựa trên tài liệu...".
+
+# FEW-SHOT EXAMPLE (VÍ DỤ MẪU ĐẦU RA):
+[
+    {{
+        "difficulty": "Trung bình",
+        "question": "Cơ chế Self-Attention trong Transformer hoạt động như thế nào?",
+        "options": [
+            "A. Nó loại bỏ hoàn toàn các từ không quan trọng",
+            "B. Tính toán trọng số liên kết giữa mỗi từ với tất cả các từ khác",
+            "C. Chỉ phân tích từ đứng ngay trước nó",
+            "D. Thay thế mạng CNN"
+        ],
+        "correct_answer": "B. Tính toán trọng số liên kết giữa mỗi từ với tất cả các từ khác",
+        "explanation": "Self-Attention cho phép mô hình tính trọng số thông qua ba ma trận Query, Key và Value để hiểu ngữ cảnh."
+    }}
+]
+
+# INPUT DATA (TÀI LIỆU):
+{context}
+
+# OUTPUT JSON:"""
     
     response = llm.invoke(prompt)
     
