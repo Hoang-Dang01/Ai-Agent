@@ -4,28 +4,29 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Study Hub</title>
+    <script src="./theme-engine.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap&subset=vietnamese" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* [Existing styles unchanged] */
         :root {
-            --bg-color: #0f1115;
+            --bg-color: #0f172a;
             --card-bg: rgba(255, 255, 255, 0.03);
             --card-border: rgba(255, 255, 255, 0.08);
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
-            --accent-blue: #3b82f6;
-            --accent-purple: #8b5cf6;
-            --glass-blur: 12px;
+            --accent-blue: #6366f1;
+            --accent-purple: #10b981;
+            --glass-blur: 10px;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Be Vietnam Pro', 'Segoe UI', system-ui, sans-serif;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
             letter-spacing: 0.02em;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
@@ -83,19 +84,7 @@
             z-index: 50;
         }
 
-        /* Tool Mine View */
-        #tool-mine-view {
-            opacity: 0;
-            pointer-events: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            transition: opacity 0.4s ease;
-        }
-
-        #tool-mine-view.active {
+        #chat-view.active {
             opacity: 1;
             pointer-events: all;
             position: fixed;
@@ -297,9 +286,14 @@
   <body>
     <!-- Dashboard Hub -->
     <div id="dashboard-view">
-        <button class="logout-btn" onclick="logout()">
-            <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
-        </button>
+        <div style="position: absolute; top: 24px; right: 24px; display: flex; gap: 12px;">
+            <button class="logout-btn" style="position: relative; top: 0; right: 0; background: rgba(255,255,255,0.05); color: var(--text-main); border-color: rgba(255,255,255,0.1);" onclick="window.location.href='/settings.html'">
+                Cài đặt
+            </button>
+            <button class="logout-btn" style="position: relative; top: 0; right: 0;" onclick="logout()">
+                Đăng xuất
+            </button>
+        </div>
         <div class="hero">
             <h1>AI Study Hub</h1>
             <p>Chào mừng trở lại, <span id="user-display">bạn</span>! Chọn một trợ lý AI chuyên biệt bên dưới để bắt đầu phiên học tập của bạn.</p>
@@ -325,15 +319,6 @@
                     <h3>Chuyên gia Phân tích</h3>
                     <p>Đọc hiểu tài liệu, tổng hợp kiến thức và tóm tắt cực nhanh. Hỏi đáp trực tiếp dựa trên nội dung bạn đã đưa vào RAG.</p>
                 </div>
-
-                <!-- Tool Mine Bot Card -->
-                <div class="glass-card" onclick="openToolMine()">
-                    <div class="card-icon" style="background: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.2);">
-                        <i class="fa-solid fa-gamepad"></i>
-                    </div>
-                    <h3>Tool Mine Bot</h3>
-                    <p>Mở bảng điều khiển quản lý các bot trong Minecraft. Quản lý trạng thái, vị trí AFK, và giao tiếp tự động.</p>
-                </div>
             </div>
         </div>
 
@@ -351,14 +336,6 @@
     <div id="chat-view">
         <!-- Web Component from main.js -->
         <copilot-assistant id="ai-assistant"></copilot-assistant>
-    </div>
-
-    <!-- Tool Mine View (Integrated via iframe) -->
-    <div id="tool-mine-view">
-        <button class="back-btn" onclick="closeToolMine()" style="left: 30px; top: 30px;">
-            <i class="fa-solid fa-arrow-left"></i> Trở về Dashboard
-        </button>
-        <iframe src="/tool-mine" style="width: 100%; height: 100%; border: none;"></iframe>
     </div>
 
     <script type="module" src="./main.js"></script>
@@ -389,19 +366,7 @@
             }, 300); // Wait for chat fade out to finish
         }
 
-        function openToolMine() {
-            document.getElementById('dashboard-view').classList.add('hidden');
-            document.getElementById('tool-mine-view').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
 
-        function closeToolMine() {
-            document.getElementById('tool-mine-view').classList.remove('active');
-            document.body.style.overflow = '';
-            setTimeout(() => {
-                document.getElementById('dashboard-view').classList.remove('hidden');
-            }, 300);
-        }
 
         document.addEventListener('DOMContentLoaded', () => {
             const assistant = document.getElementById('ai-assistant');

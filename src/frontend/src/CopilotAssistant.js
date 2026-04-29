@@ -19,20 +19,19 @@ export class CopilotAssistant extends HTMLElement {
           display: block;
           height: 100vh;
           width: 100vw;
-          background-color: var(--bg-main);
-          color: var(--text-main);
-          --bg-main: #0a0a0c;
-          --glass-bg: rgba(255, 255, 255, 0.03);
-          --glass-border: rgba(255, 255, 255, 0.05);
+          background-color: var(--bg-color, #0f172a);
+          color: var(--text-main, #f8fafc);
+          --bg-main: var(--bg-color, #0f172a);
+          --glass-bg: var(--card-bg, rgba(255, 255, 255, 0.03));
+          --glass-border: var(--card-border, rgba(255, 255, 255, 0.05));
           --glass-highlight: rgba(255, 255, 255, 0.1);
-          --accent-primary: #8b5cf6;
-          --accent-secondary: #3b82f6;
+          --accent-primary: var(--accent-blue, #8b5cf6);
+          --accent-secondary: var(--accent-blue, #3b82f6);
           --accent-glow: rgba(139, 92, 246, 0.5);
-          --text-main: #f8fafc;
-          --text-muted: #94a3b8;
+          --text-muted: var(--text-muted, #94a3b8);
           --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           --sidebar-width: 280px;
-          font-family: 'Be Vietnam Pro', 'Segoe UI', system-ui, sans-serif;
+          font-family: var(--font-primary, 'Inter', sans-serif);
           position: relative;
           overflow: hidden;
           letter-spacing: 0.02em;
@@ -609,7 +608,7 @@ export class CopilotAssistant extends HTMLElement {
               <button class="qa-btn">Tóm tắt lý thuyết</button>
               <button class="qa-btn">Giải thích lỗi code</button>
               <button class="qa-btn">Phân tích tài liệu này</button>
-              <button class="qa-btn" id="generate-dataset-btn" style="display: none; background: rgba(220,38,38,0.2); border-color: rgba(220,38,38,0.3); color: #fca5a5;">🛠️ Sinh Dữ Liệu Huấn Luyện</button>
+              <button class="qa-btn" id="generate-dataset-btn" style="background: rgba(99, 102, 241, 0.2); border-color: rgba(99, 102, 241, 0.4); color: #a5b4fc;">🛠️ Sinh Dữ Liệu Huấn Luyện</button>
             </div>
             
             <div class="input-pill">
@@ -648,10 +647,12 @@ export class CopilotAssistant extends HTMLElement {
     // Biến lưu trữ file đang đính kèm
     let attachedFile = null;
 
-    // Kiểm tra quyền Admin
+    // Kiểm tra quyền Admin (Premium UI)
     const username = localStorage.getItem('username');
-    if (username && username.toLowerCase() === 'admin') {
-      generateDatasetBtn.style.display = 'inline-block';
+    const role = localStorage.getItem('role') || (username?.toLowerCase() === 'admin' ? 'admin' : 'student');
+    if (role !== 'admin') {
+      generateDatasetBtn.style.opacity = '0.5';
+      generateDatasetBtn.style.cursor = 'not-allowed';
     }
 
     // Xử lý đính kèm file qua nút bấm
@@ -666,8 +667,13 @@ export class CopilotAssistant extends HTMLElement {
 
     // Xử lý nút Sinh dữ liệu huấn luyện
     generateDatasetBtn.addEventListener('click', async () => {
+      if (role !== 'admin') {
+        alert("Quyền hạn của bạn không cho phép! Tính năng này chỉ dành cho Admin.");
+        return;
+      }
+
       if (!attachedFile) {
-        alert("Sếp cần đính kèm một file (.txt, .md) trước khi chạy lệnh này!");
+        alert("Sếp cần đính kèm một file (.txt, .md, .pdf) trước khi chạy lệnh này!");
         return;
       }
       
