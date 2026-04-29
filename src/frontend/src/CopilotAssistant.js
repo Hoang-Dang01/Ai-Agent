@@ -609,10 +609,12 @@ export class CopilotAssistant extends HTMLElement {
               <button class="qa-btn">Tóm tắt lý thuyết</button>
               <button class="qa-btn">Giải thích lỗi code</button>
               <button class="qa-btn">Phân tích tài liệu này</button>
+              <button class="qa-btn" id="generate-dataset-btn" style="display: none; background: rgba(220,38,38,0.2); border-color: rgba(220,38,38,0.3); color: #fca5a5;">🛠️ Sinh Dữ Liệu Huấn Luyện</button>
             </div>
             
             <div class="input-pill">
-              <button class="action-btn" title="Đính kèm tài liệu">
+              <input type="file" id="file-upload" style="display: none;" accept=".txt,.md,.pdf" />
+              <button class="action-btn" id="attach-btn" title="Đính kèm tài liệu">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
               </button>
               <textarea id="chat-input" placeholder="Hỏi trợ lý hoặc ném code vào đây..." rows="1"></textarea>
@@ -636,9 +638,73 @@ export class CopilotAssistant extends HTMLElement {
     const backBtn = this.shadowRoot.getElementById('back-btn');
     const toggleSidebarBtn = this.shadowRoot.getElementById('toggle-sidebar');
     const sidebar = this.shadowRoot.querySelector('.chat-sidebar');
-    const qaBtns = this.shadowRoot.querySelectorAll('.qa-btn');
+    const qaBtns = this.shadowRoot.querySelectorAll('.qa-btn:not(#generate-dataset-btn)');
+    const generateDatasetBtn = this.shadowRoot.getElementById('generate-dataset-btn');
+    const attachBtn = this.shadowRoot.getElementById('attach-btn');
+    const fileUpload = this.shadowRoot.getElementById('file-upload');
     const chatMainArea = this.shadowRoot.getElementById('chat-main-area');
     const dragOverlay = this.shadowRoot.getElementById('drag-overlay');
+    
+    // Biến lưu trữ file đang đính kèm
+    let attachedFile = null;
+
+    // Kiểm tra quyền Admin
+    const username = localStorage.getItem('username');
+    if (username && username.toLowerCase() === 'admin') {
+      generateDatasetBtn.style.display = 'inline-block';
+    }
+
+    // Xử lý đính kèm file qua nút bấm
+    attachBtn.addEventListener('click', () => fileUpload.click());
+    fileUpload.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        attachedFile = e.target.files[0];
+        textarea.value = `[Đã đính kèm file: ${attachedFile.name}]\n` + textarea.value;
+        textarea.dispatchEvent(new Event('input'));
+      }
+    });
+
+    // Xử lý nút Sinh dữ liệu huấn luyện
+    generateDatasetBtn.addEventListener('click', async () => {
+      if (!attachedFile) {
+        alert("Sếp cần đính kèm một file (.txt, .md) trước khi chạy lệnh này!");
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append('document', attachedFile);
+      
+      try {
+        const token = localStorage.getItem('auth_token');
+        textarea.value = "";
+        
+        // Hiện câu lệnh user
+        addMessage(`*Yêu cầu sinh dữ liệu huấn luyện từ file: ${attachedFile.name}*`, 'user');
+        
+        const response = await fetch('/api/generate-synthetic', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        });
+        
+        const result = await response.json();
+        if (response.ok) {
+          addMessage(result.reply, 'bot');
+        } else {
+          addMessage(`❌ Lỗi: ${result.error}`, 'bot');
+        }
+        
+        // Reset file
+        attachedFile = null;
+        fileUpload.value = '';
+        
+      } catch (err) {
+        console.error(err);
+        addMessage(`❌ Lỗi kết nối mạng hoặc máy chủ không phản hồi.`, 'bot');
+      }
+    });
 
     // Toggle Sidebar Logic
     if (toggleSidebarBtn && sidebar) {
@@ -668,6 +734,8 @@ export class CopilotAssistant extends HTMLElement {
         
         if (isValid || file.type.startsWith('text/')) {
           try {
+            attachedFile = file; // Lưu lại file object để dùng cho Upload
+            
             const originalPlaceholder = textarea.placeholder;
             textarea.placeholder = `Đang đọc file ${file.name}...`;
             

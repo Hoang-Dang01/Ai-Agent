@@ -1,8 +1,68 @@
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
 /**
+ * Gọi Local Ollama với cơ chế Streaming và đếm Time-To-First-Token
+ */
+async function callOllamaWithStream(prompt, timeoutMs = 10000) {
+    const controller = new AbortController();
+    
+    // Đặt bộ đếm giờ cho Token đầu tiên
+    const timeoutId = setTimeout(() => {
+        controller.abort();
+    }, timeoutMs);
+
+    try {
+        const response = await fetch("http://localhost:11434/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                model: "qwen2.5:7b",
+                messages: [{ role: "user", content: prompt }],
+                stream: true // Bật Streaming
+            }),
+            signal: controller.signal
+        });
+
+        if (!response.ok) throw new Error(`Ollama HTTP Error: ${response.status}`);
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        
+        let firstTokenReceived = false;
+        let fullContent = "";
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            if (!firstTokenReceived) {
+                // Đã nhận chunk dữ liệu (Token) đầu tiên -> An toàn! Xóa bộ đếm giờ.
+                clearTimeout(timeoutId);
+                firstTokenReceived = true;
+                console.log("🟢 [Local AI] Đã nhận First Token, tiếp tục Streaming...");
+            }
+
+            const chunkStr = decoder.decode(value, { stream: true });
+            const lines = chunkStr.split('\n').filter(l => l.trim() !== '');
+            for (let line of lines) {
+                try {
+                    const parsed = JSON.parse(line);
+                    if (parsed.message && parsed.message.content) {
+                        fullContent += parsed.message.content;
+                    }
+                } catch(e) {}
+            }
+        }
+        return fullContent;
+    } catch (err) {
+        clearTimeout(timeoutId);
+        throw err; // Ném lỗi để kích hoạt Fallback
+    }
+}
+
+/**
  * Hàm phân luồng yêu cầu (Task Router)
- * Gửi dữ liệu tới OpenRouter (Gemini 1.5 Pro) và phân tích luồng.
+ * Có tích hợp Fallback từ Local AI -> Cloud AI
  */
 async function processQuery(userMessage, modelId = "google/gemini-1.5-pro") {
     const systemPrompt = `Bạn là một Trợ Lý Cá Nhân Thông Minh về Học Tập & Nghiên cứu Khoa học.
@@ -20,38 +80,45 @@ Ví dụ:
 Trường ưu tiên priority có thể là: "low", "normal", "high". Định dạng ngày giờ là YYYY-MM-DD HH:mm.
 `;
 
-    // Gọi API tới OpenRouter mô phỏng SDK
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-            "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            "model": modelId,
-            "messages": [
-                { "role": "system", "content": systemPrompt },
-                { "role": "user", "content": userMessage }
-            ]
-        })
-    });
+    let botReply = "";
 
-    const data = await response.json();
-    if (!data.choices || data.choices.length === 0) {
-        console.error("Lỗi API OpenRouter:", data);
-        throw new Error("Invalid response from OpenRouter");
+    // BƯỚC 1: THỬ GỌI LOCAL AI TRƯỚC (QWEN)
+    try {
+        console.log("⏳ [RAG Engine] Đang gọi Local AI (Qwen2.5) với Timeout 10s...");
+        botReply = await callOllamaWithStream(`${systemPrompt}\n\n${userMessage}`, 10000);
+        console.log("✅ [Local AI] Đã xử lý xong!");
+    } catch (err) {
+        // BƯỚC 2: FALLBACK KHI LOCAL AI LỖI HOẶC TIMEOUT
+        console.warn(`⚠️ [RAG Engine] Local AI thất bại hoặc Timeout: ${err.message}. Đang KÍCH HOẠT FALLBACK sang Gemini...`);
+        
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "model": modelId,
+                "messages": [
+                    { "role": "system", "content": systemPrompt },
+                    { "role": "user", "content": userMessage }
+                ]
+            })
+        });
+
+        const data = await response.json();
+        if (!data.choices || data.choices.length === 0) {
+            throw new Error("Cả Local AI và Gemini đều gặp sự cố!");
+        }
+        botReply = data.choices[0].message.content;
     }
-
-    let botReply = data.choices[0].message.content;
 
     // Tool extraction (Trích xuất JSON Task nếu có)
     let extractedTasks = [];
-    // Biểu thức chính quy bắt khối mã json
     const jsonMatch = botReply.match(/\`\`\`json\n([\s\S]*?)\n\`\`\`/);
     if (jsonMatch) {
        try {
            extractedTasks = JSON.parse(jsonMatch[1]);
-           // Thay thế JSON block đi ẩn để UI hiện text thân thiện hơn
            botReply = botReply.replace(jsonMatch[0], "\n*(Em đã trích xuất các sự kiện này vào Lịch học của anh rồi nhé! 📅)*\n");
        } catch(e) {
            console.error("Lỗi parse JSON Task:", e);

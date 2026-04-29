@@ -2,7 +2,10 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const http = require('http');
+const fs = require('fs');
 const { Server } = require('socket.io');
+const multer = require('multer');
+const { spawn } = require('child_process');
 
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const db = require('./db/database');
@@ -14,6 +17,24 @@ const jwt = require('jsonwebtoken');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
+
+// Cấu hình Multer để upload tài liệu làm Synthetic Data
+const rawDocsDir = path.join(__dirname, '../../../data/raw_docs');
+if (!fs.existsSync(rawDocsDir)){
+    fs.mkdirSync(rawDocsDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, rawDocsDir);
+    },
+    filename: function (req, file, cb) {
+        // Đặt tên an toàn, ép đuôi .txt cho Python script dễ đọc
+        const safeName = file.originalname.replace(/[^a-zA-Z0-9]/g, '_');
+        cb(null, `${safeName}_${Date.now()}.txt`);
+    }
+});
+const upload = multer({ storage: storage });
 
 // Cho phép request từ Vite frontend
 app.use(cors());
@@ -179,6 +200,46 @@ app.post('/api/crawl', authenticateToken, async (req, res) => {
         console.error(e);
         res.status(500).json({ error: "Lỗi trong quá trình cào dữ liệu UTH" });
     }
+});
+
+// API: Kích hoạt sinh dữ liệu huấn luyện (Dành riêng cho Admin)
+app.post('/api/generate-synthetic', authenticateToken, upload.single('document'), async (req, res) => {
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: "Chỉ Admin mới có quyền sinh dữ liệu huấn luyện!" });
+    }
+
+    if (!req.file) {
+        return res.status(400).json({ error: "Vui lòng đính kèm file tài liệu (.txt, .md)." });
+    }
+
+    const replyMsg = `Đã nhận được file **${req.file.originalname}**. Hệ thống đang khởi động luồng Python ngầm để sinh Synthetic Data. Vui lòng kiểm tra thư mục data/synthetic_datasets sau ít phút...`;
+    
+    // Lưu tin nhắn thông báo lên UI ngay lập tức
+    await db.execute('INSERT INTO chats (sender, content) VALUES (?, ?)', ['bot', replyMsg]);
+    res.json({ reply: replyMsg });
+
+    // Chạy ngầm Python Script
+    const pythonScriptPath = path.join(__dirname, '../../../src/ai/synthetic_data_generator.py');
+    const pythonProcess = spawn('python', [pythonScriptPath], {
+        cwd: path.join(__dirname, '../../..') // Set working directory to project root so paths match
+    });
+
+    pythonProcess.stdout.on('data', (data) => {
+        console.log(`[Python Data Gen]: ${data}`);
+    });
+
+    pythonProcess.stderr.on('data', (data) => {
+        console.error(`[Python Data Gen Error]: ${data}`);
+    });
+
+    pythonProcess.on('close', async (code) => {
+        console.log(`Tiến trình sinh dữ liệu đã hoàn tất với mã code ${code}`);
+        if (code === 0) {
+            await db.execute('INSERT INTO chats (sender, content) VALUES (?, ?)', ['bot', `✅ Quá trình sinh dữ liệu từ file **${req.file.originalname}** đã HOÀN TẤT! Dữ liệu đã được lưu an toàn.`]);
+        } else {
+            await db.execute('INSERT INTO chats (sender, content) VALUES (?, ?)', ['bot', `❌ Quá trình sinh dữ liệu gặp lỗi (Code: ${code}). Vui lòng xem log Backend.`]);
+        }
+    });
 });
 
 // Socket.io Events cho Tool Mine

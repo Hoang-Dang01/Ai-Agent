@@ -32,7 +32,7 @@ async function initDB() {
             );
         `);
         
-        // Đảm bảo update bảng cũ nếu tồn tại
+        // Đảm bảo update bảng cũ nếu tồn tại (Role)
         try {
             await pool.query("ALTER TABLE users ADD COLUMN role VARCHAR(50) DEFAULT 'student'");
         } catch(e) { /* Đã có cột role rồi */ }
@@ -56,7 +56,18 @@ async function initDB() {
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        console.log('📦 MySQL Database Initialized!');
+
+        // Bảng mới: Lưu trữ nội dung file để làm Fallback Context cho Gemini
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS documents (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                filename VARCHAR(255) NOT NULL,
+                raw_text TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        console.log('📦 MySQL Database Initialized (Kèm bảng documents cho Fallback)!');
     } catch (error) {
         console.error('❌ Lỗi khởi tạo MySQL:', error);
     }
