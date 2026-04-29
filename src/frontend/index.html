@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Study Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap&subset=vietnamese" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* [Existing styles unchanged] */
+        :root {
+            --bg-color: #0f1115;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --glass-blur: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Be Vietnam Pro', 'Segoe UI', system-ui, sans-serif;
+            letter-spacing: 0.02em;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+            font-kerning: normal;
+            font-feature-settings: "liga" 1, "kern" 1;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15), transparent 25%);
+            font-weight: 500;
+            text-shadow: 0 0 0.4px rgba(0,0,0,0.12);
+        }
+
+        /* Dashboard Container */
+        #dashboard-view {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 48px;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        #dashboard-view.hidden {
+            opacity: 0;
+            pointer-events: none;
+            position: absolute;
+            transform: scale(0.95);
+        }
+
+        /* Chat Container */
+        #chat-view {
+            opacity: 0;
+            pointer-events: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            transition: opacity 0.4s ease;
+        }
+
+        #chat-view.active {
+            opacity: 1;
+            pointer-events: all;
+            position: fixed;
+            z-index: 50;
+        }
+
+        /* Tool Mine View */
+        #tool-mine-view {
+            opacity: 0;
+            pointer-events: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            transition: opacity 0.4s ease;
+        }
+
+        #tool-mine-view.active {
+            opacity: 1;
+            pointer-events: all;
+            position: fixed;
+            z-index: 50;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 300px; /* To avoid overlapping with the shadow DOM sidebar */
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Section Title */
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title i {
+            color: var(--accent-blue);
+        }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        /* Glass Card */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 32px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .glass-card:hover::before {
+            opacity: 1;
+        }
+
+        .card-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 24px;
+        }
+
+        .icon-blue {
+            background: rgba(59, 130, 246, 0.1);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .icon-purple {
+            background: rgba(139, 92, 246, 0.1);
+            color: #a78bfa;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .glass-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .glass-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Upload Area */
+        .upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 48px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(var(--glass-blur));
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent-blue);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 2.5rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            transition: color 0.3s ease;
+        }
+
+        .upload-area:hover .upload-icon {
+            color: var(--accent-blue);
+        }
+        .logout-btn {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            padding: 10px 20px;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+    </style>
+    <script>
+        // Auth Guard
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+    </script>
+  </head>
+  <body>
+    <!-- Dashboard Hub -->
+    <div id="dashboard-view">
+        <button class="logout-btn" onclick="logout()">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+        </button>
+        <div class="hero">
+            <h1>AI Study Hub</h1>
+            <p>Chào mừng trở lại, <span id="user-display">bạn</span>! Chọn một trợ lý AI chuyên biệt bên dưới để bắt đầu phiên học tập của bạn.</p>
+        </div>
+
+        <div>
+            <h2 class="section-title"><i class="fa-solid fa-robot"></i> Đội ngũ Trợ lý (Agents)</h2>
+            <div class="grid">
+                <!-- Code Mentor Card -->
+                <div class="glass-card" onclick="openChat('Giáo viên Code', 'Xin chào! Thầy/Cô có thể giúp em xem qua đoạn code nào hôm nay? Em nhớ gửi kèm lỗi nếu có nhé!')">
+                    <div class="card-icon icon-blue">
+                        <i class="fa-solid fa-code"></i>
+                    </div>
+                    <h3>Giáo viên Code</h3>
+                    <p>Hỗ trợ review code, tìm bug và giải thích logic. Không code hộ 100%, giúp rèn luyện tư duy lập trình thực thụ.</p>
+                </div>
+
+                <!-- Analytics Expert Card -->
+                <div class="glass-card" onclick="openChat('Chuyên gia Phân tích', 'Chào bạn! Mình có thể tóm tắt tài liệu, vẽ sơ đồ tư duy hoặc giải thích các khái niệm lý thuyết khó. Bạn cần mình giúp gì?')">
+                    <div class="card-icon icon-purple">
+                        <i class="fa-solid fa-chart-pie"></i>
+                    </div>
+                    <h3>Chuyên gia Phân tích</h3>
+                    <p>Đọc hiểu tài liệu, tổng hợp kiến thức và tóm tắt cực nhanh. Hỏi đáp trực tiếp dựa trên nội dung bạn đã đưa vào RAG.</p>
+                </div>
+
+                <!-- Tool Mine Bot Card -->
+                <div class="glass-card" onclick="openToolMine()">
+                    <div class="card-icon" style="background: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.2);">
+                        <i class="fa-solid fa-gamepad"></i>
+                    </div>
+                    <h3>Tool Mine Bot</h3>
+                    <p>Mở bảng điều khiển quản lý các bot trong Minecraft. Quản lý trạng thái, vị trí AFK, và giao tiếp tự động.</p>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <h2 class="section-title"><i class="fa-solid fa-database"></i> Dữ liệu Kiến thức (Knowledge Base)</h2>
+            <div class="upload-area">
+                <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                <h3 style="font-weight: 500;">Kéo thả tài liệu vào đây để nạp kiến thức cho AI</h3>
+                <p style="color: var(--text-muted); margin-top: 8px; font-size: 0.9rem;">Hỗ trợ định dạng .md, .pdf, .txt (Tối đa 10MB)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Chat View -->
+    <div id="chat-view">
+        <!-- Web Component from main.js -->
+        <copilot-assistant id="ai-assistant"></copilot-assistant>
+    </div>
+
+    <!-- Tool Mine View (Integrated via iframe) -->
+    <div id="tool-mine-view">
+        <button class="back-btn" onclick="closeToolMine()" style="left: 30px; top: 30px;">
+            <i class="fa-solid fa-arrow-left"></i> Trở về Dashboard
+        </button>
+        <iframe src="/tool-mine" style="width: 100%; height: 100%; border: none;"></iframe>
+    </div>
+
+    <script type="module" src="./main.js"></script>
+    <script>
+        function openChat(agentName, initialMessage) {
+            document.getElementById('dashboard-view').classList.add('hidden');
+            document.getElementById('chat-view').classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // Pass agent info to the web component
+            const assistant = document.getElementById('ai-assistant');
+            if (assistant) {
+                // Update component by dispatching an event
+                assistant.dispatchEvent(new CustomEvent('change-agent', { 
+                    detail: { 
+                        name: agentName,
+                        welcomeMsg: initialMessage
+                    } 
+                }));
+            }
+        }
+
+        function closeChat() {
+            document.getElementById('chat-view').classList.remove('active');
+            document.body.style.overflow = '';
+            setTimeout(() => {
+                document.getElementById('dashboard-view').classList.remove('hidden');
+            }, 300); // Wait for chat fade out to finish
+        }
+
+        function openToolMine() {
+            document.getElementById('dashboard-view').classList.add('hidden');
+            document.getElementById('tool-mine-view').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeToolMine() {
+            document.getElementById('tool-mine-view').classList.remove('active');
+            document.body.style.overflow = '';
+            setTimeout(() => {
+                document.getElementById('dashboard-view').classList.remove('hidden');
+            }, 300);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const assistant = document.getElementById('ai-assistant');
+            if (assistant) {
+                assistant.addEventListener('close-chat', closeChat);
+            }
+            
+            // Set username display
+            const username = localStorage.getItem('username');
+            if (username) {
+                document.getElementById('user-display').innerText = username;
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('username');
+            window.location.href = '/login.html';
+        }
+    </script>
+  </body>
+</html>

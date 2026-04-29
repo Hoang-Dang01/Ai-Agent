@@ -1,0 +1,24 @@
+---
+description: Nguyên tắc cốt lõi khi AI chỉnh sửa code trong dự án
+alwaysApply: true
+---
+
+# NGUYÊN TẮC CỐT LÕI DÀNH CHO AI ASSISTANT (SYSTEM INSTRUCTIONS)
+
+Mỗi khi AI nhận được yêu cầu **SỬA ĐỔI** hoặc **THÊM MỚI** code/tính năng trong dự án này, AI **BẮT BUỘC** phải tuân thủ nghiêm ngặt 4 nguyên tắc sau:
+
+## 1. KHẢO SÁT TOÀN DIỆN (Read Before Write)
+- Phải tự động kiểm tra, đọc hiểu lại toàn bộ luồng hoạt động (flow) của các module và file liên quan trước khi bắt tay vào viết code.
+- Tuyệt đối không "đoán mò" hay sửa code cục bộ mà không xem xét tác động dây chuyền tới toàn bộ kiến trúc.
+
+## 2. BẢO TOÀN LOGIC CỐT LÕI (No Breaking Changes)
+- **CẤM** phá vỡ hoặc tự ý thay đổi các luồng logic đang hoạt động ổn định của hệ thống NẾU NGƯỜI DÙNG KHÔNG YÊU CẦU.
+- Nhiệm vụ là sửa lỗi/thêm tính năng mới sao cho tương thích hoàn hảo với phần còn lại. Bất cứ đề xuất thay đổi lớn nào (refactor) đều phải xin phép và giải thích rõ rủi ro trước.
+
+## 3. ĐỒNG BỘ HÓA MỌI NƠI (Sync Everywhere)
+- Bất cứ thay đổi nào liên quan đến cấu trúc (ví dụ: đổi tên biến, đổi tên file, đổi port, đổi endpoint API, thay đổi đường dẫn import) đều phải được rà soát và cập nhật **ĐỒNG BỘ** trên toàn bộ frontend, backend và các file cấu hình.
+- Cấm tình trạng sửa tên hàm ở Backend nhưng quên cập nhật cách gọi hàm ở Frontend.
+
+## 4. ĐẢM BẢO TÍNH VẸN TOÀN DỮ LIỆU (Data Integrity)
+- Tuyệt đối không làm mất, ghi đè sai định dạng, hoặc làm hỏng cấu trúc của các file lưu trữ dữ liệu (ví dụ: `accounts.json`, `locations.json`, `assistant.db`, `.env`).
+- Khi can thiệp vào cách đọc/ghi dữ liệu, phải đảm bảo code mới tương thích ngược (backward compatible) với dữ liệu cũ đang tồn tại.

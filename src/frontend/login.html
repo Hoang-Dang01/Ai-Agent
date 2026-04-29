@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - AI Study Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f1115;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15), transparent 25%);
+        }
+
+        .auth-container {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .auth-container h2 {
+            font-size: 2rem;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            color: var(--text-main);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            border-color: var(--accent-blue);
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .toggle-text {
+            margin-top: 24px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .toggle-text span {
+            color: var(--accent-blue);
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .toggle-text span:hover {
+            text-decoration: underline;
+        }
+
+        .error-msg {
+            color: #ef4444;
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+            min-height: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container" id="login-box">
+        <h2>Đăng Nhập</h2>
+        <div class="error-msg" id="login-error"></div>
+        <form id="login-form">
+            <div class="input-group">
+                <label>Tên đăng nhập</label>
+                <input type="text" id="login-user" required>
+            </div>
+            <div class="input-group">
+                <label>Mật khẩu</label>
+                <input type="password" id="login-pass" required>
+            </div>
+            <button type="submit" class="btn-submit">Vào Học Ngay</button>
+        </form>
+        <div class="toggle-text">Chưa có tài khoản? <span onclick="toggleView('register')">Đăng ký</span></div>
+    </div>
+
+    <div class="auth-container" id="register-box" style="display: none;">
+        <h2>Đăng Ký</h2>
+        <div class="error-msg" id="register-error"></div>
+        <form id="register-form">
+            <div class="input-group">
+                <label>Tên đăng nhập</label>
+                <input type="text" id="reg-user" required>
+            </div>
+            <div class="input-group">
+                <label>Mật khẩu</label>
+                <input type="password" id="reg-pass" required minlength="6">
+            </div>
+            <button type="submit" class="btn-submit">Tạo Tài Khoản</button>
+        </form>
+        <div class="toggle-text">Đã có tài khoản? <span onclick="toggleView('login')">Đăng nhập</span></div>
+    </div>
+
+    <script>
+        function toggleView(view) {
+            document.getElementById('login-box').style.display = view === 'login' ? 'block' : 'none';
+            document.getElementById('register-box').style.display = view === 'register' ? 'block' : 'none';
+            document.getElementById('login-error').innerText = '';
+            document.getElementById('register-error').innerText = '';
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = document.getElementById('login-user').value;
+            const pass = document.getElementById('login-pass').value;
+            
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, password: pass })
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    localStorage.setItem('auth_token', data.token);
+                    localStorage.setItem('username', data.username);
+                    window.location.href = '/index.html';
+                } else {
+                    document.getElementById('login-error').innerText = data.error;
+                }
+            } catch (error) {
+                document.getElementById('login-error').innerText = 'Lỗi kết nối đến máy chủ';
+            }
+        });
+
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = document.getElementById('reg-user').value;
+            const pass = document.getElementById('reg-pass').value;
+            
+            try {
+                const res = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, password: pass })
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    alert('Đăng ký thành công! Đang chuyển sang màn hình Đăng nhập.');
+                    toggleView('login');
+                    document.getElementById('login-user').value = user;
+                } else {
+                    document.getElementById('register-error').innerText = data.error;
+                }
+            } catch (error) {
+                document.getElementById('register-error').innerText = 'Lỗi kết nối đến máy chủ';
+            }
+        });
+    </script>
+</body>
+</html>

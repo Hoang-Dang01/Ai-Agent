@@ -1,0 +1,210 @@
+{
+  "name": "AI Study Hub - Multi-Agent RAG",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chat",
+        "responseMode": "responseNode"
+      },
+      "id": "webhook-1",
+      "name": "Webhook (Frontend)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [ 0, 300 ]
+    },
+    {
+      "parameters": {
+        "text": "=Phân loại yêu cầu sau thành CODE hoặc THEORY: {{ $json.body.message }}",
+        "messages": {
+          "messageValues": [
+            { "message": "Bạn là bộ định tuyến (Router). Hãy đọc yêu cầu của người dùng và trả về đúng 1 chữ: 'CODE' nếu họ nhờ sửa lỗi, viết code. Trả về 'THEORY' nếu họ hỏi kiến thức lý thuyết, phân tích, tóm tắt." }
+          ]
+        }
+      },
+      "id": "router-1",
+      "name": "LLM Router (Phân loại)",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [ 250, 300 ]
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.text }}",
+        "rules": {
+          "rules": [
+            { "operation": "contains", "value2": "CODE", "outputKey": "Code" },
+            { "operation": "contains", "value2": "THEORY", "outputKey": "Theory" }
+          ]
+        }
+      },
+      "id": "switch-1",
+      "name": "Switch (Rẽ nhánh)",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [ 500, 300 ]
+    },
+    {
+      "parameters": {
+        "text": "={{ $('Webhook (Frontend)').item.json.body.message }}",
+        "hasOutputParser": false,
+        "messages": {
+          "messageValues": [
+            { "message": "You are CodeMentor, giáo viên lập trình nghiêm khắc. KHÔNG BAO GIỜ code hộ 100%. Hãy chỉ ra lỗi sai và gợi ý." }
+          ]
+        }
+      },
+      "id": "agent-code",
+      "name": "Giáo Viên Code",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [ 800, 100 ]
+    },
+    {
+      "parameters": {
+        "text": "={{ $('Webhook (Frontend)').item.json.body.message }}",
+        "hasOutputParser": false,
+        "messages": {
+          "messageValues": [
+            { "message": "You are AnalyticsExpert. Tuyệt đối không bịa đặt (Zero Hallucination). Hãy trả lời dựa trên tài liệu RAG." }
+          ]
+        }
+      },
+      "id": "agent-analytics",
+      "name": "Chuyên Gia Phân Tích (RAG)",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [ 800, 500 ]
+    },
+    {
+      "parameters": { "model": "gpt-4o-mini" },
+      "id": "model-openai",
+      "name": "OpenAI Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [ 800, 300 ]
+    },
+    {
+      "parameters": { "sessionId": "={{ $('Webhook (Frontend)').item.json.body.sessionId || 'default' }}" },
+      "id": "memory",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.2,
+      "position": [ 950, 300 ]
+    },
+    {
+      "parameters": {
+        "name": "tim_kiem_tai_lieu",
+        "description": "Dùng công cụ này để tìm kiếm kiến thức lý thuyết trong Database Supabase"
+      },
+      "id": "tool-vector",
+      "name": "Vector Store Tool",
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "typeVersion": 1,
+      "position": [ 950, 650 ]
+    },
+    {
+      "parameters": { "tableName": "documents" },
+      "id": "supabase-vector",
+      "name": "Supabase Vector Store",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1,
+      "position": [ 950, 800 ]
+    },
+    {
+      "parameters": {},
+      "id": "openai-embeddings",
+      "name": "OpenAI Embeddings",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1,
+      "position": [ 950, 950 ]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "chat_history",
+        "columns": "session_id, user_message, ai_response, agent_name",
+        "dataMode": "define",
+        "valuesToSend": {
+          "values": [
+            { "column": "session_id", "value": "={{ $('Webhook (Frontend)').item.json.body.sessionId }}" },
+            { "column": "user_message", "value": "={{ $('Webhook (Frontend)').item.json.body.message }}" },
+            { "column": "ai_response", "value": "={{ $json.output }}" },
+            { "column": "agent_name", "value": "={{ $('Webhook (Frontend)').item.json.body.agent }}" }
+          ]
+        }
+      },
+      "id": "postgres-logger",
+      "name": "Postgres (Lưu Lịch Sử)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [ 1200, 300 ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"output\": \"{{ $json.ai_response }}\" }"
+      },
+      "id": "respond-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [ 1400, 300 ]
+    }
+  ],
+  "connections": {
+    "Webhook (Frontend)": {
+      "main": [ [ { "node": "LLM Router (Phân loại)", "type": "main", "index": 0 } ] ]
+    },
+    "LLM Router (Phân loại)": {
+      "main": [ [ { "node": "Switch (Rẽ nhánh)", "type": "main", "index": 0 } ] ]
+    },
+    "Switch (Rẽ nhánh)": {
+      "main": [
+        [ { "node": "Giáo Viên Code", "type": "main", "index": 0 } ],
+        [ { "node": "Chuyên Gia Phân Tích (RAG)", "type": "main", "index": 0 } ]
+      ]
+    },
+    "Giáo Viên Code": {
+      "main": [ [ { "node": "Postgres (Lưu Lịch Sử)", "type": "main", "index": 0 } ] ]
+    },
+    "Chuyên Gia Phân Tích (RAG)": {
+      "main": [ [ { "node": "Postgres (Lưu Lịch Sử)", "type": "main", "index": 0 } ] ]
+    },
+    "Postgres (Lưu Lịch Sử)": {
+      "main": [ [ { "node": "Respond to Webhook", "type": "main", "index": 0 } ] ]
+    },
+    "OpenAI Model": {
+      "ai_languageModel": [
+        [
+          { "node": "Giáo Viên Code", "type": "ai_languageModel", "index": 0 },
+          { "node": "Chuyên Gia Phân Tích (RAG)", "type": "ai_languageModel", "index": 0 }
+        ]
+      ],
+      "ai_model": [
+        [
+          { "node": "LLM Router (Phân loại)", "type": "ai_model", "index": 0 }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          { "node": "Giáo Viên Code", "type": "ai_memory", "index": 0 },
+          { "node": "Chuyên Gia Phân Tích (RAG)", "type": "ai_memory", "index": 0 }
+        ]
+      ]
+    },
+    "Vector Store Tool": {
+      "ai_tool": [ [ { "node": "Chuyên Gia Phân Tích (RAG)", "type": "ai_tool", "index": 0 } ] ]
+    },
+    "Supabase Vector Store": {
+      "vectorStore": [ [ { "node": "Vector Store Tool", "type": "vectorStore", "index": 0 } ] ]
+    },
+    "OpenAI Embeddings": {
+      "ai_embedding": [ [ { "node": "Supabase Vector Store", "type": "ai_embedding", "index": 0 } ] ]
+    }
+  }
+}

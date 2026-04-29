@@ -1,0 +1,64 @@
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+
+/**
+ * Hàm phân luồng yêu cầu (Task Router)
+ * Gửi dữ liệu tới OpenRouter (Gemini 1.5 Pro) và phân tích luồng.
+ */
+async function processQuery(userMessage, modelId = "google/gemini-1.5-pro") {
+    const systemPrompt = `Bạn là một Trợ Lý Cá Nhân Thông Minh về Học Tập & Nghiên cứu Khoa học.
+Anh ấy là sếp của bạn. Hãy xưng là "em" và gọi người dùng là "anh".
+
+[HƯỚNG DẪN TASK ROUTER]
+1. Nếu anh ấy trò chuyện bình thường hoặc hỏi code, hãy trả lời nhiệt tình, rõ ràng bằng định dạng Markdown.
+2. Nếu anh ấy yêu cầu lên lịch, nhắc nhở thời gian, deadline, bài tập, hãy hỗ trợ và **BẮT BUỘC** trích xuất ra một đoạn JSON Schema mảng lịch trình chính xác. Bạn phải đặt đoạn JSON này ở riêng biệt trong một cụm \`\`\`json ... \`\`\`.
+Ví dụ:
+\`\`\`json
+[
+  { "task_name": "Nộp tiểu luận PTTK HT", "start_time": "2026-04-20 08:00", "end_time": "2026-04-20 12:00", "priority": "high" }
+]
+\`\`\`
+Trường ưu tiên priority có thể là: "low", "normal", "high". Định dạng ngày giờ là YYYY-MM-DD HH:mm.
+`;
+
+    // Gọi API tới OpenRouter mô phỏng SDK
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            "model": modelId,
+            "messages": [
+                { "role": "system", "content": systemPrompt },
+                { "role": "user", "content": userMessage }
+            ]
+        })
+    });
+
+    const data = await response.json();
+    if (!data.choices || data.choices.length === 0) {
+        console.error("Lỗi API OpenRouter:", data);
+        throw new Error("Invalid response from OpenRouter");
+    }
+
+    let botReply = data.choices[0].message.content;
+
+    // Tool extraction (Trích xuất JSON Task nếu có)
+    let extractedTasks = [];
+    // Biểu thức chính quy bắt khối mã json
+    const jsonMatch = botReply.match(/\`\`\`json\n([\s\S]*?)\n\`\`\`/);
+    if (jsonMatch) {
+       try {
+           extractedTasks = JSON.parse(jsonMatch[1]);
+           // Thay thế JSON block đi ẩn để UI hiện text thân thiện hơn
+           botReply = botReply.replace(jsonMatch[0], "\n*(Em đã trích xuất các sự kiện này vào Lịch học của anh rồi nhé! 📅)*\n");
+       } catch(e) {
+           console.error("Lỗi parse JSON Task:", e);
+       }
+    }
+
+    return { botReply, extractedTasks };
+}
+
+module.exports = { processQuery };
