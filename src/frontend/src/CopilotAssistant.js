@@ -64,19 +64,19 @@ export class CopilotAssistant extends HTMLElement {
         .blob-1 {
           top: -10%; left: -10%;
           width: 500px; height: 500px;
-          background: rgba(139, 92, 246, 0.35);
+          background: rgba(var(--accent-rgb, 139, 92, 246), 0.35);
           animation-delay: 0s;
         }
         .blob-2 {
           bottom: -20%; right: -10%;
           width: 600px; height: 600px;
-          background: rgba(59, 130, 246, 0.35);
+          background: rgba(var(--accent-rgb, 59, 130, 246), 0.35);
           animation-delay: -5s;
         }
         .blob-3 {
           top: 30%; left: 30%;
           width: 450px; height: 450px;
-          background: rgba(236, 72, 153, 0.25);
+          background: rgba(var(--accent-rgb, 236, 72, 153), 0.25);
           animation-delay: -10s;
           animation: float 25s infinite ease-in-out alternate-reverse;
         }
@@ -175,10 +175,10 @@ export class CopilotAssistant extends HTMLElement {
           color: var(--text-main);
         }
         .history-item.active {
-          background: rgba(139, 92, 246, 0.1);
+          background: rgba(var(--accent-rgb, 139, 92, 246), 0.1);
           color: var(--text-main);
-          border-color: rgba(139, 92, 246, 0.2);
-          box-shadow: inset 0 0 15px rgba(139, 92, 246, 0.05);
+          border-color: rgba(var(--accent-rgb, 139, 92, 246), 0.2);
+          box-shadow: inset 0 0 15px rgba(var(--accent-rgb, 139, 92, 246), 0.05);
         }
 
         /* Main Chat Area */
@@ -336,11 +336,11 @@ export class CopilotAssistant extends HTMLElement {
         }
 
         .message.user {
-          background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+          background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
           color: white;
           border-top-right-radius: 6px;
           border: 1px solid rgba(255,255,255,0.15);
-          box-shadow: 0 4px 20px rgba(139, 92, 246, 0.2);
+          box-shadow: 0 4px 20px rgba(var(--accent-rgb, 139, 92, 246), 0.2);
         }
 
         /* Markdown Advanced Styling */
@@ -447,11 +447,11 @@ export class CopilotAssistant extends HTMLElement {
           transition: var(--transition-smooth);
         }
         .qa-btn:hover {
-          background: rgba(139, 92, 246, 0.15);
-          border-color: rgba(139, 92, 246, 0.3);
+          background: rgba(var(--accent-rgb, 139, 92, 246), 0.15);
+          border-color: rgba(var(--accent-rgb, 139, 92, 246), 0.3);
           color: #fff;
           transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
+          box-shadow: 0 4px 12px rgba(var(--accent-rgb, 139, 92, 246), 0.15);
         }
 
         .input-pill {
@@ -512,8 +512,8 @@ export class CopilotAssistant extends HTMLElement {
           border-radius: 50%;
         }
         .send-btn:hover:not(:disabled) {
-          background: #7c3aed;
-          box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
+          background: var(--accent-primary);
+          box-shadow: 0 0 15px rgba(var(--accent-rgb, 139, 92, 246), 0.5);
         }
         .send-btn:disabled {
           background: rgba(255,255,255,0.05);

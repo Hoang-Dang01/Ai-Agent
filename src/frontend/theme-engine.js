@@ -1,5 +1,19 @@
 // theme-engine.js
 (function() {
+    function hexToRgb(hex) {
+        let r = 0, g = 0, b = 0;
+        if (hex.length == 4) {
+            r = "0x" + hex[1] + hex[1];
+            g = "0x" + hex[2] + hex[2];
+            b = "0x" + hex[3] + hex[3];
+        } else if (hex.length == 7) {
+            r = "0x" + hex[1] + hex[2];
+            g = "0x" + hex[3] + hex[4];
+            b = "0x" + hex[5] + hex[6];
+        }
+        return +(r) + "," + +(g) + "," + +(b);
+    }
+
     function applyTheme() {
         const savedSettings = JSON.parse(localStorage.getItem('ai_study_hub_settings') || '{}');
         
@@ -7,6 +21,7 @@
         const isDarkMode = savedSettings.darkMode !== false; // Default true
         const primaryColor = savedSettings.primaryColor || '#6366f1'; // Default Indigo
         const fontFamily = savedSettings.fontFamily || 'Inter';
+        const primaryRgb = hexToRgb(primaryColor);
         
         const root = document.documentElement;
         
@@ -25,7 +40,7 @@
         }
 
         root.style.setProperty('--accent-blue', primaryColor);
-        root.style.setProperty('--accent-purple', primaryColor);
+        root.style.setProperty('--accent-rgb', primaryRgb);
         root.style.setProperty('--font-primary', `"${fontFamily}", system-ui, sans-serif`);
     }
 
