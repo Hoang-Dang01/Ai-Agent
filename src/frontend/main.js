@@ -1,1 +1,1 @@
-import './src/CopilotAssistant.js';
+import './components/CopilotAssistant.js';

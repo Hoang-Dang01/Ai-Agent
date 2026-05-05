@@ -13,6 +13,7 @@ __pycache__/
 *.pem
 
 # Data & AI
+data/
 vector_db/
 .claude/memory/
 

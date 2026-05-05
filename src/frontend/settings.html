@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cài đặt hệ thống</title>
     <script src="./theme-engine.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@400;500;600&family=Roboto:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Poppins:wght@400;500;600&family=Roboto:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -193,9 +193,9 @@
                 </div>
                 <div class="color-picker-wrap">
                     <div class="preset-colors">
-                        <div class="preset-btn" style="background: #6366f1" onclick="setPrimaryColor('#6366f1')" title="Indigo"></div>
-                        <div class="preset-btn" style="background: #10b981" onclick="setPrimaryColor('#10b981')" title="Emerald"></div>
-                        <div class="preset-btn" style="background: #f43f5e" onclick="setPrimaryColor('#f43f5e')" title="Rose"></div>
+                        <div class="preset-btn" style="background: #4F46E5" onclick="setPrimaryColor('#4F46E5')" title="Premium Indigo"></div>
+                        <div class="preset-btn" style="background: #10B981" onclick="setPrimaryColor('#10B981')" title="Emerald"></div>
+                        <div class="preset-btn" style="background: #F43F5E" onclick="setPrimaryColor('#F43F5E')" title="Rose"></div>
                     </div>
                     <input type="color" id="color-picker" value="#6366f1">
                 </div>
@@ -209,7 +209,8 @@
                     <p>Thay đổi kiểu chữ toàn hệ thống</p>
                 </div>
                 <select class="control-el" id="font-select">
-                    <option value="Inter">Inter (Mặc định)</option>
+                    <option value="Plus Jakarta Sans">Plus Jakarta Sans (Mặc định)</option>
+                    <option value="Inter">Inter</option>
                     <option value="Poppins">Poppins</option>
                     <option value="Roboto">Roboto</option>
                 </select>
@@ -232,8 +233,8 @@
         const settings = JSON.parse(localStorage.getItem('ai_study_hub_settings') || '{}');
         let currentSettings = {
             darkMode: settings.darkMode !== false,
-            primaryColor: settings.primaryColor || '#6366f1',
-            fontFamily: settings.fontFamily || 'Inter',
+            primaryColor: settings.primaryColor || '#4F46E5',
+            fontFamily: settings.fontFamily || 'Plus Jakarta Sans',
             lang: settings.lang || 'vi'
         };
 

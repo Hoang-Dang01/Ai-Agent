@@ -768,7 +768,7 @@ export class CopilotAssistant extends HTMLElement {
       }
     });
 
-    // Quick Actions Logic
+    // Quick Actions Logic cho lần load đầu (nếu có)
     qaBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         textarea.value = btn.innerText.trim() + ": ";
@@ -791,11 +791,11 @@ export class CopilotAssistant extends HTMLElement {
       msgContainer.appendChild(row);
     };
 
-    // Hàm load lịch sử từ Database (n8n Webhook)
+    // Hàm load lịch sử từ Database
     const loadChatHistory = async () => {
       try {
         const token = localStorage.getItem('auth_token');
-        const response = await fetch('http://localhost:5678/webhook/history', {
+        const response = await fetch('/api/chats', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -807,13 +807,11 @@ export class CopilotAssistant extends HTMLElement {
           msgContainer.innerHTML = ''; // Xóa câu chào mặc định
           
           historyData.forEach(chat => {
-            // Hiển thị câu hỏi của user
-            if (chat.user_message) {
-              addMessage(chat.user_message, 'user', true);
-            }
-            // Hiển thị câu trả lời của AI
-            if (chat.ai_response) {
-              addMessage(chat.ai_response, 'bot', true);
+            // Dựa vào schema của MySQL (sender = 'user' | 'bot', content = text)
+            if (chat.sender === 'user') {
+              addMessage(chat.content, 'user', true);
+            } else if (chat.sender === 'bot') {
+              addMessage(chat.content, 'bot', true);
             }
           });
         } else {
@@ -830,6 +828,39 @@ export class CopilotAssistant extends HTMLElement {
       const { name, welcomeMsg } = e.detail;
       if (agentTitle) agentTitle.textContent = name;
       showWelcomeMessage(welcomeMsg);
+      
+      // Cập nhật Quick Actions theo từng Agent
+      const quickActionsContainer = this.shadowRoot.getElementById('quick-actions');
+      if (quickActionsContainer) {
+        // Xóa các nút cũ (trừ nút Sinh Dữ Liệu)
+        const oldBtns = quickActionsContainer.querySelectorAll('.qa-btn:not(#generate-dataset-btn)');
+        oldBtns.forEach(btn => btn.remove());
+        
+        let actions = [];
+        if (name.includes('RAG')) {
+          actions = ['Giải thích thuật toán KNN', 'Cách dùng np.matmul', 'Tóm tắt lý thuyết ML'];
+        } else if (name.includes('Feynman')) {
+          actions = ['Tui sẽ giải thích Gradient Descent', 'Hãy đóng vai học sinh hỏi tui', 'Bắt lỗi tư duy của tui'];
+        } else if (name.includes('Thử thách')) {
+          actions = ['Cho bài tập Python (Dễ)', 'Thử thách Numpy (Khó)', 'Giải đố SQL'];
+        } else {
+          actions = ['Giải thích lỗi code', 'Review đoạn code này', 'Phân tích tài liệu'];
+        }
+
+        const datasetBtn = quickActionsContainer.querySelector('#generate-dataset-btn');
+        actions.forEach(action => {
+          const btn = document.createElement('button');
+          btn.className = 'qa-btn';
+          btn.innerText = action;
+          btn.addEventListener('click', () => {
+            const textarea = this.shadowRoot.getElementById('chat-input');
+            textarea.value = btn.innerText.trim() + ": ";
+            textarea.focus();
+            textarea.dispatchEvent(new Event('input'));
+          });
+          quickActionsContainer.insertBefore(btn, datasetBtn);
+        });
+      }
     });
 
     textarea.addEventListener('input', () => {
@@ -906,7 +937,7 @@ export class CopilotAssistant extends HTMLElement {
 
       const agentName = agentTitle ? agentTitle.textContent : 'Giáo viên Code';
 
-      fetch('http://localhost:5678/webhook/chat', {
+      fetch('/api/chat', {
           method: 'POST',
           headers: { 
               'Content-Type': 'application/json',
@@ -924,7 +955,7 @@ export class CopilotAssistant extends HTMLElement {
           addMessage(reply, 'bot');
       })
       .catch(err => {
-          addMessage('Lỗi kết nối tới n8n (Backend). Vui lòng kiểm tra lại Webhook.\n\n Chi tiết lỗi: ' + err.message, 'bot');
+          addMessage('Lỗi kết nối tới Backend. Vui lòng kiểm tra lại Node Server.\n\n Chi tiết lỗi: ' + err.message, 'bot');
       });
     };
 
