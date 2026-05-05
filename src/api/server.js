@@ -8,7 +8,7 @@ const multer = require('multer');
 const { spawn } = require('child_process');
 const pdfParse = require('pdf-parse');
 
-require('dotenv').config({ path: path.join(__dirname, '../.env') });
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const db = require('./db/database');
 const { processQuery } = require('./agents/agent');
 const { crawlUTH } = require('./tools/crawler');
@@ -20,7 +20,7 @@ const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
 // Cấu hình Multer để upload tài liệu làm Synthetic Data
-const rawDocsDir = path.join(__dirname, '../../../data/raw_docs');
+const rawDocsDir = path.join(__dirname, '../../data/raw_docs');
 if (!fs.existsSync(rawDocsDir)){
     fs.mkdirSync(rawDocsDir, { recursive: true });
 }
@@ -42,7 +42,7 @@ app.use(cors());
 app.use(express.json());
 
 // Gộp chung: Phục vụ Frontend trên cùng một cổng 3000
-app.use(express.static(path.join(__dirname, '../../frontend')));
+app.use(express.static(path.join(__dirname, '../frontend')));
 
 
 
@@ -123,15 +123,15 @@ app.get('/api/chats', authenticateToken, async (req, res) => {
 
 // API: Tiến hành Gửi & Trả lời tin nhắn AI
 app.post('/api/chat', authenticateToken, async (req, res) => {
-    const { message, modelId } = req.body;
+    const { message, modelId, agent } = req.body;
     if (!message) return res.status(400).json({ error: "Tham số message không hợp lệ" });
 
     // Lưu tin nhắn USER vào DB
     await db.execute('INSERT INTO chats (sender, content) VALUES (?, ?)', ['user', message]);
 
     try {
-        // Gửi qua Task Router LLM
-        const { botReply, extractedTasks } = await processQuery(message, modelId);
+        // Gửi qua Task Router LLM kèm theo Agent
+        const { botReply, extractedTasks } = await processQuery(message, modelId, agent);
 
         // Lưu tin nhắn BOT vào DB
         await db.execute('INSERT INTO chats (sender, content) VALUES (?, ?)', ['bot', botReply]);
@@ -226,9 +226,9 @@ app.post('/api/generate-synthetic', authenticateToken, upload.single('document')
     res.json({ reply: replyMsg });
 
     // Chạy ngầm Python Script
-    const pythonScriptPath = path.join(__dirname, '../../../src/ai/synthetic_data_generator.py');
+    const pythonScriptPath = path.join(__dirname, '../ai/synthetic_data_generator.py');
     const pythonProcess = spawn('python', [pythonScriptPath], {
-        cwd: path.join(__dirname, '../../..') // Set working directory to project root so paths match
+        cwd: path.join(__dirname, '../..') // Set working directory to project root so paths match
     });
 
     pythonProcess.stdout.on('data', (data) => {
@@ -253,7 +253,7 @@ app.post('/api/generate-synthetic', authenticateToken, upload.single('document')
 
 // Routing về trang chủ cho các route không có API
 app.use((req, res) => {
-    res.sendFile(path.join(__dirname, '../../frontend', 'index.html'));
+    res.sendFile(path.join(__dirname, '../frontend', 'index.html'));
 });
 
 const PORT = process.env.PORT || 3000;

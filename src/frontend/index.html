@@ -7,32 +7,24 @@
     <script src="./theme-engine.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* [Existing styles unchanged] */
         :root {
-            --bg-color: #0f172a;
-            --card-bg: rgba(255, 255, 255, 0.03);
-            --card-border: rgba(255, 255, 255, 0.08);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent-blue: #6366f1;
-            --accent-purple: #10b981;
-            --glass-blur: 10px;
+            --glass-blur: 16px;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-            letter-spacing: 0.02em;
+            font-family: var(--font-primary, 'Plus Jakarta Sans', system-ui, sans-serif);
+            letter-spacing: -0.01em;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             text-rendering: optimizeLegibility;
-            font-kerning: normal;
-            font-feature-settings: "liga" 1, "kern" 1;
+            font-feature-settings: "cv02", "cv03", "cv04", "cv11";
         }
 
         body {
@@ -164,12 +156,13 @@
             backdrop-filter: blur(var(--glass-blur));
             -webkit-backdrop-filter: blur(var(--glass-blur));
             border: 1px solid var(--card-border);
-            border-radius: 20px;
+            border-radius: var(--radius-xl, 24px);
             padding: 32px;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all var(--transition-normal, 0.4s cubic-bezier(0.16, 1, 0.3, 1));
             position: relative;
             overflow: hidden;
+            box-shadow: var(--shadow-card, 0 10px 25px rgba(0,0,0,0.1));
         }
 
         .glass-card::before {
@@ -185,9 +178,9 @@
         }
 
         .glass-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(255, 255, 255, 0.2);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            transform: translateY(-6px);
+            border-color: var(--color-primary, rgba(255, 255, 255, 0.2));
+            box-shadow: var(--shadow-hover, 0 20px 40px rgba(0,0,0,0.4));
         }
 
         .glass-card:hover::before {
@@ -232,10 +225,10 @@
         /* Upload Area */
         .upload-area {
             border: 2px dashed rgba(255, 255, 255, 0.15);
-            border-radius: 20px;
+            border-radius: var(--radius-xl, 24px);
             padding: 48px;
             text-align: center;
-            transition: all 0.3s ease;
+            transition: all var(--transition-normal, 0.3s ease);
             cursor: pointer;
             background: rgba(255, 255, 255, 0.02);
             backdrop-filter: blur(var(--glass-blur));
@@ -318,6 +311,33 @@
                     </div>
                     <h3>Chuyên gia Phân tích</h3>
                     <p>Đọc hiểu tài liệu, tổng hợp kiến thức và tóm tắt cực nhanh. Hỏi đáp trực tiếp dựa trên nội dung bạn đã đưa vào RAG.</p>
+                </div>
+
+                <!-- RAG AI Engineering Card -->
+                <div class="glass-card" onclick="openChat('Kỹ sư AI (RAG)', 'Chào sếp! Tôi đã được nạp toàn bộ tài liệu về Machine Learning, NumPy, và Pandas. Sếp muốn tra cứu hàm nào hay cần giải thích thuật toán nào hôm nay?')">
+                    <div class="card-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--color-success); border: 1px solid rgba(16, 185, 129, 0.2);">
+                        <i class="fa-solid fa-brain"></i>
+                    </div>
+                    <h3>Kỹ sư AI (RAG)</h3>
+                    <p>Truy xuất kiến thức chuẩn mực từ Docs (NumPy, Pandas, Toán ML). Giải thích chi tiết cách hoạt động kèm minh họa thực tế.</p>
+                </div>
+
+                <!-- Feynman Mode Card -->
+                <div class="glass-card" onclick="openChat('Chế độ Feynman', 'Chào bạn! Trong chế độ Feynman này, bạn hãy thử giải thích một khái niệm cho mình nghe nhé. Mình sẽ đóng vai người mới học và vặn vẹo bạn đến cùng!')">
+                    <div class="card-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--color-warning); border: 1px solid rgba(245, 158, 11, 0.2);">
+                        <i class="fa-solid fa-comments"></i>
+                    </div>
+                    <h3>Chế độ Feynman</h3>
+                    <p>Đóng vai người phản biện. Bạn giải thích kiến thức, AI sẽ "vặn" lại để giúp bạn khắc sâu kiến thức hơn là chỉ học thuộc.</p>
+                </div>
+
+                <!-- Code Challenge Card -->
+                <div class="glass-card" onclick="openChat('Thử thách Code', 'Are you ready? Hãy chọn ngôn ngữ và độ khó, tôi sẽ tạo ra một thử thách code thực tế cho bạn. Bạn đã sẵn sàng chưa?')">
+                    <div class="card-icon" style="background: rgba(244, 63, 94, 0.1); color: var(--color-danger); border: 1px solid rgba(244, 63, 94, 0.2);">
+                        <i class="fa-solid fa-gamepad"></i>
+                    </div>
+                    <h3>Thử thách Code (Game hóa)</h3>
+                    <p>Tạo các bài tập code tình huống thực tế theo cấp độ. Tích hợp chạy thử và kiểm tra ngay trên hệ thống.</p>
                 </div>
             </div>
         </div>

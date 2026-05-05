@@ -72,12 +72,21 @@ async function callOllamaWithStream(prompt, timeoutMs = 10000) {
  * Hàm phân luồng yêu cầu (Task Router)
  * Có tích hợp Fallback từ Local AI -> Cloud AI
  */
-async function processQuery(userMessage, modelId = "google/gemini-1.5-pro") {
-    const systemPrompt = `Bạn là một Trợ Lý Cá Nhân Thông Minh về Học Tập & Nghiên cứu Khoa học.
-Anh ấy là sếp của bạn. Hãy xưng là "em" và gọi người dùng là "anh".
+async function processQuery(userMessage, modelId = "google/gemini-1.5-pro", agentContext = "Giáo viên Code") {
+    let roleDescription = "Bạn là một Trợ Lý Cá Nhân Thông Minh về Học Tập & Nghiên cứu Khoa học. Anh ấy là sếp của bạn. Hãy xưng là 'em' và gọi người dùng là 'anh'.";
+    
+    if (agentContext.includes("Feynman")) {
+        roleDescription = "Bạn là một học sinh hoặc người phản biện trong chế độ Feynman. Nhiệm vụ của bạn là liên tục đặt câu hỏi 'Tại sao?', tìm lỗ hổng trong lời giải thích của anh ấy và bắt anh ấy phải giải thích lại thật cặn kẽ. Hãy xưng là 'em' và gọi người dùng là 'anh'.";
+    } else if (agentContext.includes("RAG")) {
+        roleDescription = "Bạn là Kỹ sư AI chuyên trách mảng Machine Learning, NumPy, Pandas. Hãy trả lời cực kỳ kỹ thuật, trích dẫn hàm chi tiết, và cho ví dụ code minh họa. Hãy xưng là 'em' và gọi người dùng là 'anh'.";
+    } else if (agentContext.includes("Thử thách")) {
+        roleDescription = "Bạn là Quản trò Game. Nhiệm vụ của bạn là đưa ra các thử thách lập trình, toán học cực khó để đố anh ấy, sau đó chấm điểm. Hãy xưng là 'em' và gọi người dùng là 'anh'.";
+    }
+
+    const systemPrompt = `${roleDescription}
 
 [HƯỚNG DẪN TASK ROUTER]
-1. Nếu anh ấy trò chuyện bình thường hoặc hỏi code, hãy trả lời nhiệt tình, rõ ràng bằng định dạng Markdown.
+1. Hãy đóng tròn vai trò của mình để giúp anh ấy học tốt nhất.
 2. Nếu anh ấy yêu cầu lên lịch, nhắc nhở thời gian, deadline, bài tập, hãy hỗ trợ và **BẮT BUỘC** trích xuất ra một đoạn JSON Schema mảng lịch trình chính xác. Bạn phải đặt đoạn JSON này ở riêng biệt trong một cụm \`\`\`json ... \`\`\`.
 Ví dụ:
 \`\`\`json

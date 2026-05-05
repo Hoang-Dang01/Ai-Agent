@@ -67,6 +67,17 @@ async function initDB() {
             );
         `);
 
+        // Bảng mới: Ngân hàng Thử thách Code
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS challenges (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                title VARCHAR(255),
+                difficulty VARCHAR(50),
+                prompt TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
         console.log('📦 MySQL Database Initialized (Kèm bảng documents cho Fallback)!');
     } catch (error) {
         console.error('❌ Lỗi khởi tạo MySQL:', error);
