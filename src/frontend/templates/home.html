@@ -1,0 +1,46 @@
+<div id="dashboard-view" style="max-width: 1200px; margin: 0 auto; padding: 60px 24px; display: flex; flex-direction: column; gap: 48px;">
+    <div style="position: absolute; top: 24px; right: 24px; display: flex; gap: 12px;">
+        <button class="logout-btn" style="position: relative; top: 0; right: 0; background: rgba(255,255,255,0.05); color: var(--text-main); border-color: rgba(255,255,255,0.1);" onclick="navigate('settings')">
+            Cài đặt
+        </button>
+        <button class="logout-btn" style="position: relative; top: 0; right: 0;" id="btn-logout">
+            Đăng xuất
+        </button>
+    </div>
+    <div class="hero">
+        <h1>AI Study Hub</h1>
+        <p>Chào mừng trở lại, <span id="user-display">bạn</span>! Chọn một trợ lý AI chuyên biệt bên dưới để bắt đầu phiên học tập của bạn.</p>
+    </div>
+
+    <div>
+        <h2 class="section-title"><i class="fa-solid fa-robot"></i> Đội ngũ Trợ lý (Agents)</h2>
+        <div class="grid">
+            <!-- Code Mentor Card -->
+            <div class="glass-card" data-agent="Giáo viên Code" data-msg="Xin chào! Thầy/Cô có thể giúp em xem qua đoạn code nào hôm nay? Em nhớ gửi kèm lỗi nếu có nhé!">
+                <div class="card-icon icon-blue">
+                    <i class="fa-solid fa-code"></i>
+                </div>
+                <h3>Giáo viên Code</h3>
+                <p>Hỗ trợ review code, tìm bug và giải thích logic. Không code hộ 100%, giúp rèn luyện tư duy lập trình thực thụ.</p>
+            </div>
+
+            <!-- Analytics Expert Card -->
+            <div class="glass-card" data-agent="Chuyên gia Phân tích" data-msg="Chào bạn! Mình có thể tóm tắt tài liệu, vẽ sơ đồ tư duy hoặc giải thích các khái niệm lý thuyết khó. Bạn cần mình giúp gì?">
+                <div class="card-icon icon-purple">
+                    <i class="fa-solid fa-chart-pie"></i>
+                </div>
+                <h3>Chuyên gia Phân tích</h3>
+                <p>Đọc hiểu tài liệu, tổng hợp kiến thức và tóm tắt cực nhanh. Hỏi đáp trực tiếp dựa trên nội dung bạn đã đưa vào RAG.</p>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <h2 class="section-title"><i class="fa-solid fa-database"></i> Dữ liệu Kiến thức (Knowledge Base)</h2>
+        <div class="upload-area">
+            <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+            <h3 style="font-weight: 500;">Kéo thả tài liệu vào đây để nạp kiến thức cho AI</h3>
+            <p style="color: var(--text-muted); margin-top: 8px; font-size: 0.9rem;">Hỗ trợ định dạng .md, .pdf, .txt (Tối đa 10MB)</p>
+        </div>
+    </div>
+</div>

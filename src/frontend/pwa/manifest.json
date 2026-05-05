@@ -1,0 +1,31 @@
+{
+  "name": "Medstand Pharma",
+  "short_name": "Medstand",
+  "description": "Ứng dụng quản lý bán hàng dược phẩm Medstand",
+  "start_url": "/pages/login.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#3c50e0",
+  "background_color": "#f1f5f9",
+  "icons": [
+    {
+      "src": "/images/logo/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/logo/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/logo/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

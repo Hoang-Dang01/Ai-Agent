@@ -1,0 +1,56 @@
+<div class="container" style="max-width: 800px; margin: 0 auto; padding: 40px 24px;">
+    <div class="header">
+        <h1>Cài đặt hệ thống</h1>
+        <button class="back-btn" onclick="navigate('home')">Trở về</button>
+    </div>
+
+    <div class="setting-group">
+        <div class="setting-item">
+            <div class="setting-label">
+                <h3>Chế độ tối</h3>
+                <p>Bật hoặc tắt giao diện nền tối</p>
+            </div>
+            <div class="toggle-switch" id="dark-mode-toggle"></div>
+        </div>
+        
+        <div class="setting-item">
+            <div class="setting-label">
+                <h3>Màu sắc chủ đạo</h3>
+                <p>Chọn màu nhấn cho toàn bộ nút và viền</p>
+            </div>
+            <div class="color-picker-wrap">
+                <div class="preset-colors">
+                    <div class="preset-btn" style="background: #6366f1" onclick="setPrimaryColor('#6366f1')" title="Indigo"></div>
+                    <div class="preset-btn" style="background: #10b981" onclick="setPrimaryColor('#10b981')" title="Emerald"></div>
+                    <div class="preset-btn" style="background: #f43f5e" onclick="setPrimaryColor('#f43f5e')" title="Rose"></div>
+                </div>
+                <input type="color" id="color-picker" value="#6366f1">
+            </div>
+        </div>
+    </div>
+
+    <div class="setting-group">
+        <div class="setting-item">
+            <div class="setting-label">
+                <h3>Phông chữ</h3>
+                <p>Thay đổi kiểu chữ toàn hệ thống</p>
+            </div>
+            <select class="control-el" id="font-select">
+                <option value="Inter">Inter (Mặc định)</option>
+                <option value="Poppins">Poppins</option>
+                <option value="Roboto">Roboto</option>
+            </select>
+        </div>
+
+        <div class="setting-item">
+            <div class="setting-label">
+                <h3>Ngôn ngữ</h3>
+                <p>Ngôn ngữ hiển thị của giao diện</p>
+            </div>
+            <select class="control-el" id="lang-select">
+                <option value="vi">Tiếng Việt</option>
+                <option value="en">English</option>
+            </select>
+        </div>
+    </div>
+</div>
