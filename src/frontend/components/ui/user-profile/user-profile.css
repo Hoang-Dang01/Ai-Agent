@@ -1,0 +1,43 @@
+/* ═══════════════════════════════════════════
+   USER PROFILE / AVATAR COMPONENT
+   ═══════════════════════════════════════════ */
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.user-text {
+  text-align: right;
+}
+
+.user-name {
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.user-role {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.user-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  overflow: hidden;
+  transition: all var(--transition-normal);
+}
+
+@media (max-width: 768px) {
+  .user-avatar {
+    width: 36px;
+    height: 36px;
+  }
+  .user-profile {
+    gap: 8px;
+  }
+}

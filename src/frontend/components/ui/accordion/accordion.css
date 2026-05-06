@@ -1,0 +1,49 @@
+/* ═══════════════════════════════════════════
+   ACCORDION COMPONENT
+   ═══════════════════════════════════════════ */
+
+.ui-accordion {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.ui-accordion-header {
+  padding: 16px 24px;
+  background: var(--color-background);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 600;
+  color: var(--color-text);
+  transition: background 0.2s;
+}
+
+.ui-accordion-header:hover {
+  background: rgba(148, 163, 184, 0.1);
+}
+
+.ui-accordion-icon {
+  transition: transform 0.3s ease;
+}
+
+.ui-accordion.open .ui-accordion-icon {
+  transform: rotate(180deg);
+}
+
+.ui-accordion-body {
+  padding: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--color-surface);
+}
+
+.ui-accordion.open .ui-accordion-body {
+  padding: 24px;
+  max-height: 1000px;
+  border-top: 1px solid var(--color-border);
+}

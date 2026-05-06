@@ -1,0 +1,53 @@
+/* ═══════════════════════════════════════════
+   CHART COMPONENT
+   ═══════════════════════════════════════════ */
+
+.chart-wrapper {
+  position: relative;
+  width: 100%;
+  padding: 16px;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.chart-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.chart-container {
+  position: relative;
+  height: 300px;
+  width: 100%;
+}
+
+/* ═══════════════════════════════════════════
+   PRINT MEDIA QUERY (DÀNH RIÊNG CHO BIỂU ĐỒ)
+   ═══════════════════════════════════════════ */
+@media print {
+  /* Ép trình duyệt in màu nền, màu đường kẻ và nét của canvas */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Đảm bảo canvas không bị co lại hay mờ đi khi in */
+  canvas {
+    max-width: 100% !important;
+    page-break-inside: avoid;
+  }
+
+  .card {
+    page-break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+  }
+}

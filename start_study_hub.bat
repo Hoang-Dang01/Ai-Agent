@@ -20,7 +20,7 @@ echo.
 start /B "AI Core (Python)" cmd /c "cd /d %~dp0src\ai && (if exist venv\Scripts\activate.bat call venv\Scripts\activate.bat) && uvicorn main:app --host 0.0.0.0 --port 8000"
 
 :: Chay Node.js API Server an danh trong cung 1 cua so
-start /B "NodeJS API Server" cmd /c "cd /d %~dp0src\api && node src/server.js"
+start /B "NodeJS API Server" cmd /c "cd /d %~dp0src\api && node server.js"
 
 echo.
 echo [*] BUOC 3: MO TRINH DUYET...

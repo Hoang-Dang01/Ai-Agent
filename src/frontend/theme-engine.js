@@ -85,6 +85,21 @@
         root.style.setProperty('--accent-blue', primaryColor);
         root.style.setProperty('--accent-rgb', primaryRgb);
         root.style.setProperty('--font-primary', `"${fontFamily}", 'Plus Jakarta Sans', system-ui, sans-serif`);
+        
+        // Dynamically load Google Font if it's not the default
+        if (fontFamily && fontFamily !== 'Inter' && fontFamily !== 'Plus Jakarta Sans') {
+            const fontUrl = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/\s+/g, '+')}:wght@300;400;500;600;700&display=swap`;
+            let link = document.getElementById('dynamic-google-font');
+            if (!link) {
+                link = document.createElement('link');
+                link.id = 'dynamic-google-font';
+                link.rel = 'stylesheet';
+                document.head.appendChild(link);
+            }
+            if (link.href !== fontUrl) {
+                link.href = fontUrl;
+            }
+        }
     }
 
     applyTheme();

@@ -1,0 +1,23 @@
+/* Grid Cell Input wrapper */
+.grid-cell-dropdown-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.grid-cell-input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  padding: 4px;
+  font-size: 13px;
+  font-family: inherit;
+  color: inherit;
+}
+.grid-cell-input:focus {
+  background: var(--color-surface);
+  box-shadow: inset 0 0 0 2px var(--color-primary-light);
+  border-radius: 2px;
+}

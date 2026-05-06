@@ -1,0 +1,30 @@
+/* ═══════════════════════════════════════════
+   SEARCH BAR COMPONENT
+   ═══════════════════════════════════════════ */
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-text-secondary);
+  background: var(--color-background);
+  padding: 10px 16px;
+  border-radius: var(--radius-xl);
+  border: 1px solid transparent;
+  transition: all var(--transition-fast);
+}
+
+.search-box:focus-within {
+  background: var(--color-surface);
+  border-color: var(--color-primary-light);
+  box-shadow: 0 0 0 4px var(--color-primary-light);
+}
+
+.search-box input {
+  border: none;
+  outline: none;
+  font-size: var(--font-size-sm);
+  background: transparent;
+  width: 250px;
+  font-weight: 500;
+}

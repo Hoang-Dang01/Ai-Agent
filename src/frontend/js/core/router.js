@@ -165,6 +165,24 @@ const Router = (() => {
 
     _loadCSS(route.css || []);
 
+    // Fullscreen mode for chat: Hide global sidebar and header
+    const appSidebar = document.getElementById('app-sidebar');
+    const appHeader = document.querySelector('.header');
+    const mainWrapper = document.querySelector('.main-wrapper');
+    const mainContentArea = document.querySelector('.main');
+    
+    if (path === 'chat') {
+      if (appSidebar) appSidebar.style.display = 'none';
+      if (appHeader) appHeader.style.display = 'none';
+      if (mainWrapper) mainWrapper.style.height = '100vh';
+      if (mainContentArea) mainContentArea.style.paddingBottom = '0';
+    } else {
+      if (appSidebar) appSidebar.style.display = '';
+      if (appHeader) appHeader.style.display = '';
+      if (mainWrapper) mainWrapper.style.height = '';
+      if (mainContentArea) mainContentArea.style.paddingBottom = '';
+    }
+
     try {
       const html = await _fetchTemplate(route.template);
       if ($content) $content.innerHTML = html;

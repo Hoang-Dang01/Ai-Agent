@@ -1,43 +1,87 @@
-<div id="dashboard-view" style="max-width: 1200px; margin: 0 auto; padding: 60px 24px; display: flex; flex-direction: column; gap: 48px;">
-    <div style="position: absolute; top: 24px; right: 24px; display: flex; gap: 12px;">
-        <button class="logout-btn" style="position: relative; top: 0; right: 0; background: rgba(255,255,255,0.05); color: var(--text-main); border-color: rgba(255,255,255,0.1);" onclick="navigate('settings')">
-            Cài đặt
-        </button>
-        <button class="logout-btn" style="position: relative; top: 0; right: 0;" id="btn-logout">
-            Đăng xuất
-        </button>
-    </div>
-    <div class="hero">
+<div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+</div>
+<div id="dashboard-view" style="max-width: 1200px; margin: 0 auto; padding: 60px 24px; display: flex; flex-direction: column; gap: 48px; position: relative;">
+    <div class="hero animate-fade-up delay-100">
         <h1>AI Study Hub</h1>
-        <p>Chào mừng trở lại, <span id="user-display">bạn</span>! Chọn một trợ lý AI chuyên biệt bên dưới để bắt đầu phiên học tập của bạn.</p>
+        <p>Chào mừng trở lại, <span id="user-display" style="color: var(--accent-blue); font-weight: 600;">bạn</span>! Chọn một trợ lý AI chuyên biệt bên dưới để bắt đầu phiên học tập của bạn.</p>
     </div>
 
     <div>
-        <h2 class="section-title"><i class="fa-solid fa-robot"></i> Đội ngũ Trợ lý (Agents)</h2>
-        <div class="grid">
-            <!-- Code Mentor Card -->
-            <div class="glass-card" data-agent="Giáo viên Code" data-msg="Xin chào! Thầy/Cô có thể giúp em xem qua đoạn code nào hôm nay? Em nhớ gửi kèm lỗi nếu có nhé!">
-                <div class="card-icon icon-blue">
-                    <i class="fa-solid fa-code"></i>
+        <h2 class="section-title animate-fade-up delay-200"><i class="fa-solid fa-robot"></i> Đội ngũ Trợ lý (Agents)</h2>
+        <div class="card-grid bento-section animate-fade-up delay-200" id="bento-grid">
+            <!-- Code Mentor Card (Large Top Left) -->
+            <div class="magic-bento-card magic-bento-card--border-glow particle-container" style="--glow-color: 59, 130, 246" data-glow="59, 130, 246" data-agent="Giáo viên Code" data-msg="Xin chào! Thầy/Cô có thể giúp em xem qua đoạn code nào hôm nay? Em nhớ gửi kèm lỗi nếu có nhé!">
+                <div>
+                    <div class="card-icon icon-blue">
+                        <i class="fa-solid fa-code"></i>
+                    </div>
                 </div>
-                <h3>Giáo viên Code</h3>
-                <p>Hỗ trợ review code, tìm bug và giải thích logic. Không code hộ 100%, giúp rèn luyện tư duy lập trình thực thụ.</p>
+                <div>
+                    <h3>Giáo viên Code</h3>
+                    <p>Hỗ trợ review code, tìm bug và giải thích logic. Không code hộ 100%, giúp rèn luyện tư duy lập trình thực thụ.</p>
+                </div>
             </div>
 
-            <!-- Analytics Expert Card -->
-            <div class="glass-card" data-agent="Chuyên gia Phân tích" data-msg="Chào bạn! Mình có thể tóm tắt tài liệu, vẽ sơ đồ tư duy hoặc giải thích các khái niệm lý thuyết khó. Bạn cần mình giúp gì?">
-                <div class="card-icon icon-purple">
-                    <i class="fa-solid fa-chart-pie"></i>
+            <!-- Analytics Expert Card (Top Right) -->
+            <div class="magic-bento-card magic-bento-card--border-glow particle-container" style="--glow-color: 139, 92, 246" data-glow="139, 92, 246" data-agent="Chuyên gia Phân tích" data-msg="Chào bạn! Mình có thể tóm tắt tài liệu, vẽ sơ đồ tư duy hoặc giải thích các khái niệm lý thuyết khó. Bạn cần mình giúp gì?">
+                <div>
+                    <div class="card-icon icon-purple">
+                        <i class="fa-solid fa-chart-pie"></i>
+                    </div>
                 </div>
-                <h3>Chuyên gia Phân tích</h3>
-                <p>Đọc hiểu tài liệu, tổng hợp kiến thức và tóm tắt cực nhanh. Hỏi đáp trực tiếp dựa trên nội dung bạn đã đưa vào RAG.</p>
+                <div>
+                    <h3>Chuyên gia Phân tích</h3>
+                    <p>Đọc hiểu tài liệu, tổng hợp kiến thức và tóm tắt cực nhanh.</p>
+                </div>
+            </div>
+
+            <!-- RAG AI Engineering Card (Top Right Edge) -->
+            <div class="magic-bento-card magic-bento-card--border-glow particle-container" style="--glow-color: 16, 185, 129" data-glow="16, 185, 129" data-agent="Kỹ sư AI (RAG)" data-msg="Chào sếp! Tôi đã được nạp toàn bộ tài liệu về Machine Learning, NumPy, và Pandas. Sếp muốn tra cứu hàm nào hay cần giải thích thuật toán nào hôm nay?">
+                <div>
+                    <div class="card-icon icon-emerald">
+                        <i class="fa-solid fa-brain"></i>
+                    </div>
+                </div>
+                <div>
+                    <h3>Kỹ sư AI (RAG)</h3>
+                    <p>Truy xuất kiến thức chuẩn mực từ Docs. Giải thích chi tiết cách hoạt động.</p>
+                </div>
+            </div>
+
+            <!-- Feynman Mode Card (Wide Bottom Right) -->
+            <div class="magic-bento-card magic-bento-card--border-glow particle-container" style="--glow-color: 245, 158, 11" data-glow="245, 158, 11" data-agent="Chế độ Feynman" data-msg="Chào bạn! Trong chế độ Feynman này, bạn hãy thử giải thích một khái niệm cho mình nghe nhé. Mình sẽ đóng vai người mới học và vặn vẹo bạn đến cùng!">
+                <div>
+                    <div class="card-icon icon-amber">
+                        <i class="fa-solid fa-comments"></i>
+                    </div>
+                </div>
+                <div>
+                    <h3>Chế độ Feynman</h3>
+                    <p>Đóng vai người phản biện. Bạn giải thích kiến thức, AI sẽ "vặn" lại để giúp bạn khắc sâu kiến thức hơn là chỉ học thuộc.</p>
+                </div>
+            </div>
+            
+            <!-- Code Challenge Card (Bottom Left) -->
+            <div class="magic-bento-card magic-bento-card--border-glow particle-container" style="--glow-color: 236, 72, 153" data-glow="236, 72, 153" data-agent="Thử thách Code" data-msg="Are you ready? Hãy chọn ngôn ngữ và độ khó, tôi sẽ tạo ra một thử thách code thực tế cho bạn. Bạn đã sẵn sàng chưa?">
+                <div>
+                    <div class="card-icon icon-pink">
+                        <i class="fa-solid fa-gamepad"></i>
+                    </div>
+                </div>
+                <div>
+                    <h3>Thử thách Code (Game)</h3>
+                    <p>Tạo các bài tập code tình huống thực tế theo cấp độ. Tích hợp chạy thử và kiểm tra ngay trên hệ thống.</p>
+                </div>
             </div>
         </div>
     </div>
 
     <div>
-        <h2 class="section-title"><i class="fa-solid fa-database"></i> Dữ liệu Kiến thức (Knowledge Base)</h2>
-        <div class="upload-area">
+        <h2 class="section-title animate-fade-up delay-400"><i class="fa-solid fa-database"></i> Dữ liệu Kiến thức (Knowledge Base)</h2>
+        <div class="upload-area animate-fade-up delay-500">
             <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
             <h3 style="font-weight: 500;">Kéo thả tài liệu vào đây để nạp kiến thức cho AI</h3>
             <p style="color: var(--text-muted); margin-top: 8px; font-size: 0.9rem;">Hỗ trợ định dạng .md, .pdf, .txt (Tối đa 10MB)</p>

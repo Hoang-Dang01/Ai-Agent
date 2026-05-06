@@ -1,8 +1,8 @@
 {
-  "name": "Medstand Pharma",
-  "short_name": "Medstand",
-  "description": "Ứng dụng quản lý bán hàng dược phẩm Medstand",
-  "start_url": "/pages/login.html",
+  "name": "AI Study Hub",
+  "short_name": "StudyHub",
+  "description": "Nền tảng học tập thông minh tích hợp AI",
+  "start_url": "/index.html",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",

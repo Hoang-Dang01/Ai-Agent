@@ -4,48 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng nhập - AI Study Hub</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/app.css">
     <style>
-        :root {
-            --bg-color: #0f1115;
-            --card-bg: rgba(255, 255, 255, 0.03);
-            --card-border: rgba(255, 255, 255, 0.08);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent-blue: #3b82f6;
-            --accent-purple: #8b5cf6;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
         body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15), transparent 25%);
         }
 
         .auth-container {
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--card-border);
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 24px;
             padding: 40px;
             width: 100%;
             max-width: 400px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
             text-align: center;
+            position: relative;
+            z-index: 10;
         }
 
         .auth-container h2 {
@@ -83,6 +63,7 @@
         .input-group input:focus {
             border-color: var(--accent-blue);
             background: rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
         }
 
         .btn-submit {
@@ -95,13 +76,14 @@
             font-weight: 600;
             font-size: 1rem;
             cursor: pointer;
-            transition: transform 0.2s, opacity 0.2s;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             margin-top: 10px;
         }
 
         .btn-submit:hover {
-            opacity: 0.9;
             transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+            filter: brightness(1.1);
         }
 
         .toggle-text {
@@ -114,10 +96,12 @@
             color: var(--accent-blue);
             cursor: pointer;
             font-weight: 500;
+            transition: color 0.2s;
         }
 
         .toggle-text span:hover {
             text-decoration: underline;
+            color: #60a5fa;
         }
 
         .error-msg {
@@ -129,9 +113,14 @@
     </style>
 </head>
 <body>
+    <div class="bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
 
-    <div class="auth-container" id="login-box">
-        <h2>Đăng Nhập</h2>
+    <div class="auth-container animate-fade-up" id="login-box">
+        <h2 class="font-heading">Đăng Nhập</h2>
         <div class="error-msg" id="login-error"></div>
         <form id="login-form">
             <div class="input-group">
@@ -147,8 +136,8 @@
         <div class="toggle-text">Chưa có tài khoản? <span onclick="toggleView('register')">Đăng ký</span></div>
     </div>
 
-    <div class="auth-container" id="register-box" style="display: none;">
-        <h2>Đăng Ký</h2>
+    <div class="auth-container animate-fade-up" id="register-box" style="display: none;">
+        <h2 class="font-heading">Đăng Ký</h2>
         <div class="error-msg" id="register-error"></div>
         <form id="register-form">
             <div class="input-group">
@@ -166,8 +155,23 @@
 
     <script>
         function toggleView(view) {
-            document.getElementById('login-box').style.display = view === 'login' ? 'block' : 'none';
-            document.getElementById('register-box').style.display = view === 'register' ? 'block' : 'none';
+            const loginBox = document.getElementById('login-box');
+            const regBox = document.getElementById('register-box');
+            
+            if (view === 'login') {
+                loginBox.style.display = 'block';
+                regBox.style.display = 'none';
+                loginBox.classList.remove('animate-fade-up');
+                void loginBox.offsetWidth; // trigger reflow
+                loginBox.classList.add('animate-fade-up');
+            } else {
+                loginBox.style.display = 'none';
+                regBox.style.display = 'block';
+                regBox.classList.remove('animate-fade-up');
+                void regBox.offsetWidth;
+                regBox.classList.add('animate-fade-up');
+            }
+            
             document.getElementById('login-error').innerText = '';
             document.getElementById('register-error').innerText = '';
         }
@@ -176,6 +180,9 @@
             e.preventDefault();
             const user = document.getElementById('login-user').value;
             const pass = document.getElementById('login-pass').value;
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerText;
+            btn.innerText = 'Đang xử lý...';
             
             try {
                 const res = await fetch('/api/login', {
@@ -191,9 +198,11 @@
                     window.location.href = '/index.html';
                 } else {
                     document.getElementById('login-error').innerText = data.error;
+                    btn.innerText = originalText;
                 }
             } catch (error) {
                 document.getElementById('login-error').innerText = 'Lỗi kết nối đến máy chủ';
+                btn.innerText = originalText;
             }
         });
 
@@ -201,6 +210,9 @@
             e.preventDefault();
             const user = document.getElementById('reg-user').value;
             const pass = document.getElementById('reg-pass').value;
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerText;
+            btn.innerText = 'Đang tạo...';
             
             try {
                 const res = await fetch('/api/register', {
@@ -220,6 +232,7 @@
             } catch (error) {
                 document.getElementById('register-error').innerText = 'Lỗi kết nối đến máy chủ';
             }
+            btn.innerText = originalText;
         });
     </script>
 </body>

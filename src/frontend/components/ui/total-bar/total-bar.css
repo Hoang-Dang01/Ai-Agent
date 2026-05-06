@@ -1,0 +1,26 @@
+/* ═══════════════════════════════════════════
+   TOTAL BAR COMPONENT
+   ═══════════════════════════════════════════ */
+
+.total-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--color-background);
+  padding: 16px 24px;
+  border-top: 2px dashed var(--color-border);
+  margin-top: 16px;
+}
+
+.total-bar-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+}
+
+.total-bar-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-primary);
+}

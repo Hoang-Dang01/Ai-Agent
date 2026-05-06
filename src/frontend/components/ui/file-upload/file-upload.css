@@ -1,0 +1,48 @@
+/* ═══════════════════════════════════════════
+   FILE UPLOAD COMPONENT (Khu vực tải lên)
+   ═══════════════════════════════════════════ */
+
+.ui-file-upload {
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 32px 24px;
+  text-align: center;
+  background: var(--color-background);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.ui-file-upload:hover, .ui-file-upload.dragover {
+  border-color: var(--color-primary);
+  background: rgba(60, 80, 224, 0.05);
+}
+
+.ui-file-upload input[type="file"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.ui-upload-icon {
+  font-size: 40px;
+  color: var(--color-primary);
+  margin-bottom: 12px;
+}
+
+.ui-upload-text {
+  font-size: 14px;
+  color: var(--color-text);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.ui-upload-hint {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}

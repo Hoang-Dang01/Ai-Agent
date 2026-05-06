@@ -1,0 +1,36 @@
+/* ═══════════════════════════════════════════
+   EMPTY STATE COMPONENT (Trạng thái rỗng)
+   ═══════════════════════════════════════════ */
+
+.ui-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--color-border);
+}
+
+.ui-empty-icon {
+  font-size: 48px;
+  color: var(--color-text-secondary);
+  opacity: 0.5;
+  margin-bottom: 16px;
+}
+
+.ui-empty-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 8px;
+}
+
+.ui-empty-desc {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  max-width: 300px;
+  margin-bottom: 24px;
+}

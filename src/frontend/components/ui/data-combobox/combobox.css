@@ -1,0 +1,60 @@
+/* 2. COMBO BOX & INPUT WRAPPERS */
+.combo-box-container {
+  display: flex;
+  position: relative;
+  width: 100%;
+}
+
+.combo-box-container .ui-input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  outline: none;
+  font-size: 14px;
+  transition: all var(--transition-fast);
+  font-family: inherit;
+  color: var(--color-text);
+}
+
+.combo-box-container .ui-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: inset 0 0 0 1px var(--color-primary);
+}
+
+.combo-box-actions {
+  display: flex;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-left: none;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  overflow: hidden;
+}
+
+.combo-action-btn {
+  background: transparent;
+  border: none;
+  border-left: 1px solid var(--color-border);
+  padding: 0 8px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.combo-action-btn:first-child {
+  border-left: none;
+}
+
+.combo-action-btn:hover {
+  background: rgba(60, 80, 224, 0.1);
+  color: var(--color-primary);
+}
+
+.combo-action-btn .material-symbols-outlined {
+  font-size: 18px;
+}
+

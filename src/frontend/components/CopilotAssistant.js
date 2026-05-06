@@ -17,8 +17,8 @@ export class CopilotAssistant extends HTMLElement {
 
         :host {
           display: block;
-          height: 100vh;
-          width: 100vw;
+          height: 100%;
+          width: 100%;
           background-color: var(--bg-color, #0f172a);
           color: var(--text-main, #f8fafc);
           --bg-main: var(--bg-color, #0f172a);
@@ -93,22 +93,25 @@ export class CopilotAssistant extends HTMLElement {
         /* Layout */
         .app-container {
           display: flex;
-          height: 100vh;
-          width: 100vw;
+          height: 100%;
+          width: 100%;
           position: relative;
           z-index: 1;
+          border-radius: 16px;
+          overflow: hidden;
+          border: 1px solid var(--glass-border);
+          box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+          background: #131314; /* Solid dark like Gemini */
         }
 
-        /* Sidebar Glassmorphism */
+        /* Sidebar Styling */
         .chat-sidebar {
           width: var(--sidebar-width);
-          background: rgba(10, 10, 12, 0.6);
-          backdrop-filter: blur(24px);
-          -webkit-backdrop-filter: blur(24px);
-          border-right: 1px solid var(--glass-border);
+          background: #1e1f22; /* Solid dark grey like Gemini sidebar */
+          border-right: 1px solid rgba(255,255,255,0.05);
           display: flex;
           flex-direction: column;
-          z-index: 10;
+          position: relative;
           transition: var(--transition-smooth);
           flex-shrink: 0;
         }
@@ -121,15 +124,16 @@ export class CopilotAssistant extends HTMLElement {
 
         .sidebar-header {
           padding: 24px;
+          padding-top: 76px; /* Make room for the floating toggle button */
         }
 
         .new-chat-btn {
           width: 100%;
-          padding: 12px;
-          background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+          padding: 10px 16px;
+          background: transparent;
           color: var(--text-main);
-          border: 1px solid var(--glass-border);
-          border-radius: 12px;
+          border: 1px solid rgba(255,255,255,0.15);
+          border-radius: 24px;
           cursor: pointer;
           font-size: 14px;
           font-weight: 500;
@@ -137,13 +141,10 @@ export class CopilotAssistant extends HTMLElement {
           align-items: center;
           justify-content: center;
           transition: var(--transition-smooth);
-          box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         .new-chat-btn:hover {
-          background: rgba(255,255,255,0.1);
-          border-color: rgba(255,255,255,0.2);
-          transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+          background: rgba(255,255,255,0.05);
+          border-color: rgba(255,255,255,0.25);
         }
 
         .chat-history {
@@ -152,11 +153,12 @@ export class CopilotAssistant extends HTMLElement {
           overflow-y: auto;
         }
         .history-title {
-          font-size: 11px;
-          font-weight: 600;
-          color: var(--text-muted);
+          font-size: 12px;
+          font-weight: 700;
+          color: #a1a1aa;
           text-transform: uppercase;
           letter-spacing: 1px;
+          margin-top: 16px;
           margin-bottom: 12px;
           padding-left: 8px;
         }
@@ -175,10 +177,10 @@ export class CopilotAssistant extends HTMLElement {
           color: var(--text-main);
         }
         .history-item.active {
-          background: rgba(var(--accent-rgb, 139, 92, 246), 0.1);
+          background: rgba(255, 255, 255, 0.1);
           color: var(--text-main);
-          border-color: rgba(var(--accent-rgb, 139, 92, 246), 0.2);
-          box-shadow: inset 0 0 15px rgba(var(--accent-rgb, 139, 92, 246), 0.05);
+          border: none;
+          box-shadow: none;
         }
 
         /* Main Chat Area */
@@ -191,17 +193,7 @@ export class CopilotAssistant extends HTMLElement {
 
         /* Header Component - Glass */
         .chat-header {
-          padding: 20px 32px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          position: absolute;
-          top: 0; left: 0; width: 100%;
-          z-index: 10;
-          background: linear-gradient(to bottom, rgba(10,10,12,0.8) 0%, rgba(10,10,12,0) 100%);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          border-bottom: 1px solid rgba(255,255,255,0.02);
+          display: none !important;
         }
 
         .header-left {
@@ -291,7 +283,7 @@ export class CopilotAssistant extends HTMLElement {
         .message-list {
           flex: 1;
           overflow-y: auto;
-          padding: 100px 40px 180px 40px; 
+          padding: 80px 40px 180px 40px; 
           display: flex;
           flex-direction: column;
           gap: 28px;
@@ -545,6 +537,57 @@ export class CopilotAssistant extends HTMLElement {
           align-items: center;
           gap: 16px;
         }
+
+        /* Persistent floating buttons */
+        .persistent-btn {
+          background: transparent;
+          border: none;
+          color: var(--text-muted);
+          cursor: pointer;
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: var(--transition-smooth);
+        }
+        .persistent-btn:hover {
+          background: rgba(255,255,255,0.08);
+          color: var(--text-main);
+        }
+
+        .sidebar-footer {
+          padding: 16px;
+          border-top: 1px solid var(--glass-border);
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .sidebar-footer-btn {
+          background: transparent;
+          color: var(--text-muted);
+          border: none;
+          border-radius: 8px;
+          padding: 10px 14px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          font-family: var(--font-primary, 'Inter', sans-serif);
+          font-weight: 500;
+          font-size: 14px;
+          transition: var(--transition-smooth);
+          width: 100%;
+        }
+        .sidebar-footer-btn:hover {
+          background: rgba(255,255,255,0.05);
+          color: var(--text-main);
+        }
+        .sidebar-footer-btn.logout:hover {
+          background: rgba(239, 68, 68, 0.1);
+          color: #fca5a5;
+        }
       </style>
 
       <!-- Mesh Gradient Background - Trả lại hiệu ứng Aura -->
@@ -560,6 +603,15 @@ export class CopilotAssistant extends HTMLElement {
       </div>
 
       <div class="app-container">
+        <!-- Floating Toggle Button like Gemini -->
+        <div style="position: absolute; top: 16px; left: 16px; z-index: 100;">
+          <button class="persistent-btn" id="toggle-sidebar" title="Thu gom trò chuyện">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+          </button>
+        </div>
+        
+
+
         <!-- Sidebar -->
         <div class="chat-sidebar">
           <div class="sidebar-header">
@@ -572,6 +624,16 @@ export class CopilotAssistant extends HTMLElement {
             <div class="history-item">Giải thích về OOP</div>
             <div class="history-item active">Sửa lỗi React Hook</div>
           </div>
+          <div class="sidebar-footer">
+            <button class="sidebar-footer-btn" id="settings-btn" title="Cài đặt">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+              Cài đặt
+            </button>
+            <button class="sidebar-footer-btn logout" id="back-btn" title="Thoát ra ngoài">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+              Thoát ra Dashboard
+            </button>
+          </div>
         </div>
 
         <!-- Main Area -->
@@ -579,10 +641,10 @@ export class CopilotAssistant extends HTMLElement {
           <!-- Header -->
           <div class="chat-header">
             <div class="header-left">
-              <button class="icon-btn" id="toggle-sidebar" title="Ẩn/Hiện Sidebar">
+              <button class="icon-btn" id="toggle-sidebar-old" title="Ẩn/Hiện Sidebar">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
               </button>
-              <button class="back-btn" id="back-btn">
+              <button class="back-btn" id="back-btn-old">
                 Quay lại Hub
               </button>
             </div>
@@ -636,6 +698,7 @@ export class CopilotAssistant extends HTMLElement {
     const agentTitle = this.shadowRoot.getElementById('agent-title');
     const backBtn = this.shadowRoot.getElementById('back-btn');
     const toggleSidebarBtn = this.shadowRoot.getElementById('toggle-sidebar');
+    const settingsBtn = this.shadowRoot.getElementById('settings-btn');
     const sidebar = this.shadowRoot.querySelector('.chat-sidebar');
     const qaBtns = this.shadowRoot.querySelectorAll('.qa-btn:not(#generate-dataset-btn)');
     const generateDatasetBtn = this.shadowRoot.getElementById('generate-dataset-btn');
@@ -716,6 +779,14 @@ export class CopilotAssistant extends HTMLElement {
     if (toggleSidebarBtn && sidebar) {
       toggleSidebarBtn.addEventListener('click', () => {
         sidebar.classList.toggle('hidden');
+      });
+    }
+
+    // Settings Logic
+    if (settingsBtn) {
+      settingsBtn.addEventListener('click', () => {
+        // Since we are in Shadow DOM, we can just change the global window hash
+        window.location.hash = '#/settings';
       });
     }
 
