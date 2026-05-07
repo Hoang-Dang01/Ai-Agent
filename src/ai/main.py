@@ -5,6 +5,14 @@ from core.rag_engine import process_pdf_to_vector, ask_llm
 
 app = FastAPI(title="AI Study Hub - Deep Learning Core")
 
+from fastapi.middleware.cors import CORSMiddleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 class ChatRequest(BaseModel):
     message: str
 
