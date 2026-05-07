@@ -1,0 +1,31 @@
+{
+  "name": "ai-agent",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "start": "concurrently \"npm run ai\" \"npm run backend\"",
+    "backend": "cd src/backend && npm start",
+    "ai": "cd src/ai && python main.py",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hoang-Dang01/Ai-Agent.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Hoang-Dang01/Ai-Agent/issues"
+  },
+  "homepage": "https://github.com/Hoang-Dang01/Ai-Agent#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

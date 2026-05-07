@@ -854,42 +854,49 @@ export class CopilotAssistant extends HTMLElement {
       e.preventDefault();
       dragOverlay.classList.remove('active');
     });
-    dragOverlay.addEventListener('drop', async (e) => {
+      dragOverlay.addEventListener('drop', async (e) => {
       e.preventDefault();
       dragOverlay.classList.remove('active');
       const files = e.dataTransfer.files;
       if (files.length > 0) {
         const file = files[0];
         
-        const validExtensions = ['.txt', '.md', '.js', '.py', '.html', '.css', '.json', '.csv', '.java', '.cpp'];
-        const isValid = validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+        // Cập nhật giao diện khi đang tải
+        const originalPlaceholder = textarea.placeholder;
+        textarea.placeholder = `Đang nạp kiến thức từ file ${file.name} vào não AI...`;
+        textarea.disabled = true;
         
-        if (isValid || file.type.startsWith('text/')) {
-          try {
-            attachedFile = file; // Lưu lại file object để dùng cho Upload
-            
-            const originalPlaceholder = textarea.placeholder;
-            textarea.placeholder = `Đang đọc file ${file.name}...`;
-            
-            const text = await file.text();
-            const fileExtension = file.name.split('.').pop();
-            const formattedText = `\n\n\`\`\`${fileExtension}\n// File: ${file.name}\n${text}\n\`\`\`\n`;
-            
-            textarea.value += formattedText;
-            textarea.placeholder = originalPlaceholder;
-            
-            const inputPill = this.shadowRoot.querySelector('.input-pill');
-            inputPill.style.boxShadow = '0 0 25px rgba(139, 92, 246, 0.8)';
-            setTimeout(() => { inputPill.style.boxShadow = ''; }, 1000);
-            
-            textarea.focus();
-            textarea.dispatchEvent(new Event('input'));
-          } catch (err) {
-            console.error('Lỗi đọc file:', err);
-            alert('Không thể đọc nội dung file này!');
+        const inputPill = this.shadowRoot.querySelector('.input-pill');
+        inputPill.style.boxShadow = '0 0 25px rgba(234, 179, 8, 0.8)'; // Ánh sáng vàng (Đang xử lý)
+
+        try {
+          // Gửi thẳng qua API Python bằng FormData
+          const formData = new FormData();
+          formData.append('file', file);
+
+          const response = await fetch('http://127.0.0.1:8000/upload', {
+            method: 'POST',
+            body: formData
+          });
+
+          const result = await response.json();
+
+          if (response.ok && result.success) {
+             inputPill.style.boxShadow = '0 0 25px rgba(34, 197, 94, 0.8)'; // Xanh lá (Thành công)
+             addMessage(`✅ **Nạp dữ liệu thành công!**\n\nTài liệu: \`${file.name}\`\nChi tiết: ${result.message}\n\nSếp có thể đặt câu hỏi về tài liệu này rồi đó!`, 'bot');
+          } else {
+             throw new Error(result.error || 'Lỗi không xác định từ RAG Engine');
           }
-        } else {
-          alert('Chỉ hỗ trợ kéo thả file văn bản/mã nguồn (.txt, .js, .py...)');
+        } catch (err) {
+          console.error('Lỗi nạp file:', err);
+          inputPill.style.boxShadow = '0 0 25px rgba(239, 68, 68, 0.8)'; // Đỏ (Lỗi)
+          alert('Không thể nạp kiến thức: ' + err.message);
+        } finally {
+          // Trả lại giao diện bình thường
+          setTimeout(() => { inputPill.style.boxShadow = ''; }, 2000);
+          textarea.placeholder = originalPlaceholder;
+          textarea.disabled = false;
+          textarea.focus();
         }
       }
     });
