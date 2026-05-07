@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File
 from pydantic import BaseModel
 import uvicorn
-from rag_engine import process_pdf_to_vector, ask_llm
+from core.rag_engine import process_pdf_to_vector, ask_llm
 
 app = FastAPI(title="AI Study Hub - Deep Learning Core")
 
@@ -35,7 +35,7 @@ def ask_question(req: ChatRequest):
     except Exception as e:
         return {"error": str(e)}
 
-from test_generator import generate_mock_test
+from core.test_generator import generate_mock_test
 
 class TestRequest(BaseModel):
     topic: str
