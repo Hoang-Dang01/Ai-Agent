@@ -7,12 +7,22 @@ from langchain_community.llms import Ollama
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 
+from langchain.retrievers import ContextualCompressionRetriever
+from langchain.retrievers.document_compressors import CrossEncoderReranker
+from langchain_community.cross_encoders import HuggingFaceCrossEncoder
+
 # Cấu hình Qdrant lưu trữ Local
 QDRANT_PATH = "vector_db/qdrant_storage"
 COLLECTION_NAME = "study_hub_docs"
 
 # Kết nối Embedding chuyên trị Tiếng Việt
+print("Đang tải Embedding Model...")
 embeddings = HuggingFaceEmbeddings(model_name="keepitreal/vietnamese-sbert")
+
+# Khởi tạo Reranker (Kẻ Sàng Lọc) cho Advanced RAG
+print("Đang tải BGE-Reranker (Mô hình chấm điểm)...")
+reranker_model = HuggingFaceCrossEncoder(model_name="BAAI/bge-reranker-base")
+compressor = CrossEncoderReranker(model=reranker_model, top_n=3)
 
 def process_pdf_to_vector(pdf_path: str):
     """
@@ -42,13 +52,21 @@ def process_pdf_to_vector(pdf_path: str):
 
 def ask_llm(query: str):
     """
-    Truy vấn Qdrant để lấy thông tin liên quan, sau đó nhờ Llama 3 trả lời
+    Truy vấn Qdrant để lấy thông tin liên quan, dùng Reranker chấm điểm lại, sau đó nhờ Llama/Qwen trả lời
     """
     # Khởi tạo kết nối đọc Qdrant
     vector_store = Qdrant.from_existing_collection(
         embedding=embeddings,
         collection_name=COLLECTION_NAME,
         path=QDRANT_PATH,
+    )
+    
+    # 1. Base Retriever: Quét rộng 15 đoạn (Chunks) liên quan nhất bằng Vector Search
+    base_retriever = vector_store.as_retriever(search_kwargs={"k": 15})
+    
+    # 2. Reranker: Dùng BGE-Reranker chấm điểm và chắt lọc lại đúng 3 đoạn đắt giá nhất
+    compression_retriever = ContextualCompressionRetriever(
+        base_compressor=compressor, base_retriever=base_retriever
     )
     
     # Đổi sang Qwen 2.5 theo kế hoạch
@@ -69,7 +87,7 @@ def ask_llm(query: str):
     qa_chain = RetrievalQA.from_chain_type(
         llm=llm,
         chain_type="stuff",
-        retriever=vector_store.as_retriever(search_kwargs={"k": 3}),
+        retriever=compression_retriever, # Sử dụng Reranker Retriever thay vì Base Retriever
         return_source_documents=True, # BẬT TÍNH NĂNG TRÍCH DẪN NGUỒN
         chain_type_kwargs={"prompt": PROMPT}
     )
