@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  ai-postgres:
+    image: pgvector/pgvector:pg16
+    container_name: ai-postgres
+    environment:
+      POSTGRES_USER: ai_admin
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: ai_study_hub
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+volumes:
+  postgres_data:

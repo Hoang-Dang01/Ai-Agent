@@ -1,7 +1,7 @@
 import os
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import Qdrant
+from langchain_community.vectorstores import PGVector
 from langchain_community.embeddings import OllamaEmbeddings, HuggingFaceEmbeddings
 from langchain_community.llms import Ollama
 from langchain.chains import RetrievalQA
@@ -11,8 +11,8 @@ from langchain.retrievers import ContextualCompressionRetriever
 from langchain.retrievers.document_compressors import CrossEncoderReranker
 from langchain_community.cross_encoders import HuggingFaceCrossEncoder
 
-# Cấu hình Qdrant lưu trữ Local
-QDRANT_PATH = "vector_db/qdrant_storage"
+# Cấu hình PostgreSQL (Gom về 1 mối)
+CONNECTION_STRING = "postgresql+psycopg2://ai_admin:mysecretpassword@localhost:5432/ai_study_hub"
 COLLECTION_NAME = "study_hub_docs"
 
 # Kết nối Embedding chuyên trị Tiếng Việt
@@ -26,7 +26,7 @@ compressor = CrossEncoderReranker(model=reranker_model, top_n=3)
 
 def process_pdf_to_vector(pdf_path: str):
     """
-    Đọc file PDF, băm nhỏ (chunking) và lưu vào Vector Database Qdrant
+    Đọc file PDF, băm nhỏ (chunking) và lưu vào PostgreSQL (pgvector)
     """
     print(f"Đang đọc file: {pdf_path}")
     loader = PyPDFLoader(pdf_path)
@@ -40,25 +40,25 @@ def process_pdf_to_vector(pdf_path: str):
     chunks = text_splitter.split_documents(documents)
     print(f"Đã chia thành {len(chunks)} chunks.")
 
-    # Lưu vào Qdrant (Tự động tạo collection)
-    Qdrant.from_documents(
-        chunks,
-        embeddings,
-        path=QDRANT_PATH,
-        collection_name=COLLECTION_NAME
+    # Lưu vào PostgreSQL (Tự động tạo bảng và collection)
+    PGVector.from_documents(
+        embedding=embeddings,
+        documents=chunks,
+        collection_name=COLLECTION_NAME,
+        connection_string=CONNECTION_STRING,
     )
-    print("Đã lưu thành công vào Qdrant!")
+    print("Đã lưu thành công vào PostgreSQL!")
     return len(chunks)
 
 def ask_llm(query: str):
     """
     Truy vấn Qdrant để lấy thông tin liên quan, dùng Reranker chấm điểm lại, sau đó nhờ Llama/Qwen trả lời
     """
-    # Khởi tạo kết nối đọc Qdrant
-    vector_store = Qdrant.from_existing_collection(
-        embedding=embeddings,
+    # Khởi tạo kết nối đọc PostgreSQL
+    vector_store = PGVector(
         collection_name=COLLECTION_NAME,
-        path=QDRANT_PATH,
+        connection_string=CONNECTION_STRING,
+        embedding_function=embeddings,
     )
     
     # 1. Base Retriever: Quét rộng 15 đoạn (Chunks) liên quan nhất bằng Vector Search
