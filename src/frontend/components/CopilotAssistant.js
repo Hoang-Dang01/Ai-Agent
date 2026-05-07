@@ -921,7 +921,7 @@ export class CopilotAssistant extends HTMLElement {
     const loadChatHistory = async () => {
       try {
         const token = localStorage.getItem('auth_token');
-        const response = await fetch('http://127.0.0.1:8000/api/v1/chat/history', {
+        const response = await fetch('http://127.0.0.1:8000/history', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -1095,7 +1095,7 @@ export class CopilotAssistant extends HTMLElement {
 
       const agentName = agentTitle ? agentTitle.textContent : 'Giáo viên Code';
 
-      fetch('http://127.0.0.1:8000/api/v1/chat/', {
+      fetch('http://127.0.0.1:8000/ask', {
           method: 'POST',
           headers: { 
               'Content-Type': 'application/json',
@@ -1109,7 +1109,10 @@ export class CopilotAssistant extends HTMLElement {
       })
       .then(res => res.json())
       .then(data => {
-          const reply = data.output || data.reply || data[0]?.output || JSON.stringify(data);
+          let reply = data.output || data.reply || data[0]?.output || JSON.stringify(data);
+          if (data.citations && data.citations.length > 0) {
+              reply += '\n\n**📚 Trích dẫn nguồn:**\n' + data.citations.map(c => `- ${c}`).join('\n');
+          }
           addMessage(reply, 'bot');
       })
       .catch(err => {
