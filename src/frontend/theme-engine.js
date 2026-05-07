@@ -61,6 +61,8 @@
             root.style.setProperty('--card-border', '#334155');
             root.style.setProperty('--text-main', '#F8FAFC');
             root.style.setProperty('--text-muted', '#94A3B8');
+            root.style.setProperty('--body-gradient', 'radial-gradient(ellipse at top, rgba(59, 130, 246, 0.15) 0%, transparent 40%), radial-gradient(ellipse at bottom, rgba(139, 92, 246, 0.1) 0%, transparent 40%)');
+            root.style.setProperty('--display-orbs', 'block');
         } else {
             // Slate 50 Light Theme
             root.style.setProperty('--color-background', '#F8FAFC');
@@ -75,11 +77,13 @@
             root.style.setProperty('--shadow-hover', '0 25px 30px -5px rgba(0, 0, 0, 0.08), 0 15px 15px -10px rgba(0, 0, 0, 0.04)');
             
             // Map legacy Ai-Agent variables
-            root.style.setProperty('--bg-color', '#F8FAFC');
+            root.style.setProperty('--bg-color', '#F4F6F8'); // Giống hệt màu nền order Santino
             root.style.setProperty('--card-bg', '#FFFFFF');
             root.style.setProperty('--card-border', '#E2E8F0');
-            root.style.setProperty('--text-main', '#0F172A');
-            root.style.setProperty('--text-muted', '#475569');
+            root.style.setProperty('--text-main', '#1E293B');
+            root.style.setProperty('--text-muted', '#64748B');
+            root.style.setProperty('--body-gradient', 'none'); // Nền trơn
+            root.style.setProperty('--display-orbs', 'none'); // Tắt các cục màu 3D
         }
 
         root.style.setProperty('--accent-blue', primaryColor);

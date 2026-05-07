@@ -25,6 +25,8 @@
     <div class="layout">
       <!-- SIDEBAR -->
       <aside class="sidebar collapsed" id="app-sidebar">
+        <!-- Resizer Handle -->
+        <div class="resizer" id="sidebar-resizer"></div>
         <!-- Active Indicator -->
         <div class="active-indicator" id="active-indicator"></div>
 
@@ -35,7 +37,7 @@
         
         <div class="sidebar-content">
           <!-- Card 1: Menu Chính -->
-          <div class="nav-card" style="background-color: rgba(27, 23, 34, 0.7); color: #fff;">
+          <div class="nav-card">
             <div class="nav-card-label">Menu Chính</div>
             <div class="nav-card-links">
               <a class="nav-item magnetic" href="#/home" data-route="/home" data-tooltip="Trang chủ">
@@ -53,11 +55,16 @@
                 <span class="nav-text">Kiến thức RAG</span>
                 <i class="fa-solid fa-arrow-up-right-from-square nav-card-link-icon"></i>
               </a>
+              <a class="nav-item magnetic" href="#/minecraft" data-route="/minecraft" data-tooltip="Minecraft Engine">
+                <i class="fa-solid fa-gamepad icon"></i> 
+                <span class="nav-text">Minecraft Engine</span>
+                <i class="fa-solid fa-arrow-up-right-from-square nav-card-link-icon"></i>
+              </a>
             </div>
           </div>
           
           <!-- Card 2: Hệ thống -->
-          <div class="nav-card nav-card-bottom" style="background-color: rgba(47, 41, 58, 0.7); color: #fff;">
+          <div class="nav-card nav-card-bottom">
             <div class="nav-card-label">Hệ thống</div>
             <div class="nav-card-links">
               <a class="nav-item magnetic" href="#/settings" data-route="/settings" data-tooltip="Cài đặt">

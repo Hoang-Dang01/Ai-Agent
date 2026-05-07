@@ -13,6 +13,7 @@ window.SidebarManager = {
         this.setupMagneticHover();
         this.updateActiveIndicator();
         this.setupTooltips();
+        this.setupResizer();
 
         // Listen for route changes to update active state
         window.addEventListener('hashchange', () => {
@@ -168,6 +169,42 @@ window.SidebarManager = {
                     }
                 });
             });
+        });
+    },
+
+    setupResizer: function() {
+        const resizer = document.getElementById('sidebar-resizer');
+        if (!resizer || !this.sidebar) return;
+
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            if (this.sidebar.classList.contains('collapsed')) return;
+            isResizing = true;
+            resizer.classList.add('active');
+            this.sidebar.style.transition = 'none'; // Tắt transition khi đang kéo để không bị lag
+            document.body.style.cursor = 'col-resize';
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            // Giới hạn độ rộng từ 220px đến 500px
+            let newWidth = e.clientX;
+            if (newWidth < 220) newWidth = 220;
+            if (newWidth > 500) newWidth = 500;
+            
+            this.sidebar.style.width = newWidth + 'px';
+            this.updateActiveIndicator(); // Cập nhật lại thanh highlight
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                resizer.classList.remove('active');
+                this.sidebar.style.transition = ''; // Bật lại transition
+                document.body.style.cursor = '';
+            }
         });
     }
 };

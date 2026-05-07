@@ -86,8 +86,12 @@ export class CopilotAssistant extends HTMLElement {
           100% { transform: translate(50px, 50px) scale(1.1); }
         }
         @keyframes pulseOpacity {
-          0% { opacity: 0.3; }
-          100% { opacity: 0.7; }
+          0% { opacity: 0.5; }
+          100% { opacity: 0.9; }
+        }
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
         }
 
         /* Layout */
@@ -99,16 +103,18 @@ export class CopilotAssistant extends HTMLElement {
           z-index: 1;
           border-radius: 16px;
           overflow: hidden;
-          border: 1px solid var(--glass-border);
-          box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-          background: #131314; /* Solid dark like Gemini */
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+          background: transparent; /* Kính xuyên thấu */
         }
 
         /* Sidebar Styling */
         .chat-sidebar {
           width: var(--sidebar-width);
-          background: #1e1f22; /* Solid dark grey like Gemini sidebar */
-          border-right: 1px solid rgba(255,255,255,0.05);
+          background: var(--card-bg, rgba(18, 15, 23, 0.4)); /* Theo Theme */
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          border-right: 1px solid var(--card-border, rgba(255,255,255,0.05));
           display: flex;
           flex-direction: column;
           position: relative;
@@ -177,10 +183,11 @@ export class CopilotAssistant extends HTMLElement {
           color: var(--text-main);
         }
         .history-item.active {
-          background: rgba(255, 255, 255, 0.1);
-          color: var(--text-main);
-          border: none;
-          box-shadow: none;
+          background: rgba(139, 92, 246, 0.15);
+          color: #a5b4fc;
+          border: 1px solid rgba(139, 92, 246, 0.2);
+          border-left: 3px solid #8b5cf6;
+          box-shadow: inset 0 0 10px rgba(139, 92, 246, 0.05);
         }
 
         /* Main Chat Area */
@@ -189,6 +196,9 @@ export class CopilotAssistant extends HTMLElement {
           display: flex;
           flex-direction: column;
           position: relative;
+          background: rgba(var(--bg-rgb, 10, 10, 15), 0.2); /* Kính siêu mờ theo theme */
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
         }
 
         /* Header Component - Glass */
@@ -362,6 +372,7 @@ export class CopilotAssistant extends HTMLElement {
         .message h2 { border-bottom: 1px solid var(--glass-border); padding-bottom: 6px; }
         .message h3 { color: #a5b4fc; }
         .message p { margin: 0 0 1em 0; }
+        .message p:first-child { margin-top: 0; }
         .message p:last-child { margin-bottom: 0; }
         .message ul, .message ol { margin: 0 0 1em 0; padding-left: 24px; }
         .message table {
@@ -460,9 +471,9 @@ export class CopilotAssistant extends HTMLElement {
         }
 
         .input-pill:focus-within {
-          border-color: rgba(139, 92, 246, 0.4);
-          box-shadow: 0 10px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(139, 92, 246, 0.2);
-          background: rgba(15, 15, 18, 0.85);
+          border-color: rgba(139, 92, 246, 0.6);
+          box-shadow: 0 0 30px rgba(139, 92, 246, 0.3), inset 0 0 15px rgba(139, 92, 246, 0.15);
+          background: rgba(15, 15, 18, 0.95);
         }
 
         .action-btn {
@@ -587,6 +598,45 @@ export class CopilotAssistant extends HTMLElement {
         .sidebar-footer-btn.logout:hover {
           background: rgba(239, 68, 68, 0.1);
           color: #fca5a5;
+        }
+
+        /* --- MOBILE RESPONSIVE --- */
+        @media (max-width: 768px) {
+          .chat-sidebar {
+            position: absolute;
+            height: 100%;
+            z-index: 50;
+            width: 85%;
+            max-width: 300px;
+            background: var(--card-bg, #0f0f13); /* Đổi màu theo Theme Sáng/Tối */
+            box-shadow: 10px 0 40px rgba(0,0,0,0.4);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+          }
+          .message-list {
+            padding: 70px 15px 140px 15px;
+          }
+          .message {
+            max-width: 95%;
+            font-size: 15px;
+            padding: 14px 16px;
+          }
+          .input-container {
+            padding: 0 10px;
+            bottom: 15px;
+          }
+          .input-pill textarea {
+            font-size: 14px; /* Thu nhỏ chữ trên mobile */
+            padding: 8px 12px;
+          }
+          .input-pill textarea::placeholder {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          .qa-btn {
+            padding: 8px 12px;
+            font-size: 13px;
+          }
         }
       </style>
 
@@ -777,6 +827,11 @@ export class CopilotAssistant extends HTMLElement {
 
     // Toggle Sidebar Logic
     if (toggleSidebarBtn && sidebar) {
+      // Ẩn sidebar mặc định nếu là màn hình điện thoại
+      if (window.innerWidth <= 768) {
+        sidebar.classList.add('hidden');
+      }
+      
       toggleSidebarBtn.addEventListener('click', () => {
         sidebar.classList.toggle('hidden');
       });
@@ -866,7 +921,7 @@ export class CopilotAssistant extends HTMLElement {
     const loadChatHistory = async () => {
       try {
         const token = localStorage.getItem('auth_token');
-        const response = await fetch('/api/chats', {
+        const response = await fetch('http://127.0.0.1:8000/api/v1/chat/history', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -945,7 +1000,6 @@ export class CopilotAssistant extends HTMLElement {
     });
 
     const addMessage = (text, sender, isHistory = false) => {
-      // Remove skeleton if exists
       const skeleton = this.shadowRoot.getElementById('skeleton-loader');
       if (skeleton) skeleton.remove();
 
@@ -953,19 +1007,52 @@ export class CopilotAssistant extends HTMLElement {
       row.className = 'message-row ' + sender;
       
       let formattedText = text;
-      // Dùng Marked.js để biến đổi cú pháp Markdown thành HTML chuẩn
       try {
         formattedText = marked.parse(text);
       } catch (e) {
-        // Fallback nếu lỗi
         formattedText = formattedText.replace(/```(.*?)```/gs, '<pre><code>$1</code></pre>');
         formattedText = formattedText.replace(/`(.*?)`/g, '<code>$1</code>');
       }
 
-      row.innerHTML = `<div class="message ${sender} markdown-body">${formattedText}</div>`;
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `message ${sender} markdown-body`;
+      row.appendChild(msgDiv);
       msgContainer.appendChild(row);
+
+      // Hiệu ứng Typewriter siêu mượt cho Bot (chỉ khi nhận tin nhắn mới)
+      if (sender === 'bot' && !isHistory) {
+        msgDiv.innerHTML = '';
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = formattedText;
+        const plainText = tempDiv.textContent || tempDiv.innerText || "";
+        
+        let i = 0;
+        
+        // Thêm con trỏ nhấp nháy mô phỏng ChatGPT
+        const cursorNode = document.createElement('span');
+        cursorNode.innerHTML = '●';
+        cursorNode.style.animation = 'blink 1s step-end infinite';
+        cursorNode.style.marginLeft = '6px';
+        cursorNode.style.fontSize = '0.8em';
+        
+        const typeInterval = setInterval(() => {
+          const isAtBottom = msgContainer.scrollHeight - msgContainer.clientHeight <= msgContainer.scrollTop + 100;
+          
+          if (i < plainText.length) {
+            msgDiv.textContent = plainText.substring(0, i + 1);
+            msgDiv.appendChild(cursorNode);
+            i++;
+            if (isAtBottom) msgContainer.scrollTop = msgContainer.scrollHeight;
+          } else {
+            clearInterval(typeInterval);
+            msgDiv.innerHTML = formattedText; // Trả lại định dạng HTML/Markdown (xóa con trỏ)
+            if (isAtBottom) msgContainer.scrollTop = msgContainer.scrollHeight;
+          }
+        }, 5); // Tốc độ gõ 5ms/ký tự (Cực nhanh)
+      } else {
+        msgDiv.innerHTML = formattedText;
+      }
       
-      // Chỉ scroll xuống nếu không phải đang load history (tránh giật màn hình)
       if (!isHistory) {
         msgContainer.scrollTop = msgContainer.scrollHeight;
       }
@@ -1008,7 +1095,7 @@ export class CopilotAssistant extends HTMLElement {
 
       const agentName = agentTitle ? agentTitle.textContent : 'Giáo viên Code';
 
-      fetch('/api/chat', {
+      fetch('http://127.0.0.1:8000/api/v1/chat/', {
           method: 'POST',
           headers: { 
               'Content-Type': 'application/json',

@@ -1,0 +1,199 @@
+<!-- TURING DRONE V9.0 ULTRA EDITION -->
+<div class="ultra-dashboard" id="mc-dashboard">
+    <div class="circuitry-overlay"></div>
+    
+    <!-- Header -->
+    <div class="ultra-header">
+        <div class="header-left">
+            <button class="ultra-btn-icon"><i class="fa-solid fa-plus"></i></button>
+            <div class="header-titles">
+                <h1>TURING DRONE V9.0</h1>
+                <p>Micro-Tactical Command Swarm Center | SwarmCommander V9.0 | Industrial Grade</p>
+            </div>
+        </div>
+        <div class="header-right">
+            <span class="ultra-ping text-info">PING: <span id="mc-ping">42ms</span></span>
+            <span class="ultra-badge" id="mc-status">UPLINK ACTIVE <span class="badge-dot"></span></span>
+            <button id="btn-enable-audio" class="ultra-btn-icon"><i class="fa-solid fa-volume-high"></i></button>
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="ultra-grid">
+        
+        <!-- ROW 1: ROSTER | VITALS | TELEMETRY -->
+        <!-- Col 1: Roster -->
+        <div class="ultra-panel roster-panel">
+            <div class="panel-title flex-row justify-between align-center">
+                <span>DANH SÁCH BOT (SWARM)</span>
+                <button class="btn-micro-add">THÊM BOT NHANH</button>
+            </div>
+            <div class="swarm-list">
+                <!-- JS Populated -->
+            </div>
+        </div>
+
+        <!-- Col 2: Vitals -->
+        <div class="ultra-panel vitals-panel">
+            <div class="panel-title">CHỈ SỐ SINH TỒN</div>
+            <div class="vitals-content">
+                <div class="vitals-arcs">
+                    <!-- HP Arc (Cyan) -->
+                    <div class="ultra-arc-container hp-glow">
+                        <svg viewBox="0 0 100 100" class="ultra-arc">
+                            <circle cx="50" cy="50" r="42" class="arc-track" />
+                            <circle cx="50" cy="50" r="42" class="arc-fill hp-fill" />
+                            <!-- Ticks (dashed inner ring) -->
+                            <circle cx="50" cy="50" r="32" class="arc-ticks hp-ticks" />
+                        </svg>
+                        <div class="arc-text text-cyan">
+                            <span class="arc-label">MÁU</span><br>
+                            <strong id="mc-health">20</strong><span class="text-xs">/20</span><br>
+                            <span class="arc-percent" id="mc-hp-percent">100%</span>
+                        </div>
+                    </div>
+                    
+                    <!-- FOOD Arc (Amber) -->
+                    <div class="ultra-arc-container food-glow mt-16">
+                        <svg viewBox="0 0 100 100" class="ultra-arc">
+                            <circle cx="50" cy="50" r="42" class="arc-track" />
+                            <circle cx="50" cy="50" r="42" class="arc-fill food-fill" />
+                            <!-- Ticks -->
+                            <circle cx="50" cy="50" r="32" class="arc-ticks food-ticks" />
+                        </svg>
+                        <div class="arc-text text-warning">
+                            <span class="arc-label">THỨC ĂN</span><br>
+                            <strong id="mc-food">20</strong><span class="text-xs">/20</span><br>
+                            <span class="arc-percent" id="mc-food-percent">100%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="vitals-stats">
+                    <div class="stat-group">
+                        <span class="stat-label">ĐỘ TRỄ MẠNG <i class="fa-solid fa-signal text-success"></i></span>
+                        <div class="stat-val text-cyan"><span id="mc-vitals-ping">42</span><span class="text-xs">ms</span></div>
+                    </div>
+                    <div class="stat-group mt-32">
+                        <span class="stat-label">TPS MÁY CHỦ <i class="fa-solid fa-server text-success"></i></span>
+                        <div class="stat-val text-success"><span id="mc-vitals-tps">20.0</span><span class="text-xs">tps</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Col 3: Telemetry -->
+        <div class="ultra-panel telemetry-panel">
+            <div class="flex-row gap-16 h-100">
+                <div class="telemetry-numbers flex-1">
+                    <div class="panel-title mb-16">ĐO LƯỜNG TỪ XA</div>
+                    <div class="stat-box">
+                        <span class="stat-label">VẬN TỐC</span>
+                        <strong class="stat-value text-cyan" id="mc-vel">0.0 m/s</strong>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">ĐỘ CAO (Y)</span>
+                        <strong class="stat-value text-accent" id="mc-y">0.0 m</strong>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">KHOẢNG CÁCH (Δ)</span>
+                        <strong class="stat-value text-success" id="mc-delta">0.0 m</strong>
+                    </div>
+                    <div class="stat-box" style="border:none">
+                        <span class="stat-label">TRẠNG THÁI</span>
+                        <strong class="stat-value text-warning" id="mc-state">KHÔNG RÕ</strong>
+                    </div>
+                    
+                    <div class="quick-links mt-16">
+                        <div class="quick-link text-info"><i class="fa-solid fa-angle-right"></i> CỤC KẾ TOÁN (SOI RƯƠNG)</div>
+                        <div class="quick-link text-danger"><i class="fa-solid fa-angle-right"></i> CÚT ALL (XEM ADMIN)</div>
+                    </div>
+                </div>
+                
+                <div class="telemetry-graphs flex-1.5">
+                    <div class="graph-box">
+                        <div class="graph-header"><span>CƯỜNG ĐỘ TÍN HIỆU</span><i class="fa-solid fa-signal text-info text-xs"></i></div>
+                        <div class="graph-svg-wrapper">
+                            <svg viewBox="0 0 100 30" preserveAspectRatio="none" class="sparkline">
+                                <path d="M0,30 L0,15 C10,5 20,25 30,10 C40,-5 50,20 60,15 C70,10 80,25 90,5 C95,0 100,10 100,10 L100,30 Z" class="spark-fill-cyan"/>
+                                <path d="M0,15 C10,5 20,25 30,10 C40,-5 50,20 60,15 C70,10 80,25 90,5 C95,0 100,10 100,10" class="spark-line-cyan"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="graph-box">
+                        <div class="graph-header"><span>TỐC ĐỘ & ĐỘ CAO</span><i class="fa-solid fa-chart-line text-info text-xs"></i></div>
+                        <div class="graph-svg-wrapper">
+                            <svg viewBox="0 0 100 30" preserveAspectRatio="none" class="sparkline">
+                                <path d="M0,30 L0,20 C20,10 40,25 50,15 C70,5 80,20 100,10 L100,30 Z" class="spark-fill-success"/>
+                                <path d="M0,20 C20,10 40,25 50,15 C70,5 80,20 100,10" class="spark-line-success"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="graph-box">
+                        <div class="graph-header"><span>TPS MÁY CHỦ</span><i class="fa-solid fa-server text-info text-xs"></i></div>
+                        <div class="graph-svg-wrapper">
+                            <svg viewBox="0 0 100 30" preserveAspectRatio="none" class="sparkline">
+                                <path d="M0,30 L0,25 L10,24 L20,25 L30,22 L40,24 L50,15 L60,22 L70,24 L80,25 L90,22 L100,25 L100,30 Z" class="spark-fill-accent"/>
+                                <path d="M0,25 L10,24 L20,25 L30,22 L40,24 L50,15 L60,22 L70,24 L80,25 L90,22 L100,25" class="spark-line-accent"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ROW 2: COORD | INFO | LOG -->
+        <!-- Col 1: Coordinates -->
+        <div class="ultra-panel coord-panel">
+            <div class="panel-title flex-row justify-between align-center">
+                <span style="font-size: 10px;"><i class="fa-solid fa-location-crosshairs"></i> PHÂN CHIA TỌA ĐỘ</span>
+                <label class="ultra-checkbox-label text-warning font-bold">
+                    <input type="checkbox" id="broadcast-toggle" class="ultra-checkbox"> CHẾ ĐỘ ĐỒNG LOẠT
+                </label>
+            </div>
+            <div class="coord-inputs flex-row gap-8 mb-8 mt-8">
+                <input type="number" id="input-coord-x" class="ultra-input flex-1 metallic-input" placeholder="X">
+                <input type="number" id="input-coord-y" class="ultra-input flex-1 metallic-input" placeholder="Y">
+                <input type="number" id="input-coord-z" class="ultra-input flex-1 metallic-input" placeholder="Z">
+            </div>
+            <button id="btn-execute-coords" class="ultra-btn-execute btn-execute mt-auto"><i class="fa-solid fa-play"></i> THỰC THI</button>
+        </div>
+
+        <!-- Col 2: Coordinate Display Info -->
+        <div class="ultra-panel local-panel">
+            <div class="panel-title">BẢNG ĐIỀU KHIỂN TỌA ĐỘ</div>
+            <div class="local-stats mt-8">
+                <div class="local-stat-row"><span>VĨ ĐỘ (X)</span> <div class="val" id="mc-local-x">0.000</div></div>
+                <div class="local-stat-row"><span>ĐỘ CAO (Y)</span> <div class="val" id="mc-local-y">0.000</div></div>
+                <div class="local-stat-row"><span>KINH ĐỘ (Z)</span> <div class="val" id="mc-local-z">0.000</div></div>
+            </div>
+            <div class="flex-row gap-8 mt-auto">
+                <button id="btn-deploy" class="btn-secondary flex-1">XUẤT PHÁT</button>
+                <button id="btn-recall" class="btn-secondary flex-1">GỌI VỀ</button>
+            </div>
+        </div>
+
+        <!-- Col 3: Event Log -->
+        <div class="ultra-panel log-panel military-corners">
+            <div class="panel-title flex-row justify-between">
+                <span>NHẬT KÝ SỰ KIỆN & TRUNG TÂM LỆNH</span>
+                <div class="log-controls">_ [] X</div>
+            </div>
+            <div id="mc-console" class="ultra-console">
+                <!-- Logs -->
+            </div>
+            <div class="ultra-input-wrapper">
+                <span class="prompt text-cyan">>_</span>
+                <input type="text" id="mc-chat-input" placeholder="Nhập lệnh..." autocomplete="off">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Panic Footer -->
+<div class="ultra-panic-footer btn-panic shimmer-bg">
+    <div class="panic-stripes"></div>
+    <span>NGẮT KẾT NỐI TOÀN BỘ [ESC]</span>
+</div>
+
+<!-- Target Cursor is dynamically injected to document.body -->

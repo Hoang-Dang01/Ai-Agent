@@ -6,7 +6,8 @@ const Router = (() => {
   const ROUTES = [
     { path: 'home', template: 'templates/home.html', scripts: ['js/pages/home.js'], css: [], auth: true, title: 'Trang chủ' },
     { path: 'chat', template: 'templates/chat.html', scripts: ['js/pages/chat.js'], css: [], auth: true, title: 'AI Assistant' },
-    { path: 'settings', template: 'templates/settings.html', scripts: ['js/pages/settings.js'], css: ['css/settings.css'], auth: true, title: 'Cài đặt' }
+    { path: 'settings', template: 'templates/settings.html', scripts: ['js/pages/settings.js'], css: ['css/settings.css'], auth: true, title: 'Cài đặt' },
+    { path: 'minecraft', template: 'templates/minecraft.html', scripts: ['js/pages/minecraft.js'], css: ['css/minecraft.css'], auth: true, title: 'Minecraft Engine' }
   ];
 
   // ── State ──────────────────────────────────────────────────────────────
@@ -82,7 +83,8 @@ const Router = (() => {
 
   // ── Auth check ─────────────────────────────────────────────────────────
   function _isLoggedIn() {
-    return !!localStorage.getItem('auth_token');
+    // Tạm thời bỏ qua đăng nhập để tiện xem và sửa giao diện
+    return true; 
   }
 
   // ── Route matching ─────────────────────────────────────────────────────

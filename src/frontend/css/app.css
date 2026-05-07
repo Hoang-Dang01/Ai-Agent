@@ -28,6 +28,7 @@
 /* Typography */
 h1, h2, h3, h4, h5, h6, .font-heading {
     font-family: var(--font-primary, 'Plus Jakarta Sans', system-ui, sans-serif);
+    letter-spacing: -0.03em;
 }
 
 /* Classic Sidebar Mode overrides */
@@ -58,14 +59,13 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 }
 
 body {
-    background-color: var(--bg-color);
+    background-color: var(--bg-color, #050505);
     color: var(--text-main);
     min-height: 100vh;
     overflow-x: hidden;
-    /* Static fallback background */
-    background-image: 
-        radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.08), transparent 25%),
-        radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.08), transparent 25%);
+    background-image: var(--body-gradient, radial-gradient(ellipse at top, rgba(59, 130, 246, 0.15) 0%, transparent 40%), radial-gradient(ellipse at bottom, rgba(139, 92, 246, 0.1) 0%, transparent 40%));
+    background-attachment: fixed;
+    transition: background-color 0.4s ease, color 0.4s ease;
 }
 
 /* Animations */
@@ -99,6 +99,7 @@ body {
     overflow: hidden;
     z-index: -1;
     pointer-events: none;
+    display: var(--display-orbs, block);
 }
 .orb {
     position: absolute;
@@ -197,13 +198,14 @@ body {
     min-height: 200px;
     padding: 32px;
     border-radius: 24px;
-    border: 1px solid var(--border-color);
-    background: var(--background-dark);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+    box-shadow: 0 4px 24px -8px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1);
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     cursor: pointer;
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     
     --glow-x: 50%;
     --glow-y: 50%;
@@ -344,15 +346,16 @@ body {
 .magic-bento-card:hover .icon-pink { box-shadow: 0 0 20px rgba(236, 72, 153, 0.4); }
 
 .magic-bento-card h3 {
-    font-size: 1.25rem;
-    font-weight: 600;
+    font-size: 1.35rem;
+    font-weight: 700;
     margin-bottom: 12px;
     position: relative;
     z-index: 2;
+    color: #ffffff;
 }
 
 .magic-bento-card p {
-    color: var(--text-muted);
+    color: rgba(255, 255, 255, 0.6);
     font-size: 0.95rem;
     line-height: 1.6;
     position: relative;
@@ -445,6 +448,27 @@ body {
     position: relative;
 }
 
+/* Sidebar Resizer */
+.sidebar .resizer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 4px;
+    height: 100%;
+    cursor: col-resize;
+    background: transparent;
+    transition: background 0.2s ease;
+    z-index: 101;
+}
+.sidebar .resizer:hover, 
+.sidebar .resizer.active {
+    background: var(--accent-blue);
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+.sidebar.collapsed .resizer {
+    display: none; /* Không cho resize khi đang thu gọn */
+}
+
 /* Collapsed State */
 .sidebar.collapsed {
     width: 80px;
@@ -481,8 +505,11 @@ body {
 
 .sidebar.collapsed .nav-item {
     justify-content: center;
-    padding-left: 0;
-    padding-right: 0;
+    padding: 0;
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    margin-bottom: 10px;
     gap: 0;
 }
 
@@ -507,14 +534,13 @@ body {
 }
 
 .nav-card {
-    border-radius: 12px;
-    padding: 16px;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.03);
-    will-change: transform;
-    transition: background 0.3s;
+    background: transparent !important; /* Xoá nền chung */
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0;
 }
 
 .nav-card-bottom {
@@ -538,9 +564,11 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 14px;
-    border-radius: 8px;
+    padding: 14px 16px;
+    border-radius: 12px;
     color: var(--text-main);
+    background: var(--card-bg, rgba(255,255,255,0.03));
+    border: 1px solid var(--card-border, rgba(255,255,255,0.05));
     text-decoration: none;
     transition: all 0.2s;
     font-size: 0.95rem;
@@ -548,8 +576,10 @@ body {
 }
 
 .nav-item:hover, .nav-item.active {
-    color: var(--accent-blue);
-    background: rgba(255, 255, 255, 0.03);
+    color: #fff;
+    background: var(--accent-blue);
+    border-color: var(--accent-blue);
+    box-shadow: 0 4px 12px rgba(var(--accent-rgb, 59, 130, 246), 0.3);
 }
 
 .nav-item .icon {
