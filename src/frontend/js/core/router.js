@@ -4,10 +4,10 @@
 const Router = (() => {
   // ── Route definitions ──────────────────────────────────────────────────
   const ROUTES = [
-    { path: 'home', template: 'templates/home.html', scripts: ['js/pages/home.js'], css: [], auth: true, title: 'Trang chủ' },
-    { path: 'chat', template: 'templates/chat.html', scripts: ['js/pages/chat.js'], css: [], auth: true, title: 'AI Assistant' },
-    { path: 'settings', template: 'templates/settings.html', scripts: ['js/pages/settings.js'], css: ['css/settings.css'], auth: true, title: 'Cài đặt' },
-    { path: 'minecraft', template: 'templates/minecraft.html', scripts: ['js/pages/minecraft.js'], css: ['css/minecraft.css'], auth: true, title: 'Minecraft Engine' }
+    { path: 'home', template: 'pages/home/home.html', scripts: ['pages/home/home.js'], css: [], auth: true, title: 'Trang chủ' },
+    { path: 'chat', template: 'pages/chat/chat.html', scripts: ['pages/chat/chat.js'], css: [], auth: true, title: 'AI Assistant' },
+    { path: 'settings', template: 'pages/settings/settings.html', scripts: ['pages/settings/settings.js'], css: ['pages/settings/settings.css'], auth: true, title: 'Cài đặt' },
+    { path: 'minecraft', template: 'pages/minecraft/minecraft.html', scripts: ['pages/minecraft/minecraft.js'], css: ['pages/minecraft/minecraft.css'], auth: true, title: 'Minecraft Engine' }
   ];
 
   // ── State ──────────────────────────────────────────────────────────────

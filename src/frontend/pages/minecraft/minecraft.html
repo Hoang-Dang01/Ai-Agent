@@ -14,27 +14,41 @@
         <div class="header-right">
             <span class="ultra-ping text-info">PING: <span id="mc-ping">42ms</span></span>
             <span class="ultra-badge" id="mc-status">UPLINK ACTIVE <span class="badge-dot"></span></span>
+            <button id="btn-reset-layout" class="ultra-btn-icon" title="Reset Layout"><i class="fa-solid fa-rotate-left"></i></button>
             <button id="btn-enable-audio" class="ultra-btn-icon"><i class="fa-solid fa-volume-high"></i></button>
         </div>
     </div>
 
-    <!-- Main Grid -->
-    <div class="ultra-grid">
+    <!-- Modular Workspace V10 Grid -->
+    <div class="grid-stack" id="tactical-hud-grid">
         
-        <!-- ROW 1: ROSTER | VITALS | TELEMETRY -->
-        <!-- Col 1: Roster -->
-        <div class="ultra-panel roster-panel">
+        <!-- ITEM: Roster -->
+        <div class="grid-stack-item" gs-w="4" gs-h="5" gs-x="0" gs-y="0" gs-id="roster">
+          <div class="grid-stack-item-content">
+            <div class="ultra-panel roster-panel">
             <div class="panel-title flex-row justify-between align-center">
                 <span>DANH SÁCH BOT (SWARM)</span>
-                <button class="btn-micro-add">THÊM BOT NHANH</button>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn-micro-panic" id="btn-panic-all" title="Ngắt kết nối toàn bộ [ESC]">NGẮT KẾT NỐI TOÀN BỘ [ESC]</button>
+                    <button class="btn-micro-add" id="btn-toggle-add">THÊM BOT NHANH</button>
+                </div>
+            </div>
+            <div class="bot-input-matrix" id="bot-add-form">
+                <input type="text" id="input-bot-user" class="tactical-input" placeholder="Tên đăng nhập (Ex: Drone-01)">
+                <input type="text" id="input-bot-pass" class="tactical-input" placeholder="Mật khẩu (Trống nếu offline)">
+                <button id="btn-submit-bot" class="btn-tactical-add">+ THÊM</button>
             </div>
             <div class="swarm-list">
                 <!-- JS Populated -->
             </div>
+            </div>
+          </div>
         </div>
 
-        <!-- Col 2: Vitals -->
-        <div class="ultra-panel vitals-panel">
+        <!-- ITEM: Vitals -->
+        <div class="grid-stack-item" gs-w="3" gs-h="5" gs-x="4" gs-y="0" gs-id="vitals">
+          <div class="grid-stack-item-content">
+            <div class="ultra-panel vitals-panel">
             <div class="panel-title">CHỈ SỐ SINH TỒN</div>
             <div class="vitals-content">
                 <div class="vitals-arcs">
@@ -80,10 +94,14 @@
                     </div>
                 </div>
             </div>
+            </div>
+          </div>
         </div>
 
-        <!-- Col 3: Telemetry -->
-        <div class="ultra-panel telemetry-panel">
+        <!-- ITEM: Telemetry -->
+        <div class="grid-stack-item" gs-w="5" gs-h="5" gs-x="7" gs-y="0" gs-id="telemetry">
+          <div class="grid-stack-item-content">
+            <div class="ultra-panel telemetry-panel">
             <div class="flex-row gap-16 h-100">
                 <div class="telemetry-numbers flex-1">
                     <div class="panel-title mb-16">ĐO LƯỜNG TỪ XA</div>
@@ -114,37 +132,31 @@
                     <div class="graph-box">
                         <div class="graph-header"><span>CƯỜNG ĐỘ TÍN HIỆU</span><i class="fa-solid fa-signal text-info text-xs"></i></div>
                         <div class="graph-svg-wrapper">
-                            <svg viewBox="0 0 100 30" preserveAspectRatio="none" class="sparkline">
-                                <path d="M0,30 L0,15 C10,5 20,25 30,10 C40,-5 50,20 60,15 C70,10 80,25 90,5 C95,0 100,10 100,10 L100,30 Z" class="spark-fill-cyan"/>
-                                <path d="M0,15 C10,5 20,25 30,10 C40,-5 50,20 60,15 C70,10 80,25 90,5 C95,0 100,10 100,10" class="spark-line-cyan"/>
-                            </svg>
+                            <canvas id="canvas-ping" width="200" height="60" class="spark-canvas"></canvas>
                         </div>
                     </div>
                     <div class="graph-box">
-                        <div class="graph-header"><span>TỐC ĐỘ & ĐỘ CAO</span><i class="fa-solid fa-chart-line text-info text-xs"></i></div>
+                        <div class="graph-header"><span>TỐC ĐỘ (VEL)</span><i class="fa-solid fa-chart-line text-info text-xs"></i></div>
                         <div class="graph-svg-wrapper">
-                            <svg viewBox="0 0 100 30" preserveAspectRatio="none" class="sparkline">
-                                <path d="M0,30 L0,20 C20,10 40,25 50,15 C70,5 80,20 100,10 L100,30 Z" class="spark-fill-success"/>
-                                <path d="M0,20 C20,10 40,25 50,15 C70,5 80,20 100,10" class="spark-line-success"/>
-                            </svg>
+                            <canvas id="canvas-vel" width="200" height="60" class="spark-canvas"></canvas>
                         </div>
                     </div>
                     <div class="graph-box">
                         <div class="graph-header"><span>TPS MÁY CHỦ</span><i class="fa-solid fa-server text-info text-xs"></i></div>
                         <div class="graph-svg-wrapper">
-                            <svg viewBox="0 0 100 30" preserveAspectRatio="none" class="sparkline">
-                                <path d="M0,30 L0,25 L10,24 L20,25 L30,22 L40,24 L50,15 L60,22 L70,24 L80,25 L90,22 L100,25 L100,30 Z" class="spark-fill-accent"/>
-                                <path d="M0,25 L10,24 L20,25 L30,22 L40,24 L50,15 L60,22 L70,24 L80,25 L90,22 L100,25" class="spark-line-accent"/>
-                            </svg>
+                            <canvas id="canvas-tps" width="200" height="60" class="spark-canvas"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
+            </div>
+          </div>
         </div>
 
-        <!-- ROW 2: COORD | INFO | LOG -->
-        <!-- Col 1: Coordinates -->
-        <div class="ultra-panel coord-panel">
+        <!-- ITEM: Coordinates Control -->
+        <div class="grid-stack-item" gs-w="4" gs-h="3" gs-x="0" gs-y="5" gs-id="coord">
+          <div class="grid-stack-item-content">
+            <div class="ultra-panel coord-panel">
             <div class="panel-title flex-row justify-between align-center">
                 <span style="font-size: 10px;"><i class="fa-solid fa-location-crosshairs"></i> PHÂN CHIA TỌA ĐỘ</span>
                 <label class="ultra-checkbox-label text-warning font-bold">
@@ -157,10 +169,14 @@
                 <input type="number" id="input-coord-z" class="ultra-input flex-1 metallic-input" placeholder="Z">
             </div>
             <button id="btn-execute-coords" class="ultra-btn-execute btn-execute mt-auto"><i class="fa-solid fa-play"></i> THỰC THI</button>
+            </div>
+          </div>
         </div>
 
-        <!-- Col 2: Coordinate Display Info -->
-        <div class="ultra-panel local-panel">
+        <!-- ITEM: Coordinates Display -->
+        <div class="grid-stack-item" gs-w="3" gs-h="3" gs-x="4" gs-y="5" gs-id="local">
+          <div class="grid-stack-item-content">
+            <div class="ultra-panel local-panel">
             <div class="panel-title">BẢNG ĐIỀU KHIỂN TỌA ĐỘ</div>
             <div class="local-stats mt-8">
                 <div class="local-stat-row"><span>VĨ ĐỘ (X)</span> <div class="val" id="mc-local-x">0.000</div></div>
@@ -171,10 +187,14 @@
                 <button id="btn-deploy" class="btn-secondary flex-1">XUẤT PHÁT</button>
                 <button id="btn-recall" class="btn-secondary flex-1">GỌI VỀ</button>
             </div>
+            </div>
+          </div>
         </div>
 
-        <!-- Col 3: Event Log -->
-        <div class="ultra-panel log-panel military-corners">
+        <!-- ITEM: Event Log -->
+        <div class="grid-stack-item" gs-w="5" gs-h="3" gs-x="7" gs-y="5" gs-id="log">
+          <div class="grid-stack-item-content">
+            <div class="ultra-panel log-panel military-corners">
             <div class="panel-title flex-row justify-between">
                 <span>NHẬT KÝ SỰ KIỆN & TRUNG TÂM LỆNH</span>
                 <div class="log-controls">_ [] X</div>
@@ -186,14 +206,12 @@
                 <span class="prompt text-cyan">>_</span>
                 <input type="text" id="mc-chat-input" placeholder="Nhập lệnh..." autocomplete="off">
             </div>
+            </div>
+          </div>
         </div>
     </div>
 </div>
 
-<!-- Panic Footer -->
-<div class="ultra-panic-footer btn-panic shimmer-bg">
-    <div class="panic-stripes"></div>
-    <span>NGẮT KẾT NỐI TOÀN BỘ [ESC]</span>
-</div>
+
 
 <!-- Target Cursor is dynamically injected to document.body -->

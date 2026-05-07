@@ -21,9 +21,11 @@
         const isDarkMode = savedSettings.darkMode !== false; // Default true
         const primaryColor = savedSettings.primaryColor || '#4F46E5'; // Default Premium Indigo
         const fontFamily = savedSettings.fontFamily || 'Plus Jakarta Sans';
+        const sidebarStyle = savedSettings.sidebarStyle || 'cardnav';
         const primaryRgb = hexToRgb(primaryColor);
         
         const root = document.documentElement;
+        root.setAttribute('data-sidebar-style', sidebarStyle);
         
         // ui-core Design Tokens Integration
         root.style.setProperty('--color-primary', primaryColor);

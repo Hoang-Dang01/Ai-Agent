@@ -600,6 +600,105 @@ body {
     transform: translate(0, 0);
 }
 
+/* ==============================================================
+   LAYOUT: TOP NAVBAR
+============================================================== */
+html[data-sidebar-style="navbar"] .layout {
+    flex-direction: column;
+}
+
+html[data-sidebar-style="navbar"] .sidebar {
+    width: 100% !important;
+    height: 70px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 20px;
+    overflow: visible; /* To allow tooltips or dropdowns if any */
+}
+
+html[data-sidebar-style="navbar"] .sidebar .resizer {
+    display: none;
+}
+
+html[data-sidebar-style="navbar"] .active-indicator {
+    display: none; /* Hide indicator for top navbar for now */
+}
+
+html[data-sidebar-style="navbar"] .logo {
+    padding: 0;
+    margin-right: 40px;
+}
+
+html[data-sidebar-style="navbar"] .sidebar-content {
+    flex-direction: row;
+    padding: 0;
+    margin: 0;
+    gap: 20px;
+    overflow: visible;
+    flex: 1;
+    align-items: center;
+}
+
+html[data-sidebar-style="navbar"] .nav-card {
+    flex-direction: row;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+}
+
+html[data-sidebar-style="navbar"] .nav-card-label {
+    display: none;
+}
+
+html[data-sidebar-style="navbar"] .nav-card-links {
+    flex-direction: row;
+    gap: 8px;
+}
+
+html[data-sidebar-style="navbar"] .nav-card-bottom {
+    margin-top: 0;
+    margin-left: auto;
+}
+
+html[data-sidebar-style="navbar"] .nav-item {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 16px;
+    height: 60px;
+    width: auto;
+    border-radius: 8px;
+    background: transparent;
+    border: 1px solid transparent;
+}
+
+html[data-sidebar-style="navbar"] .nav-item:hover,
+html[data-sidebar-style="navbar"] .nav-item.active {
+    background: var(--color-primary-light);
+    color: var(--accent-blue);
+    border-bottom: 3px solid var(--accent-blue);
+    border-radius: 8px 8px 0 0;
+    box-shadow: none;
+}
+
+html[data-sidebar-style="navbar"] .nav-item .icon {
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+html[data-sidebar-style="navbar"] .nav-text {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+html[data-sidebar-style="navbar"] .nav-card-link-icon {
+    display: none;
+}
+
 /* Active Indicator */
 .active-indicator {
     position: absolute;
@@ -687,7 +786,7 @@ body {
     overflow-y: auto;
     overflow-x: hidden;
     position: relative;
-    padding-bottom: 40px;
+    padding-bottom: 0;
 }
 
 /* Toast */

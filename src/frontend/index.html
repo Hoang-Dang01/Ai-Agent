@@ -13,12 +13,17 @@
     
     <!-- CSS -->
     <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="components/ui/dock/Dock.css">
 
     <!-- GSAP for Animations -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
     <!-- Cash.js for lightweight DOM manipulation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cash/8.1.5/cash.min.js"></script>
+
+    <!-- GridStack.js for Modular HUD (V10) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/gridstack.js/10.0.1/gridstack.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gridstack.js/10.0.1/gridstack-all.js"></script>
   </head>
   <body>
     <!-- SPA Container wrapped in Layout -->
@@ -119,6 +124,9 @@
     <!-- Router & Sidebar GSAP -->
     <script src="js/core/router.js"></script>
     <script src="js/core/sidebar.js"></script>
+    <script src="components/ui/target-cursor/TargetCursor.js"></script>
+    <script src="components/ui/dock/Dock.js"></script>
+
     <script>
       $(function () {
         Router.init();

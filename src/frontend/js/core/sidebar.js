@@ -23,9 +23,69 @@ window.SidebarManager = {
             }, 50);
         });
         
+        window.addEventListener('layout-changed', (e) => {
+            this.applyLayout(e.detail?.style || document.documentElement.getAttribute('data-sidebar-style'));
+        });
+        
         // Initial setup
+        this.applyLayout(document.documentElement.getAttribute('data-sidebar-style'));
         this.updateActiveMenu();
         setTimeout(() => this.updateActiveIndicator(), 500);
+    },
+
+    applyLayout: function(style) {
+        if (style === 'mac-dock') {
+            this.sidebar.style.display = 'none';
+
+            // Create dock container if not exists
+            let dockContainer = document.getElementById('horizontal-mac-dock');
+            if (!dockContainer) {
+                dockContainer = document.createElement('div');
+                dockContainer.id = 'horizontal-mac-dock';
+                dockContainer.className = 'dock-outer';
+                dockContainer.style.position = 'fixed';
+                dockContainer.style.bottom = '20px';
+                dockContainer.style.left = '50%';
+                dockContainer.style.transform = 'translateX(-50%)';
+                dockContainer.style.zIndex = '9999';
+                document.body.appendChild(dockContainer);
+            }
+
+            if (window.Dock && !this.dockInstance) {
+                const dockItems = [
+                    { icon: '<i class="fa-solid fa-house"></i>', label: 'Trang chủ', onClick: () => window.location.hash = '#/' },
+                    { icon: '<i class="fa-solid fa-gamepad"></i>', label: 'Minecraft', onClick: () => window.location.hash = '#/minecraft' },
+                    { icon: '<i class="fa-solid fa-comments"></i>', label: 'Chat AI', onClick: () => window.location.hash = '#/chat' },
+                    { icon: '<i class="fa-solid fa-folder-open"></i>', label: 'RAG Knowledge', onClick: () => window.location.hash = '#/documents' },
+                    { icon: '<i class="fa-solid fa-gear"></i>', label: 'Cài đặt', onClick: () => window.location.hash = '#/settings' }
+                ];
+                this.dockInstance = new Dock('#horizontal-mac-dock', dockItems, { baseItemSize: 50, magnification: 75, distance: 200, direction: 'horizontal' });
+            }
+        } else {
+            // Restore standard layout
+            this.sidebar.style.display = '';
+            this.sidebar.classList.remove('collapsed');
+            const content = this.sidebar.querySelector('.sidebar-content');
+            const logo = this.sidebar.querySelector('.logo');
+            if (content) content.style.display = '';
+            if (logo) logo.style.display = '';
+            if (this.activeIndicator) this.activeIndicator.style.display = '';
+            
+            const resizer = document.getElementById('sidebar-resizer');
+            if (resizer) resizer.style.display = '';
+            
+            try {
+                if (this.dockInstance) {
+                    this.dockInstance.destroy();
+                    this.dockInstance = null;
+                }
+            } catch(e) {
+                console.error("Error destroying dock:", e);
+            } finally {
+                const dockContainers = document.querySelectorAll('.dock-outer');
+                dockContainers.forEach(container => container.remove());
+            }
+        }
     },
 
     updateActiveMenu: function() {
