@@ -35,7 +35,11 @@ Mỗi khi User đưa ra một yêu cầu mới, bạn PHẢI tự động chạy
 - **BẮT BUỘC:** Trước khi viết MỘT DÒNG CODE NÀO, phải tạo ra các file Markdown (`.md`) chứa **Tài liệu Đặc tả Kỹ thuật (Technical Blueprint)** siêu chi tiết. Tách biệt rõ ràng:
   - `FE_PLAN.md` (Dành cho Frontend: Mockup UI, State, UX Flow)
   - `BE_PLAN.md` (Dành cho Backend: Database Schema, API Contract, Data Pipeline).
-  - Hoặc gom chung thành một file `PLAN_[TenDuAn].md` nếu dự án nhỏ. Lưu vào thư mục `src/ai/blueprints/` hoặc thư mục gốc dự án.
+  - Hoặc gom chung thành một file `PLAN_[TenDuAn].md` nếu dự án nhỏ. Lưu vào thư mục `plans/` tại gốc dự án. Tùy thuộc vào loại task, hãy lưu vào đúng thư mục con:
+    + `plans/designs/`: Cho các thay đổi về giao diện (UI/UX).
+    + `plans/updates/`: Cho các bản nâng cấp, cấu trúc lại (Refactor).
+    + `plans/debug/`: Cho các bản vá lỗi (Bug fixes) hoặc sửa logic.
+    + `plans/features/`: Cho các tính năng hoàn toàn mới.
 - **Cấu trúc BẮT BUỘC của file PLAN.md:**
   1. **PHÂN TÍCH YÊU CẦU:** Giải mã input/output, kèm bảng phân tích.
   2. **DATA MODEL:** Cấu trúc JSON/Database, giải thích rõ các Key.

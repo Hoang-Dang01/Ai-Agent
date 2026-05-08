@@ -1,11 +1,12 @@
 import os
 import time
 from deep_translator import GoogleTranslator
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-# Cấu hình đường dẫn
-SOURCE_DIR = "../shared-knowledge/docs/experiments/GenerativeAICourse/content"
-TARGET_DIR = "../shared-knowledge/docs/vector_knowledge"
+# Cấu hình đường dẫn (Lấy tuyệt đối từ gốc dự án)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SOURCE_DIR = os.path.join(BASE_DIR, "shared-knowledge", "docs", "experiments", "GenerativeAICourse", "content")
+TARGET_DIR = os.path.join(BASE_DIR, "shared-knowledge", "docs", "vector_knowledge")
 
 def translate_markdown():
     if not os.path.exists(TARGET_DIR):
