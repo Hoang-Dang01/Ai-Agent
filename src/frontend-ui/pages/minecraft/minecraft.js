@@ -95,7 +95,26 @@ function initMinecraftDashboard() {
             window.swarmState.bots = bots;
         });
 
+        mcSocket.on('bot_vitals', (data) => {
+            const bots = { ...window.swarmState.bots };
+            if (!bots[window.swarmState.activeBotId]) return;
+            bots[window.swarmState.activeBotId] = { 
+                ...bots[window.swarmState.activeBotId], 
+                hp: data.health, 
+                food: data.food,
+                x: data.position.x,
+                y: data.position.y,
+                z: data.position.z,
+                playerCount: data.playerCount
+            };
+            window.swarmState.bots = bots;
+        });
+
         mcSocket.on('bot_chat', (data) => appendLog(`[PLAYER] ${data.username}: ${data.message}`, 'log-player'));
+        mcSocket.on('bot_log', (data) => {
+            const cssClass = data.type === 'error' ? 'text-danger' : (data.type === 'warning' ? 'text-warning' : 'text-info');
+            appendLog(`[SYSTEM] ${data.message}`, cssClass);
+        });
         mcSocket.on('admin_alert', (data) => { appendLog(`[ADMIN] ${data.message}`, 'log-admin'); playSiren(); });
     }
 
@@ -204,18 +223,37 @@ function renderUI() {
         if (foodFill) foodFill.style.strokeDashoffset = foodOffset;
         document.getElementById('mc-food-percent').textContent = `${Math.round(foodPercent*100)}%`;
 
-        // Telemetry
-        const velEl = document.getElementById('mc-vel');
-        if (velEl) velEl.textContent = `${activeBot.vel.toFixed(1)} m/s`;
+        // Tactical Metrics
+        const riskEl = document.getElementById('mc-risk-level');
+        if (riskEl) {
+            if (activeBot.status === 'RED' || activeBot.status === 'OFFLINE') {
+                riskEl.textContent = 'NGUY HIỂM (CRITICAL)';
+                riskEl.className = 'stat-value text-danger';
+            } else if (activeBot.hp < 10) {
+                riskEl.textContent = 'CẢNH BÁO (WARNING)';
+                riskEl.className = 'stat-value text-warning';
+            } else {
+                riskEl.textContent = 'THẤP (SAFE)';
+                riskEl.className = 'stat-value text-success';
+            }
+        }
 
-        const deltaEl = document.getElementById('mc-delta');
-        if (deltaEl) deltaEl.textContent = `${activeBot.delta.toFixed(1)}m`;
-        
-        const yEl = document.getElementById('mc-y');
-        if (yEl) yEl.textContent = activeBot.y.toFixed(1) + ' m';
+        const uptimeEl = document.getElementById('mc-uptime');
+        if (uptimeEl) {
+            // Fake uptime based on a generic calculation for now, or use server data if available
+            uptimeEl.textContent = activeBot.uptimeStr || '00:15:30';
+        }
 
-        const stateEl = document.getElementById('mc-state');
-        if (stateEl) stateEl.textContent = activeBot.status;
+        const overallEl = document.getElementById('mc-overall-status');
+        if (overallEl) {
+            overallEl.textContent = activeBot.status === 'GREEN' ? 'ỔN ĐỊNH (ACTIVE)' : (activeBot.status === 'IDLE' ? 'ĐANG CHỜ (IDLE)' : 'MẤT KẾT NỐI (OFFLINE)');
+            overallEl.className = `stat-value ${activeBot.status === 'GREEN' ? 'text-success' : (activeBot.status === 'IDLE' ? 'text-info' : 'text-danger')}`;
+        }
+
+        const actionEl = document.getElementById('mc-current-action');
+        if (actionEl) {
+            actionEl.textContent = activeBot.currentAction || 'Đang rình mồi...';
+        }
         
         // Vitals Ping & TPS
         const pingEl = document.getElementById('mc-vitals-ping');
@@ -223,6 +261,9 @@ function renderUI() {
         
         const tpsEl = document.getElementById('mc-vitals-tps');
         if (tpsEl) tpsEl.textContent = (activeBot.tps || 20).toFixed(1);
+
+        const playersEl = document.getElementById('mc-vitals-players');
+        if (playersEl) playersEl.textContent = activeBot.playerCount || 0;
 
         // Coordinate Control Info
         const localX = document.getElementById('mc-local-x');
@@ -492,80 +533,7 @@ function appendLog(text, className) {
     consoleBox.scrollTop = consoleBox.scrollHeight;
 }
 
-// --- TELEMETRY DATA (50 points max) ---
-const pingData = new Array(50).fill(0);
-const velData = new Array(50).fill(0);
-const tpsData = new Array(50).fill(20);
-
-function drawChart(canvasId, dataArray, color, maxVal) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas) return;
-    
-    // Auto-resize internal resolution to match actual display size for crisp rendering
-    const parent = canvas.parentElement;
-    if (parent && parent.clientWidth > 0 && canvas.width !== parent.clientWidth) {
-        canvas.width = parent.clientWidth;
-    }
-
-    const ctx = canvas.getContext('2d');
-    const w = canvas.width;
-    const h = canvas.height;
-    
-    ctx.clearRect(0, 0, w, h);
-    ctx.beginPath();
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    
-    // Fill gradient
-    const gradient = ctx.createLinearGradient(0, 0, 0, h);
-    gradient.addColorStop(0, color.replace(')', ', 0.3)').replace('rgb', 'rgba'));
-    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = gradient;
-
-    dataArray.forEach((val, i) => {
-        const x = (i / (dataArray.length - 1)) * w;
-        const normalizedVal = Math.max(0, Math.min(val, maxVal));
-        const y = h - (normalizedVal / maxVal) * h * 0.8 - h * 0.1; // 10% padding
-        
-        if (i === 0) {
-            ctx.moveTo(x, y);
-        } else {
-            // Smooth curve
-            const prevX = ((i - 1) / (dataArray.length - 1)) * w;
-            const prevVal = Math.max(0, Math.min(dataArray[i-1], maxVal));
-            const prevY = h - (prevVal / maxVal) * h * 0.8 - h * 0.1;
-            const cpX = (prevX + x) / 2;
-            ctx.bezierCurveTo(cpX, prevY, cpX, y, x, y);
-        }
-    });
-    ctx.stroke();
-    
-    // Fill path
-    ctx.lineTo(w, h);
-    ctx.lineTo(0, h);
-    ctx.closePath();
-    ctx.fill();
-}
-
-function updateTelemetryData() {
-    if (window.swarmState && window.swarmState.activeBotId) {
-        const activeBot = window.swarmState.bots[window.swarmState.activeBotId];
-        if (activeBot) {
-            pingData.shift(); pingData.push(activeBot.ping || 0);
-            velData.shift(); velData.push(activeBot.vel || 0);
-            tpsData.shift(); tpsData.push(activeBot.tps || 20);
-        }
-    }
-    
-    drawChart('canvas-ping', pingData, 'rgb(0, 255, 255)', 200); // Max ping 200ms
-    drawChart('canvas-vel', velData, 'rgb(80, 250, 123)', 10);   // Max vel 10m/s
-    drawChart('canvas-tps', tpsData, 'rgb(189, 147, 249)', 20);  // Max tps 20
-    
-    requestAnimationFrame(updateTelemetryData);
-}
-
-// Start rendering charts
-requestAnimationFrame(updateTelemetryData);
+// Cleaned up legacy telemetry graphs
 
 setInterval(() => {
     if (window.swarmState && window.swarmState.activeBotId) {

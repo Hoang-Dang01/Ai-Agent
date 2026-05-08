@@ -8,9 +8,10 @@
     "test": "tests"
   },
   "scripts": {
-    "start": "concurrently \"npm run ai\" \"npm run backend\"",
+    "start": "concurrently \"npm run ai\" \"npm run backend\" \"npm run minecraft\"",
     "backend": "cd src/backend-orchestrator && npm start",
-    "ai": "cd src/ai-engine && python main.py",
+    "minecraft": "cd src/minecraft-engine && npm start",
+    "ai": "cd src/ai-engine && ..\\..\\venv\\Scripts\\python main.py",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

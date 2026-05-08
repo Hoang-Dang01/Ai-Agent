@@ -1,8 +1,9 @@
 class VaultManager {
     constructor(bot) {
         this.bot = bot;
+        this.minVault = 1;
         this.maxVaults = 5; // Default fallback, configurable via UI
-        this.currentVaultIndex = 1;
+        this.currentVaultIndex = this.minVault;
         this.isProcessing = false;
     }
 
@@ -14,11 +15,13 @@ class VaultManager {
     }
 
     /**
-     * Set số lượng kho tối đa từ UI
+     * Set số lượng kho từ Config (Tự động)
      */
-    setMaxVaults(count) {
-        this.maxVaults = count;
-        console.log(`[VaultManager] Max Vaults set to ${count}`);
+    setVaultBounds(start, end) {
+        this.minVault = start;
+        this.maxVaults = end;
+        this.currentVaultIndex = this.minVault;
+        console.log(`[VaultManager] Giới hạn rương được nạp: Từ /pv ${this.minVault} đến /pv ${this.maxVaults}`);
     }
 
     /**

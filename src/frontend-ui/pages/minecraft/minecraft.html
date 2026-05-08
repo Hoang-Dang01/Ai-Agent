@@ -92,6 +92,10 @@
                         <span class="stat-label">TPS MÁY CHỦ <i class="fa-solid fa-server text-success"></i></span>
                         <div class="stat-val text-success"><span id="mc-vitals-tps">20.0</span><span class="text-xs">tps</span></div>
                     </div>
+                    <div class="stat-group mt-32">
+                        <span class="stat-label">NGƯỜI CHƠI (TAB) <i class="fa-solid fa-users text-info"></i></span>
+                        <div class="stat-val text-info"><span id="mc-vitals-players">0</span><span class="text-xs">người</span></div>
+                    </div>
                 </div>
             </div>
             </div>
@@ -103,49 +107,34 @@
           <div class="grid-stack-item-content">
             <div class="ultra-panel telemetry-panel">
             <div class="flex-row gap-16 h-100">
-                <div class="telemetry-numbers flex-1">
-                    <div class="panel-title mb-16">ĐO LƯỜNG TỪ XA</div>
-                    <div class="stat-box">
-                        <span class="stat-label">VẬN TỐC</span>
-                        <strong class="stat-value text-cyan" id="mc-vel">0.0 m/s</strong>
-                    </div>
-                    <div class="stat-box">
-                        <span class="stat-label">ĐỘ CAO (Y)</span>
-                        <strong class="stat-value text-accent" id="mc-y">0.0 m</strong>
-                    </div>
-                    <div class="stat-box">
-                        <span class="stat-label">KHOẢNG CÁCH (Δ)</span>
-                        <strong class="stat-value text-success" id="mc-delta">0.0 m</strong>
-                    </div>
-                    <div class="stat-box" style="border:none">
-                        <span class="stat-label">TRẠNG THÁI</span>
-                        <strong class="stat-value text-warning" id="mc-state">KHÔNG RÕ</strong>
+                <div class="telemetry-numbers flex-1" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div style="grid-column: span 2;">
+                        <div class="panel-title mb-16">GIÁM SÁT CHIẾN THUẬT (TURING GUARD)</div>
                     </div>
                     
-                    <div class="quick-links mt-16">
+                    <div class="stat-box">
+                        <span class="stat-label">NGUY CƠ BỊ BAN (RISK)</span>
+                        <strong class="stat-value text-success" id="mc-risk-level">THẤP (SAFE)</strong>
+                    </div>
+                    
+                    <div class="stat-box">
+                        <span class="stat-label">THỜI GIAN ONLINE</span>
+                        <strong class="stat-value text-cyan" id="mc-uptime">00:00:00</strong>
+                    </div>
+
+                    <div class="stat-box">
+                        <span class="stat-label">TÌNH TRẠNG CHUNG</span>
+                        <strong class="stat-value text-info" id="mc-overall-status">ỔN ĐỊNH</strong>
+                    </div>
+                    
+                    <div class="stat-box">
+                        <span class="stat-label">ĐANG LÀM GÌ?</span>
+                        <strong class="stat-value text-warning" id="mc-current-action">Chờ lệnh...</strong>
+                    </div>
+                    
+                    <div class="quick-links mt-16" style="grid-column: span 2;">
                         <div class="quick-link text-info"><i class="fa-solid fa-angle-right"></i> CỤC KẾ TOÁN (SOI RƯƠNG)</div>
                         <div class="quick-link text-danger"><i class="fa-solid fa-angle-right"></i> CÚT ALL (XEM ADMIN)</div>
-                    </div>
-                </div>
-                
-                <div class="telemetry-graphs flex-1.5">
-                    <div class="graph-box">
-                        <div class="graph-header"><span>CƯỜNG ĐỘ TÍN HIỆU</span><i class="fa-solid fa-signal text-info text-xs"></i></div>
-                        <div class="graph-svg-wrapper">
-                            <canvas id="canvas-ping" width="200" height="60" class="spark-canvas"></canvas>
-                        </div>
-                    </div>
-                    <div class="graph-box">
-                        <div class="graph-header"><span>TỐC ĐỘ (VEL)</span><i class="fa-solid fa-chart-line text-info text-xs"></i></div>
-                        <div class="graph-svg-wrapper">
-                            <canvas id="canvas-vel" width="200" height="60" class="spark-canvas"></canvas>
-                        </div>
-                    </div>
-                    <div class="graph-box">
-                        <div class="graph-header"><span>TPS MÁY CHỦ</span><i class="fa-solid fa-server text-info text-xs"></i></div>
-                        <div class="graph-svg-wrapper">
-                            <canvas id="canvas-tps" width="200" height="60" class="spark-canvas"></canvas>
-                        </div>
                     </div>
                 </div>
             </div>
