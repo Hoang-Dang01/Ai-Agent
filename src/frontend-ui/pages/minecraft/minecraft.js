@@ -20,20 +20,50 @@ function initMinecraftDashboard() {
         console.warn("[CẢNH BÁO] Thiếu thư viện socket.io client! Chạy chế độ Offline Simulator.");
     }
 
+    let saveTimeout = null;
     window.swarmState = new Proxy(rawSwarmState, {
         set(target, property, value) {
             target[property] = value;
             scheduleUIRender();
+            
+            if (['bots', 'activeBotId', 'broadcastMode'].includes(property)) {
+                if (saveTimeout) clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(() => {
+                    try {
+                        localStorage.setItem('turing-swarm-state', JSON.stringify({
+                            bots: target.bots,
+                            activeBotId: target.activeBotId,
+                            broadcastMode: target.broadcastMode
+                        }));
+                    } catch(e) {}
+                }, 1000);
+            }
             return true;
         }
     });
 
-    window.swarmState.bots = {
+    const defaultBots = {
         'Acetazolamid': { hp: 20, food: 20, x: 50.850, y: 84.0, z: -104.984, delta: 142.5, vel: 0.0, status: 'GREEN', ping: 42, tps: 20.0 },
         'vicentenguyen': { hp: 15, food: 18, x: 10.5, y: 60.0, z: 20.2, delta: 0.0, vel: 0.0, status: 'IDLE', ping: 55, tps: 20.0 },
         'nguthichetocc': { hp: 0, food: 0, x: 0, y: 0, z: 0, delta: 0, vel: 0, status: 'RED', ping: 999, tps: 0.0 }
     };
-    window.swarmState.activeBotId = 'Acetazolamid';
+
+    const savedState = localStorage.getItem('turing-swarm-state');
+    if (savedState) {
+        try {
+            const parsed = JSON.parse(savedState);
+            window.swarmState.bots = parsed.bots || defaultBots;
+            window.swarmState.activeBotId = parsed.activeBotId || 'Acetazolamid';
+            window.swarmState.broadcastMode = parsed.broadcastMode || false;
+            window.swarmState.selectedGroup = new Set([window.swarmState.activeBotId]);
+        } catch(e) {
+            window.swarmState.bots = defaultBots;
+            window.swarmState.activeBotId = 'Acetazolamid';
+        }
+    } else {
+        window.swarmState.bots = defaultBots;
+        window.swarmState.activeBotId = 'Acetazolamid';
+    }
 
     if (typeof io !== 'undefined' && !mcSocket) {
         mcSocket = io('http://localhost:3001', {
