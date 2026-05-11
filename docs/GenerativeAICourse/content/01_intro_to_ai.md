@@ -10,7 +10,7 @@ Với AI, thay vì chúng ta giải quyết vấn đề trước tiên, chúng t
 
 Một ví dụ rất cơ bản mà tôi luôn đưa ra: giả sử chúng ta có một ứng dụng dự đoán giá nhà dựa trên diện tích. Chúng ta có thể tự viết logic đó, ví dụ giá nhà luôn bằng diện tích nhân 3. Nhưng nếu thay vì chúng ta viết công thức, chúng ta cho máy tính xem hàng triệu ví dụ hoặc điểm dữ liệu về giá nhà và diện tích thì sao? Máy tính sẽ từ tất cả các điểm dữ liệu này tìm ra, "Ồ, thực ra không chỉ là diện tích nhân 3, có thể là diện tích nhân 1.5." Ngay cả khi bạn cho tôi với tư cách là con người xem hàng triệu ví dụ về giá nhà và diện tích, tôi sẽ đưa ra một công thức tốt hơn là chỉ đoán rằng giá nhà bằng diện tích nhân 3, nhưng tất nhiên con người không thể xem xét hàng triệu ví dụ.
 
-Vì vậy, AI là dạy máy tính học từ các tập dữ liệu lớn hoặc ví dụ. AI xuất sắc trong các trường hợp chúng ta muốn xem xét dữ liệu và giải quyết vấn đề. Hãy lấy ví dụ về đề xuất nguồn cấp dữ liệu Instagram: không có AI, chúng ta có thể để con người giải quyết vấn đề (tức là quyết định hiển thị gì cho bạn), hoặc chúng ta có thể để AI xem lịch sử duyệt web của bạn, và dựa trên dữ liệu đó, quyết định hiển thị gì cho bạn.
+Vì vậy, AI là dạy máy tính học từ các tập dữ liệu lớn hoặc ví dụ. AI xuất sắc trong các trường+í dụ về đề xuất nguồn cấp dữ liệu Instagram: không có AI, chúng ta có thể để con người giải quyết vấn đề (tức là quyết định hiển thị gì cho bạn), hoặc chúng ta có thể để AI xem lịch sử duyệt web của bạn, và dựa trên dữ liệu đó, quyết định hiển thị gì cho bạn.
 
 ## AI Model
 
