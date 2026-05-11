@@ -1,0 +1,35 @@
+---
+description: Kiến trúc Reinforcement Learning (Turing Loop) cho hệ thống tự tối ưu hóa đa đặc vụ.
+globs: *
+---
+# 🧠 THE TURING LOOP - REINFORCEMENT LEARNING FRAMEWORK
+
+> **Quy định Sinh tồn:** Đây là "xương sống" để thiết kế hệ thống tự vận hành phức tạp của AI Study Hub. Mọi Đặc vụ (Agent) đều phải tuân thủ và hiểu rõ vị trí của mình trong vòng lặp này.
+
+## 1. TỔNG QUAN KIẾN TRÚC
+Hệ thống 10 Đặc vụ của chúng ta không chỉ là các thực thể thực thi tĩnh. Việc áp dụng vòng lặp Học Tăng Cường (Reinforcement Learning) biến toàn bộ bầy Đặc vụ thành một hệ sinh thái có khả năng **Tự tối ưu hóa (Self-optimization)**. 
+Ở đây, toàn bộ quá trình phát triển phần mềm được coi là một **Môi trường (Environment)**.
+
+## 2. PHÂN TÍCH CHUYÊN SÂU DƯỚI GÓC ĐỘ DATA SCIENCE
+Để đưa quy trình RL này vào thực tế sản xuất, hệ thống vận hành với các biến số kỹ thuật cốt lõi:
+
+- **State ($s_t$) - Biểu diễn đặc trưng:**
+  - **Khái niệm:** Tương tự như một tensor chứa các đặc trưng (features) đã qua xử lý trong các model Computer Vision (YOLOv8).
+  - **Thực tế dự án:** Là cấu trúc mã nguồn (source code) hiện tại + Các lỗi (Bugs) đang tồn tại + Môi trường thực thi.
+
+- **Action ($a_t$) - Hành động & Chiến lược (Policy $\pi$):**
+  - **Khái niệm:** Nơi "ma thuật" xảy ra. Cân bằng giữa Exploration (Thử cái mới) và Exploitation (Dùng cái đã biết) thường được điều khiển bởi tham số $\epsilon$-greedy.
+  - **Thực tế dự án:** Một bản vá Code (từ Đặc vụ 07) hoặc một bản thiết kế/tái cấu trúc mới (từ Đặc vụ 06).
+
+- **Reward Function ($r_{t+1}$) - Hàm thưởng:**
+  - **Khái niệm:** Phần khó nhất của RL. Tránh hiện tượng Agent "gian lận" để lấy điểm (Reward hacking).
+  - **Thực tế dự án:** Điểm tự tin (Confidence Score) từ Đặc vụ 10 (Evaluator) đánh giá hoặc kết quả Test (Pass/Fail) từ Đặc vụ 08 (Tester).
+
+- **Update - Quá trình Cập nhật & Học hỏi:**
+  - Mỗi khi vòng lặp hoàn tất, nếu có lỗi phát sinh hoặc tìm ra phương pháp tối ưu mới, các Đặc vụ có trách nhiệm **cập nhật lại các tệp giao thức `.mdc` trong thư mục `core/`**. 
+  - Điều này đảm bảo hệ thống tự thay đổi "trọng số" (Weights) của mình và lần sau không bao giờ lặp lại lỗi cũ.
+
+## 3. HƯỚNG DẪN THỰC THI (Dành cho Agent)
+- Trước khi code, luôn phải thu thập đủ bối cảnh (State $s_t$).
+- Chấp nhận các giải pháp an toàn (Exploitation) khi cần ổn định, nhưng được phép thử nghiệm cấu trúc mới (Exploration) nếu được yêu cầu tối ưu hóa.
+- Hàm thưởng được quyết định bởi Code Quality và độ ổn định. Không đi đường tắt phá vỡ kiến trúc cũ chỉ để cho code chạy được tạm thời.

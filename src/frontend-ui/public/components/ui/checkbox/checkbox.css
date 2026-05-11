@@ -1,0 +1,65 @@
+/* ═══════════════════════════════════════════
+   PREMIUM CUSTOM CONTROLS (CHECKBOX, COMBOBOX, TABLE DROPDOWN)
+   ═══════════════════════════════════════════ */
+
+/* 1. CUSTOM CHECKBOX */
+.modern-checkbox-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--color-text);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+}
+
+.modern-checkbox-wrapper:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.modern-checkbox {
+  appearance: none;
+  background-color: transparent;
+  margin: 0;
+  font: inherit;
+  color: currentColor;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-border-strong);
+  border-radius: 4px;
+  display: grid;
+  place-content: center;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.modern-checkbox::before {
+  content: "";
+  width: 12px;
+  height: 12px;
+  transform: scale(0);
+  transition: 120ms transform ease-in-out;
+  box-shadow: inset 1em 1em white;
+  background-color: transparent;
+  transform-origin: center;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+
+.modern-checkbox:checked {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.modern-checkbox:checked::before {
+  transform: scale(1);
+}
+
+.modern-checkbox:focus-visible {
+  outline: 2px solid var(--color-primary-light);
+  outline-offset: 2px;
+}
+

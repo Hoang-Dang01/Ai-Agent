@@ -1,0 +1,85 @@
+/* ═══════════════════════════════════════════
+   CALENDAR (Lịch Tiệc) CSS WRAPPER
+   ═══════════════════════════════════════════ */
+
+.ui-calendar-wrapper {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  border: 1px solid var(--color-border);
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.calendar-month {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+  text-transform: capitalize;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.calendar-day-header {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  padding-bottom: 8px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  background: var(--color-background);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.calendar-day:hover {
+  background: rgba(148, 163, 184, 0.1);
+}
+
+.calendar-day-number {
+  font-weight: 600;
+  color: var(--color-text);
+  font-size: 14px;
+}
+
+.calendar-day.today {
+  border: 1px solid var(--color-primary);
+  background: rgba(60, 80, 224, 0.05);
+}
+
+.calendar-day.today .calendar-day-number {
+  color: var(--color-primary);
+}
+
+/* Dots for events */
+.calendar-events {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  display: flex;
+  gap: 4px;
+}
+
+.calendar-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+}
+.calendar-dot.warning { background: var(--color-warning); }
+.calendar-dot.success { background: var(--color-success); }

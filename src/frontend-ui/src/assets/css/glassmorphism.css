@@ -1,0 +1,296 @@
+/* =========================================================================
+   GLASSMORPHISM UTILITY LIBRARY (CORE 02) - PREMIUM MINIMALIST
+   Tạo bởi: Đặc vụ 06 (System Architect) & Đặc vụ 07 (Senior Developer)
+========================================================================= */
+
+@keyframes auroraMove {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(2%, 3%) scale(1.02); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+:root {
+  /* Tokens */
+  --gl-bg: rgba(255, 255, 255, 0.02);
+  --gl-bg-solid: #0b1120; /* Tối hơn, sâu hơn */
+  --gl-border: 1px solid rgba(255, 255, 255, 0.04);
+  --gl-border-focus: 1px solid rgba(255, 255, 255, 0.15); 
+  --gl-blur: blur(32px);
+  --gl-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.2);
+  
+  /* Accents */
+  --gl-cyan: #06b6d4;
+  --gl-purple: #8b5cf6;
+  --gl-blue: #3b82f6;
+  
+  /* Text */
+  --gl-text-main: #f8fafc;
+  --gl-text-muted: #64748b; /* Tối đi 1 chút để tạo độ sâu */
+}
+
+/* 1. Base Container */
+.gl-container {
+  min-height: 100vh;
+  width: 100%;
+  background-color: transparent; 
+  color: var(--gl-text-main);
+  position: relative;
+  overflow-x: hidden;
+  z-index: 1;
+}
+
+/* Hiệu ứng Ambient Glow siêu mỏng, không lòe loẹt */
+.gl-container::before, .gl-container::after {
+  content: "";
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(150px); /* Blur cực mạnh để tán mỏng màu */
+  z-index: -1;
+  pointer-events: none;
+  animation: auroraMove 20s ease-in-out infinite alternate;
+}
+
+.gl-container::before {
+  top: -20%; left: -10%;
+  width: 50vw; height: 50vh;
+  background: radial-gradient(circle, var(--gl-cyan) 0%, transparent 50%);
+  opacity: 0.05; /* Rất mờ */
+}
+
+.gl-container::after {
+  bottom: -20%; right: -10%;
+  width: 50vw; height: 50vh;
+  background: radial-gradient(circle, var(--gl-purple) 0%, transparent 50%);
+  opacity: 0.05;
+  animation-delay: -10s;
+}
+
+/* 2. Glass Card - Phẳng hơn, viền mảnh hơn */
+.gl-card {
+  background: var(--gl-bg);
+  backdrop-filter: var(--gl-blur);
+  -webkit-backdrop-filter: var(--gl-blur);
+  border: var(--gl-border);
+  border-radius: 24px; /* Tăng độ bo tròn lên 24px */
+  box-shadow: var(--gl-shadow);
+  padding: 24px;
+  transition: all 0.3s ease;
+}
+
+.gl-card-hover {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease;
+}
+
+.gl-card-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* 3. Inputs - Apple style minimal */
+.gl-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.15);
+  border: var(--gl-border);
+  border-radius: 16px; /* Bo tròn góc 16px */
+  color: var(--gl-text-main);
+  font-family: inherit;
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.gl-input:focus {
+  background: rgba(0, 0, 0, 0.3);
+  border: var(--gl-border-focus);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05); /* Viền focus mờ nhẹ, không chói */
+}
+
+/* 4. Buttons - Phẳng, thanh lịch */
+.gl-btn-primary {
+  padding: 12px 28px;
+  background: var(--gl-cyan); /* Bỏ gradient lòe loẹt */
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 100px; /* Chuyển thành dạng viên thuốc (Pill shape) */
+  color: #000000; /* Chữ đen trên nền màu sáng nhìn "Pro" hơn */
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.gl-btn-primary:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.gl-btn-primary:active {
+  transform: translateY(0);
+  filter: brightness(0.9);
+}
+
+.gl-btn-secondary {
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border: var(--gl-border);
+  border-radius: 100px; /* Bo tròn đồng bộ với nút chính */
+  color: var(--gl-text-main);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.gl-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.gl-btn-secondary:active {
+  transform: translateY(0);
+}
+
+/* 5. Typography */
+.gl-text-gradient {
+  color: var(--gl-text-main); /* Bỏ gradient text nhựa, dùng màu thuần túy */
+  font-weight: 700;
+  letter-spacing: -0.5px; /* Giống style NextJS / Apple */
+}
+
+.gl-text-muted {
+  color: var(--gl-text-muted);
+}
+
+/* =========================================
+   6. Dynamic Layout Engine
+   ========================================= */
+
+/* Layout: Thanh ngang (Navbar) */
+.layout-navbar {
+  flex-direction: column !important;
+}
+.layout-navbar .sidebar {
+  width: 100% !important;
+  height: auto !important;
+  flex-direction: row !important;
+  position: relative !important;
+  padding: 16px 24px;
+  align-items: center;
+  border-right: none;
+  border-bottom: var(--gl-border);
+}
+.layout-navbar .resizer, .layout-navbar .active-indicator {
+  display: none;
+}
+.layout-navbar .sidebar-content {
+  flex-direction: row;
+  height: auto;
+  align-items: center;
+  margin-top: 0;
+  gap: 24px;
+}
+.layout-navbar .nav-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+}
+.layout-navbar .nav-card-label {
+  display: none;
+}
+.layout-navbar .nav-card-links {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+}
+.layout-navbar .nav-item {
+  margin: 0;
+  padding: 8px 16px;
+  border-radius: 8px;
+}
+.layout-navbar .logo {
+  border-bottom: none;
+  padding: 0;
+  margin-right: 32px;
+}
+.layout-navbar .main-wrapper {
+  margin-left: 0 !important;
+  width: 100% !important;
+}
+
+/* Layout: MacOS Dock */
+.layout-mac-dock .sidebar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto !important;
+  height: auto !important;
+  flex-direction: row !important;
+  padding: 12px 24px;
+  border-radius: 24px;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(20px);
+  border: var(--gl-border);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+}
+.layout-mac-dock .resizer, .layout-mac-dock .active-indicator {
+  display: none;
+}
+.layout-mac-dock .sidebar-content {
+  flex-direction: row;
+  align-items: center;
+  margin-top: 0;
+  gap: 12px;
+}
+.layout-mac-dock .nav-card-label {
+  display: none;
+}
+.layout-mac-dock .nav-card {
+  margin: 0; padding: 0; background: none; border: none; display: flex; flex-direction: row; align-items: center; gap: 8px;
+}
+.layout-mac-dock .nav-card-links {
+  display: flex; flex-direction: row; align-items: center; gap: 8px;
+}
+.layout-mac-dock .logo {
+  display: none !important;
+}
+.layout-mac-dock .nav-text {
+  display: none;
+}
+.layout-mac-dock .nav-item {
+  width: 48px;
+  height: 48px;
+  justify-content: center;
+  border-radius: 50%;
+  padding: 0;
+  margin: 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.layout-mac-dock .nav-item:hover {
+  transform: scale(1.3) translateY(-10px);
+  z-index: 10;
+  background: var(--gl-cyan);
+  color: white;
+}
+.layout-mac-dock .main-wrapper {
+  margin-left: 0 !important;
+  width: 100% !important;
+  padding-bottom: 100px;
+}

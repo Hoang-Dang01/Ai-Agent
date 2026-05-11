@@ -1,0 +1,42 @@
+---
+description: "Ngôn ngữ thiết kế giao diện (UI) bắt buộc cho Frontend."
+globs: ["*.jsx", "*.css", "*.html"]
+---
+
+# 🎨 Quy Tắc 02: Linh Hồn Giao Diện - Glassmorphism
+
+Tất cả các giao diện Frontend khi được xây dựng MẶC ĐỊNH phải áp dụng phong cách thiết kế **Glassmorphism** (Hiệu ứng kính mờ) để tạo cảm giác công nghệ tương lai, cao cấp (Premium).
+
+**Quy chuẩn bắt buộc:**
+1. **Background & Blur:** Sử dụng nền bán trong suốt `background: rgba(255, 255, 255, 0.05)` kết hợp với `backdrop-filter: blur(20px);`.
+2. **Border:** Viền sáng cực mỏng `border: 1px solid rgba(255, 255, 255, 0.1)`.
+3. **Box Shadow:** Đổ bóng sâu để tạo chiều sâu không gian (ví dụ: `box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37)`).
+4. **Màu sắc (Color Palette):**
+   - Chủ đạo: Dark Mode (Nền Đen/Xám than).
+   - Điểm nhấn (Accent): Cyan sáng (#06b6d4), Tím Neon (#8b5cf6), Xanh Biển (#3b82f6).
+5. **Animation:** Phải có hiệu ứng chuyển động mượt mà (micro-interactions) khi di chuột qua các nút bấm hoặc thẻ bài.
+
+## 🛠️ BỘ THƯ VIỆN CSS UTILITY NỘI BỘ (GLASSMORPHISM.CSS)
+
+Tuyệt đối tuân thủ các class utility sau đây thay vì viết CSS inline lộn xộn:
+
+### 1. Variables (CSS Tokens)
+- `--gl-bg`: `rgba(255, 255, 255, 0.05)`
+- `--gl-border`: `1px solid rgba(255, 255, 255, 0.1)`
+- `--gl-blur`: `blur(20px)`
+
+### 2. Base Components
+- `.gl-container`: Bọc toàn màn hình, màu nền tối (Dark Mode).
+- `.gl-card`: Thẻ kính mờ cơ bản (padding, border-radius, blur, border, shadow).
+- `.gl-card-hover`: Hiệu ứng nổi lên (transform translateY) và sáng viền khi hover.
+
+### 3. Inputs & Buttons
+- `.gl-input`: Khung nhập liệu nền mờ tối, viền mờ, focus viền sáng (Cyan).
+- `.gl-btn-primary`: Nút bấm gradient (Cyan sang Tím), bo góc, hover phát sáng.
+- `.gl-btn-secondary`: Nút bấm nền kính trong suốt, chữ sáng.
+
+### 4. Typography
+- `.gl-text-gradient`: Chữ đổ màu Gradient kim loại/Tím Cyan sang trọng.
+- `.gl-text-muted`: Chữ xám mờ (`#94a3b8`) cho ghi chú.
+
+*(Các class này được định nghĩa vật lý tại `src/frontend-ui/src/assets/css/glassmorphism.css`)*

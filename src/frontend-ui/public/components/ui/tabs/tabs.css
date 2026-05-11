@@ -1,0 +1,551 @@
+/* ═══════════════════════════════════════════
+   TABS / SEGMENT COMPONENT
+   ═══════════════════════════════════════════ */
+
+.ui-tabs {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.ui-tabs-header {
+  display: flex;
+  align-items: center;
+  border-bottom: 2px solid var(--color-border);
+  gap: 32px;
+  margin-bottom: 24px;
+  padding: 0 24px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+@media (max-width: 768px) {
+  .ui-tabs-header {
+    gap: 16px;
+    padding: 0 8px;
+  }
+}
+
+.ui-tab-btn {
+  background: none;
+  border: none;
+  padding: 12px 0;
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.ui-tab-btn:hover {
+  color: var(--color-primary);
+}
+
+.ui-tab-btn.active {
+  color: var(--color-primary);
+}
+
+.ui-tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--color-primary);
+  border-radius: 4px 4px 0 0;
+}
+
+.ui-tabs-body {
+  position: relative;
+  width: 100%;
+}
+
+.ui-tab-panel {
+  display: none;
+  animation: tabFadeIn 0.3s ease;
+}
+
+.ui-tab-panel.active {
+  display: block;
+}
+
+@keyframes tabFadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+.ui-tabs-header::-webkit-scrollbar { display: none; }
+.ui-tabs-header { -ms-overflow-style: none; scrollbar-width: none; }
+
+
+/* ═══════════════════════════════════════════
+   UI NESTED TABS — Tab phân cấp 2 cấp (Cha → Con)
+   ═══════════════════════════════════════════ */
+
+.ui-nested-tabs {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* ── Tab Cha ─────────────────────────────── */
+.ui-nested-tabs__parent-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  background: var(--color-surface-elevated, #f4f6fb);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.ui-nested-tabs__parent-bar::-webkit-scrollbar { display: none; }
+
+.ui-nested-tab-parent-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm, 13px);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.ui-nested-tab-parent-btn:hover {
+  background: rgba(var(--color-primary-rgb, 60, 80, 224), 0.08);
+  color: var(--color-primary);
+}
+
+.ui-nested-tab-parent-btn.active {
+  background: var(--color-primary);
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(var(--color-primary-rgb, 60, 80, 224), 0.35);
+}
+
+.ui-nested-tab-parent-btn.active .material-symbols-outlined {
+  color: #fff;
+}
+
+.ui-nested-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.ui-nested-tab-parent-btn:not(.active) .ui-nested-tab-badge {
+  background: rgba(var(--color-primary-rgb, 60, 80, 224), 0.12);
+  color: var(--color-primary);
+}
+
+/* ── Child Section ───────────────────────── */
+.ui-nested-tabs__section {
+  display: none;
+  animation: nestedTabFadeIn 0.25s ease;
+}
+
+.ui-nested-tabs__section.active {
+  display: block;
+}
+
+@keyframes nestedTabFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Tab Con Bar ─────────────────────────── */
+.ui-nested-tabs__child-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border-bottom: 2px solid var(--color-border, #e8eaf0);
+  margin-bottom: 20px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.ui-nested-tabs__child-bar::-webkit-scrollbar { display: none; }
+
+.ui-nested-tab-child-btn {
+  padding: 10px 18px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm, 13px);
+  font-weight: 500;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  font-family: inherit;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+}
+
+.ui-nested-tab-child-btn:hover {
+  color: var(--color-primary);
+  background: rgba(var(--color-primary-rgb, 60, 80, 224), 0.04);
+}
+
+.ui-nested-tab-child-btn.active {
+  color: var(--color-primary);
+  font-weight: 700;
+  border-bottom-color: var(--color-primary);
+}
+
+/* ── Panel ───────────────────────────────── */
+.ui-nested-tabs__panel-area {
+  position: relative;
+}
+
+.ui-nested-tab-panel {
+  display: none;
+  animation: nestedTabFadeIn 0.2s ease;
+}
+
+.ui-nested-tab-panel.active {
+  display: block;
+}
+
+/* ── Default empty panel ─────────────────── */
+.ui-nested-tab-default-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-elevated, #f8f9fc);
+  border-radius: 12px;
+  border: 1.5px dashed var(--color-border, #e0e4ef);
+}
+
+/* ── Empty state ─────────────────────────── */
+.ui-nested-tabs-empty {
+  text-align: center;
+  padding: 48px;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+/* ════════════════════════════════════════════
+   DRAG & DROP STYLES
+   ════════════════════════════════════════════ */
+
+/* ── Drag handle icon ─────────────────────── */
+.ui-nested-drag-handle {
+  font-size: 16px !important;
+  opacity: 0;
+  cursor: grab;
+  color: var(--color-text-secondary);
+  transition: opacity 0.15s ease;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.ui-nested-tab-parent-btn:hover .ui-nested-drag-handle,
+.ui-nested-tab-child-btn:hover  .ui-nested-drag-handle {
+  opacity: 0.5;
+}
+
+.ui-nested-tab-parent-btn:hover .ui-nested-drag-handle:hover,
+.ui-nested-tab-child-btn:hover  .ui-nested-drag-handle:hover {
+  opacity: 1;
+  color: var(--color-primary);
+}
+
+.ui-nested-drag-handle--child {
+  font-size: 14px !important;
+}
+
+/* ── Item đang được kéo ───────────────────── */
+.ui-nested-dragging {
+  opacity: 0.4;
+  cursor: grabbing !important;
+  transform: scale(0.97);
+  transition: opacity 0.1s, transform 0.1s;
+}
+
+/* ── Drop placeholder (dải chỉ vị trí thả) ── */
+.ui-nested-drop-placeholder {
+  width: 3px;
+  min-width: 3px;
+  align-self: stretch;
+  background: var(--color-primary);
+  border-radius: 3px;
+  margin: 4px 2px;
+  opacity: 0.7;
+  transition: all 0.12s ease;
+  pointer-events: none;
+  animation: placeholderPulse 0.8s ease infinite alternate;
+  flex-shrink: 0;
+}
+
+.ui-nested-drop-placeholder--child {
+  margin: 6px 1px;
+  align-self: auto;
+  height: auto;
+  min-height: 28px;
+}
+
+@keyframes placeholderPulse {
+  from { opacity: 0.5; }
+  to   { opacity: 1; }
+}
+
+
+/* ════════════════════════════════════════════
+   UI NESTED TABS — VERTICAL MODE
+   Layout: sidebar dọc bên trái + content bên phải
+   Dùng: UINestedTabs.create(data, { vertical: true })
+   ════════════════════════════════════════════ */
+
+.ui-nested-tabs--vertical {
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  width: 100%;
+  min-height: 300px;
+}
+
+/* ── Sidebar (cột trái) ──────────────────── */
+.ui-nested-tabs__sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--color-border);
+    background: var(--color-surface);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+    user-select: none;
+}
+
+/* Thanh kéo Resizer */
+.ui-nested-resizer {
+    position: absolute;
+    top: 0;
+    right: -3px;
+    width: 6px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 10;
+    transition: background 0.2s;
+}
+.ui-nested-resizer:hover, .ui-nested-resizer.is-resizing {
+    background: var(--color-primary);
+    opacity: 0.5;
+}
+
+/* ── Parent item trong sidebar ───────────── */
+.ui-nested-tabs__sidebar-parent {
+  display: flex;
+  flex-direction: column;
+}
+
+.ui-nested-tab-parent-btn--v {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm, 13px);
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.18s ease;
+  border-radius: 0;
+  position: relative;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.ui-nested-tab-parent-btn--v:hover {
+  background: rgba(var(--color-primary-rgb, 60, 80, 224), 0.06);
+  color: var(--color-primary);
+}
+
+.ui-nested-tab-parent-btn--v.active {
+  color: var(--color-primary);
+  background: rgba(var(--color-primary-rgb, 60, 80, 224), 0.09);
+  font-weight: 700;
+}
+
+.ui-nested-tab-parent-btn--v.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--color-primary);
+  border-radius: 0 3px 3px 0;
+}
+
+/* Chevron xoay khi mở */
+.ui-nested-parent-chevron {
+  margin-left: auto;
+  font-size: 18px !important;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+.ui-nested-tab-parent-btn--v.active .ui-nested-parent-chevron {
+  transform: rotate(180deg);
+  opacity: 1;
+  color: var(--color-primary);
+}
+
+/* ── Child list (accordion slide) ────────── */
+.ui-nested-tabs__child-list {
+  display: none;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+  animation: slideDown 0.2s ease;
+}
+
+.ui-nested-tabs__child-list.open {
+  display: flex;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ui-nested-tab-child-btn--v {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px 8px 46px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm, 13px);
+  font-weight: 400;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+  position: relative;
+  font-family: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ui-nested-tab-child-btn--v:hover {
+  background: rgba(var(--color-primary-rgb, 60, 80, 224), 0.05);
+  color: var(--color-primary);
+}
+
+.ui-nested-tab-child-btn--v.active {
+  color: var(--color-primary);
+  font-weight: 600;
+  background: rgba(var(--color-primary-rgb, 60, 80, 224), 0.08);
+}
+
+.ui-nested-tab-child-btn--v.active::before {
+  content: '';
+  position: absolute;
+  left: 24px; top: 50%;
+  transform: translateY(-50%);
+  width: 5px; height: 5px;
+  background: var(--color-primary);
+  border-radius: 50%;
+}
+
+/* Drag handle trong vertical mode */
+.ui-nested-tab-parent-btn--v .ui-nested-drag-handle,
+.ui-nested-tab-child-btn--v  .ui-nested-drag-handle {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* ── Content panel (cột phải) ────────────── */
+.ui-nested-tabs__vertical-content {
+  flex: 1;
+  min-width: 0;
+  padding: 0 0 0 24px;
+  position: relative;
+}
+
+.ui-nested-tab-panel--v {
+  display: none;
+  animation: nestedTabFadeIn 0.22s ease;
+}
+
+.ui-nested-tab-panel--v.active {
+  display: block;
+}
+
+/* ── Vertical drop placeholder ──────────── */
+.ui-nested-drop-placeholder--v {
+  height: 3px;
+  min-height: 3px;
+  width: calc(100% - 24px);
+  margin: 1px 12px;
+  background: var(--color-primary);
+  border-radius: 3px;
+  animation: placeholderPulse 0.8s ease infinite alternate;
+  pointer-events: none;
+}
+
+/* ── Responsive: collapse sidebar on mobile ─ */
+@media (max-width: 640px) {
+  .ui-nested-tabs--vertical {
+    flex-direction: column;
+  }
+  .ui-nested-tabs__sidebar {
+    width: 100%;
+    max-width: 100%;
+    border-right: none;
+    border-bottom: 2px solid var(--color-border, #e8eaf0);
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 8px;
+    gap: 4px;
+  }
+  .ui-nested-tab-parent-btn--v {
+    border-radius: 8px;
+    padding: 7px 12px;
+  }
+  .ui-nested-tab-parent-btn--v.active::before { display: none; }
+  .ui-nested-tabs__child-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .ui-nested-tab-child-btn--v {
+    padding: 6px 12px;
+  }
+  .ui-nested-tabs__vertical-content {
+    padding: 16px 0 0;
+  }
+  .ui-nested-parent-chevron { display: none; }
+}

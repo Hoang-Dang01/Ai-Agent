@@ -34,12 +34,14 @@ async def upload_document(file: UploadFile = File(...)):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+from core.langchain_agent import run_agent
+
 @app.post("/ask")
 def ask_question(req: ChatRequest):
     try:
-        # result chứa cả reply và citations
-        result = ask_llm(req.message)
-        return result
+        # Gọi thẳng vào não LangChain (với 5 Tools)
+        result = run_agent(req.message)
+        return {"reply": result}
     except Exception as e:
         return {"error": str(e)}
 

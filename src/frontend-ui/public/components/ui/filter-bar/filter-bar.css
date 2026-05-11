@@ -1,0 +1,106 @@
+/* FILTER BAR STYLES */
+.filter-search {
+    padding: 6px 12px 6px 36px; 
+    border-radius: 20px; 
+    border: 1px solid var(--vip-border); 
+    background: var(--vip-surface); 
+    font-size: 13px; 
+    outline: none; 
+    width: 120px; 
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+    color: var(--vip-text);
+}
+
+.filter-btn {
+    padding: 6px 16px; 
+    background: var(--vip-surface); 
+    border: 1px solid var(--vip-border); 
+    border-radius: 20px; 
+    font-size: 13px; 
+    font-weight: 600; 
+    cursor: pointer; 
+    display: flex; 
+    align-items: center; 
+    gap: 6px; 
+    color: var(--vip-text); 
+    transition: all 0.2s;
+}
+
+.filter-pill { 
+    padding: 6px 16px; 
+    background: var(--vip-surface); 
+    border: 1px solid var(--vip-border); 
+    border-radius: 20px; 
+    font-size: 13px; 
+    font-weight: 600; 
+    cursor: pointer; 
+    color: var(--vip-text); 
+    transition: all 0.2s; 
+}
+.filter-pill.active { 
+    background: var(--vip-primary); 
+    color: var(--vip-surface); 
+    border-color: var(--vip-primary); 
+}
+.filter-pill:hover:not(.active) { 
+    background: var(--vip-bg); 
+}
+
+.filter-panel-dropdown { 
+    display: none; 
+    gap: 20px; 
+    margin-bottom: 24px; 
+    padding: 20px; 
+    background: var(--vip-surface); 
+    border: 1px solid var(--vip-border); 
+    border-radius: var(--radius-lg); 
+    box-shadow: var(--shadow-soft); 
+}
+.filter-panel-dropdown.show-filter { 
+    display: flex; 
+    animation: slideDown 0.3s ease; 
+}
+@keyframes slideDown { 
+    from { opacity: 0; transform: translateY(-10px); } 
+    to { opacity: 1; transform: translateY(0); } 
+}
+
+.filter-label {
+    font-size: 11px; 
+    font-weight: 700; 
+    color: var(--vip-text-muted); 
+    text-transform: uppercase;
+}
+
+.filter-select {
+    padding: 10px; 
+    border-radius: 8px; 
+    border: 1px solid var(--vip-border); 
+    background: var(--vip-bg); 
+    color: var(--vip-text); 
+    font-size: 13px; 
+    outline: none; 
+    cursor: pointer;
+}
+
+.filter-input-number {
+    width: 100%; 
+    padding: 10px; 
+    border-radius: 8px; 
+    border: 1px solid var(--vip-border); 
+    background: var(--vip-bg); 
+    color: var(--vip-text); 
+    font-size: 13px; 
+    outline: none;
+}
+
+.filter-apply-btn {
+    height: 40px; 
+    padding: 0 24px; 
+    background: var(--vip-primary); 
+    color: var(--vip-surface); 
+    border: none; 
+    border-radius: 8px; 
+    font-weight: 700; 
+    cursor: pointer;
+}

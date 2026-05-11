@@ -1,0 +1,21 @@
+---
+description: Pipeline Dữ liệu khép kín (ETL & RAG) cho hệ sinh thái AI.
+globs: *
+---
+# 🧠 RAG & DATA PIPELINE ARCHITECTURE
+
+> **Quy định Sinh tồn:** Dữ liệu là máu của hệ thống. Luồng xử lý dữ liệu RAG không phải là các truy vấn ngẫu nhiên, mà là một Data Pipeline chuẩn mực theo kỹ thuật Khoa học Dữ liệu (Data Science).
+
+## 1. TỐI ƯU HÓA RAG & GRAPH TRI THỨC (Knowledge Graph)
+- Khác với Vector RAG truyền thống (chỉ matching theo ngữ nghĩa), hệ thống áp dụng **Graph Tri thức (LightRAG)**.
+- **Agent 09 (Knowledge Sentinel)** phải phân tích cấu trúc mã nguồn thành một đồ thị. Việc duyệt đồ thị bằng BFS/DFS giúp RAG hiểu được mối liên hệ sâu xa (Ví dụ: File A import File B, Class C kế thừa Class D) thay vì chỉ nhặt text rời rạc.
+
+## 2. QUY TRÌNH ETL KHÉP KÍN (THE PIPELINE)
+Kiến trúc hệ thống vận hành như một nhà máy lọc dữ liệu:
+1. **Thu thập (Extract):** Quét dữ liệu từ Git, file logs, tài liệu (Agent 09 đảm nhận).
+2. **Xử lý & Nhúng (Transform & Load):** Phân rã dữ liệu (NLP), loại bỏ nhiễu, nhúng thành Vector và Đồ thị (Agent 06 đảm nhận).
+3. **Truy vấn & Suy luận (Infer):** Agent 07 (Coder) tiêu thụ dữ liệu sạch từ Pipeline này để tạo ra mã nguồn chính xác tuyệt đối, triệt tiêu ảo giác (Hallucinations).
+4. **Kiểm chứng bằng Metrics (Validate):** Agent 10 (Model Evaluator) không đánh giá cảm tính. Phải dùng các chỉ số định lượng (Metrics) như Code Complexity, Test Coverage, Execution Time để chấm điểm.
+
+## 3. MỞ RỘNG (TƯƠNG LAI)
+- **Computer Vision (YOLOv8):** Tích hợp dưới dạng module xử lý luồng thị giác độc lập, phục vụ cho các tác vụ phân tích UI/UX hoặc nhận diện lỗi hiển thị trên màn hình.

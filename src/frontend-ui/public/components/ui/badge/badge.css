@@ -1,0 +1,31 @@
+/* ═══════════════════════════════════════════
+   BADGE COMPONENT
+   ═══════════════════════════════════════════ */
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.status-badge.success {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--color-success);
+}
+
+.status-badge.danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+}
+
+.status-badge.warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning);
+}
+
+.status-badge.primary {
+  background: rgba(60, 80, 224, 0.1);
+  color: var(--color-primary);
+}

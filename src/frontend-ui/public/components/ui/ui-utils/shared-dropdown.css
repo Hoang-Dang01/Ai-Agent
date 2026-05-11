@@ -1,0 +1,85 @@
+/* 3. DATAGRID DROPDOWN MENU (FOR COMBOBOX/GRID CELL) */
+.data-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: max-content;
+  min-width: 100%;
+  max-width: 90vw;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  z-index: 1000;
+  overflow: auto;
+  max-height: 300px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
+}
+
+.data-dropdown-menu.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Custom Scrollbar for Dropdown Menu */
+.data-dropdown-menu::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.data-dropdown-menu::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.15);
+  border-radius: 4px;
+}
+
+.dropdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.dropdown-table thead {
+  position: sticky;
+  top: 0;
+  background: var(--color-surface);
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Soft shadow below sticky header */
+}
+
+.dropdown-table th {
+  padding: 8px 12px;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 12px;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.dropdown-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+/* Nổi bật cột chính (ví dụ Tên nhân viên/Tên hàng) */
+.dropdown-table td.highlight-col {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.dropdown-table tbody tr {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.dropdown-table tbody tr:hover {
+  background: rgba(60, 80, 224, 0.08);
+}
+

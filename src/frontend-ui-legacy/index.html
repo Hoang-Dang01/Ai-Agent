@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Study Hub</title>
+    <link rel="manifest" href="assets/pwa/manifest.json">
+    <script src="assets/js/core/theme-engine.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="assets/css/app.css">
+    <link rel="stylesheet" href="components/ui/dock/Dock.css">
+
+    <!-- GSAP for Animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+    <!-- Cash.js for lightweight DOM manipulation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cash/8.1.5/cash.min.js"></script>
+
+    <!-- GridStack.js for Modular HUD (V10) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/gridstack.js/10.0.1/gridstack.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gridstack.js/10.0.1/gridstack-all.js"></script>
+  </head>
+  <body>
+    <!-- SPA Container wrapped in Layout -->
+    <div class="layout">
+      <!-- SIDEBAR -->
+      <aside class="sidebar collapsed" id="app-sidebar">
+        <!-- Resizer Handle -->
+        <div class="resizer" id="sidebar-resizer"></div>
+        <!-- Active Indicator -->
+        <div class="active-indicator" id="active-indicator"></div>
+
+        <div class="logo magnetic" style="display: flex; align-items: center; gap: 12px; padding: 20px 24px; cursor: pointer;">
+          <i class="fa-solid fa-graduation-cap" style="font-size: 1.8rem; color: var(--accent-blue);"></i>
+          <span class="logo-text" style="font-size: 1.25rem; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif;">AI Study Hub</span>
+        </div>
+        
+        <div class="sidebar-content">
+          <!-- Card 1: Menu Chính -->
+          <div class="nav-card">
+            <div class="nav-card-label">Menu Chính</div>
+            <div class="nav-card-links">
+              <a class="nav-item magnetic" href="#/home" data-route="/home" data-tooltip="Trang chủ">
+                <i class="fa-solid fa-house icon"></i> 
+                <span class="nav-text">Trang chủ</span>
+                <i class="fa-solid fa-arrow-up-right-from-square nav-card-link-icon"></i>
+              </a>
+              <a class="nav-item magnetic" href="#/chat" data-route="/chat" data-tooltip="Phòng Chat AI">
+                <i class="fa-solid fa-comments icon"></i> 
+                <span class="nav-text">Phòng Chat AI</span>
+                <i class="fa-solid fa-arrow-up-right-from-square nav-card-link-icon"></i>
+              </a>
+              <a class="nav-item magnetic" href="#/documents" data-route="/documents" data-tooltip="Kiến thức RAG">
+                <i class="fa-solid fa-folder-open icon"></i> 
+                <span class="nav-text">Kiến thức RAG</span>
+                <i class="fa-solid fa-arrow-up-right-from-square nav-card-link-icon"></i>
+              </a>
+              <a class="nav-item magnetic" href="#/minecraft" data-route="/minecraft" data-tooltip="Minecraft Engine">
+                <i class="fa-solid fa-gamepad icon"></i> 
+                <span class="nav-text">Minecraft Engine</span>
+                <i class="fa-solid fa-arrow-up-right-from-square nav-card-link-icon"></i>
+              </a>
+            </div>
+          </div>
+          
+          <!-- Card 2: Hệ thống -->
+          <div class="nav-card nav-card-bottom">
+            <div class="nav-card-label">Hệ thống</div>
+            <div class="nav-card-links">
+              <a class="nav-item magnetic" href="#/settings" data-route="/settings" data-tooltip="Cài đặt">
+                <i class="fa-solid fa-gear icon"></i> 
+                <span class="nav-text">Cài đặt</span>
+                <i class="fa-solid fa-arrow-up-right-from-square nav-card-link-icon"></i>
+              </a>
+              <a class="nav-item magnetic" href="javascript:void(0)" id="sidebar-logout" data-tooltip="Đăng xuất">
+                <i class="fa-solid fa-right-from-bracket icon"></i> 
+                <span class="nav-text" style="color: #ef4444;">Đăng xuất</span>
+                <i class="fa-solid fa-arrow-up-right-from-square nav-card-link-icon"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- MAIN CONTENT AREA -->
+      <div class="main-wrapper">
+        <!-- HEADER -->
+        <header class="header">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <button class="icon-btn menu-btn" onclick="toggleSidebar()" title="Thu gọn / Mở rộng">
+              <i class="fa-solid fa-bars"></i>
+            </button>
+            <div class="header-title" id="hdr-title" style="font-family: 'Plus Jakarta Sans'; font-weight: 600; font-size: 1.25rem;">Dashboard</div>
+          </div>
+          <div class="header-actions">
+            <div class="avatar" title="Tài khoản" id="header-avatar" style="background: rgba(255,255,255,0.1); color: var(--text-main); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 600; border: 1px solid rgba(255,255,255,0.2);">US</div>
+          </div>
+        </header>
+
+        <!-- ROUTER CONTENT -->
+        <main class="main" id="app-content">
+          <!-- Views injected here -->
+        </main>
+      </div>
+    </div>
+
+    <!-- MOBILE SIDEBAR OVERLAY -->
+    <div class="sidebar-overlay" id="mobile-overlay" onclick="document.getElementById('app-sidebar').classList.remove('show'); this.classList.remove('show');"></div>
+
+    <!-- TOAST COMPONENT -->
+    <div class="toast" id="toast" style="display: none;">
+      <i class="fa-solid fa-check-circle" style="color:var(--accent-emerald)"></i>
+      <span id="toast-msg"></span>
+    </div>
+
+    <!-- Web Component Module -->
+    <script type="module" src="./main.js"></script>
+    
+    <!-- Router & Sidebar GSAP -->
+    <script src="assets/js/core/router.js"></script>
+    <script src="assets/js/core/sidebar.js"></script>
+    <script src="components/ui/target-cursor/TargetCursor.js"></script>
+    <script src="components/ui/dock/Dock.js"></script>
+
+    <script>
+      $(function () {
+        Router.init();
+        if (typeof SidebarManager !== 'undefined') SidebarManager.init();
+      });
+    </script>
+    
+    <!-- PWA -->
+    <script src="assets/pwa/pwa-register.js"></script>
+  </body>
+</html>

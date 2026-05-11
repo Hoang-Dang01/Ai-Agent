@@ -1,0 +1,13 @@
+---
+description: "Chuẩn viết code dùng chung cho toàn bộ dự án."
+globs: ["*.js", "*.jsx", "*.py", "*.html", "*.css"]
+---
+
+# 💻 Quy Tắc 01: Chuẩn Code Industrial Grade
+
+1. **Clean Code & SOLID:** Viết code dễ đọc, dễ bảo trì, tuân thủ nguyên lý SOLID. Mỗi hàm/module chỉ thực hiện một nhiệm vụ duy nhất (Single Responsibility).
+2. **DRY (Don't Repeat Yourself):** Không bao giờ copy-paste code dư thừa. Nếu một đoạn logic xuất hiện 2 lần, hãy đưa nó vào một module tiện ích (Utils).
+3. **Naming Convention:**
+   - Javascript/React: `camelCase` cho biến/hàm, `PascalCase` cho Components.
+   - Python: `snake_case` cho biến/hàm, `PascalCase` cho Classes.
+4. **Error Handling:** Luôn có `try/catch` hoặc `try/except`. Log lỗi chi tiết nhưng không làm sập toàn bộ hệ thống (Graceful Degradation).

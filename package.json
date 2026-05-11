@@ -8,7 +8,8 @@
     "test": "tests"
   },
   "scripts": {
-    "start": "concurrently \"npm run ai\" \"npm run backend\" \"npm run minecraft\"",
+    "start": "concurrently \"npm run frontend\" \"npm run backend\" \"npm run minecraft\" \"npm run ai\"",
+    "frontend": "cd src/frontend-ui && npm run dev",
     "backend": "cd src/backend-orchestrator && npm start",
     "minecraft": "cd src/minecraft-engine && npm start",
     "ai": "cd src/ai-engine && ..\\..\\venv\\Scripts\\python main.py",

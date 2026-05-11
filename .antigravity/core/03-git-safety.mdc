@@ -1,0 +1,17 @@
+---
+description: "Quy tắc bảo mật mã nguồn và thao tác Git."
+globs: **/*
+---
+
+# 🛡️ Quy Tắc 03: Bảo Mật & Git Safety
+
+1. **Zero Trust & Secrets:**
+   - TUYỆT ĐỐI KHÔNG commit bất kỳ khóa API (OpenAI Key, Anthropic Key), Password Database hay JWT Secret nào lên mã nguồn.
+   - Tất cả thông tin nhạy cảm BẮT BUỘC phải đọc từ biến môi trường (ví dụ: `process.env.API_KEY` hoặc qua file `.env`).
+2. **Git Commit Format:**
+   Mô tả thay đổi phải chuyên nghiệp:
+   - `[Feature]`: Thêm tính năng mới.
+   - `[Fix]`: Sửa lỗi.
+   - `[Refactor]`: Tối ưu hóa lại code hiện tại mà không làm thay đổi tính năng.
+   - `[Docs]`: Cập nhật tài liệu.
+3. **Thao Tác Cẩn Trọng:** Khi được yêu cầu xóa file hoặc thay đổi cấu trúc lớn, hãy xác nhận lại với Sếp (User) mục đích cuối cùng trước khi thực thi.
