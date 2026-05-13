@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Caveat, Patrick_Hand, Quicksand, Nunito, Rajdhani, Chakra_Petch } from "next/font/google";
 import "./globals.css";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
@@ -15,6 +15,39 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const caveat = Caveat({
+  variable: "--font-caveat",
+  subsets: ["latin", "vietnamese"],
+});
+
+const patrickHand = Patrick_Hand({
+  weight: "400",
+  variable: "--font-patrick",
+  subsets: ["latin", "vietnamese"],
+});
+
+const quicksand = Quicksand({
+  variable: "--font-quicksand",
+  subsets: ["latin", "vietnamese"],
+});
+
+const nunito = Nunito({
+  variable: "--font-nunito",
+  subsets: ["latin", "vietnamese"],
+});
+
+const rajdhani = Rajdhani({
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-rajdhani",
+  subsets: ["latin"],
+});
+
+const chakraPetch = Chakra_Petch({
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-chakra",
+  subsets: ["latin", "vietnamese"],
+});
+
 export const metadata: Metadata = {
   title: "Turing Hub | Vibe Agent 2026",
   description: "Advanced Personal AI Ecosystem",
@@ -26,7 +59,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${caveat.variable} ${patrickHand.variable} ${quicksand.variable} ${nunito.variable} ${rajdhani.variable} ${chakraPetch.variable}`}>
       <body className="antialiased bg-[#0A0E17] text-slate-300 font-sans selection:bg-cyan-500/30">
         <LanguageProvider>
           <div className="flex h-screen overflow-hidden">

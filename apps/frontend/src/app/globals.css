@@ -127,4 +127,257 @@
   html {
     @apply font-sans;
   }
+
+  /* Theme Color Overrides (Mapping all cyan utility classes to selected theme) */
+  [data-theme="emerald"] {
+    --color-cyan-300: var(--color-emerald-300);
+    --color-cyan-400: var(--color-emerald-400);
+    --color-cyan-500: var(--color-emerald-500);
+    --color-cyan-600: var(--color-emerald-600);
+    --color-cyan-800: var(--color-emerald-800);
+    --color-cyan-900: var(--color-emerald-900);
+    --color-cyan-950: var(--color-emerald-950);
+  }
+  
+  [data-theme="violet"] {
+    --color-cyan-300: var(--color-violet-300);
+    --color-cyan-400: var(--color-violet-400);
+    --color-cyan-500: var(--color-violet-500);
+    --color-cyan-600: var(--color-violet-600);
+    --color-cyan-800: var(--color-violet-800);
+    --color-cyan-900: var(--color-violet-900);
+    --color-cyan-950: var(--color-violet-950);
+  }
+  
+  [data-theme="rose"] {
+    --color-cyan-300: var(--color-rose-300);
+    --color-cyan-400: var(--color-rose-400);
+    --color-cyan-500: var(--color-rose-500);
+    --color-cyan-600: var(--color-rose-600);
+    --color-cyan-800: var(--color-rose-800);
+    --color-cyan-900: var(--color-rose-900);
+    --color-cyan-950: var(--color-rose-950);
+  }
+  
+  [data-theme="amber"] {
+    --color-cyan-300: var(--color-amber-300);
+    --color-cyan-400: var(--color-amber-400);
+    --color-cyan-500: var(--color-amber-500);
+    --color-cyan-600: var(--color-amber-600);
+    --color-cyan-800: var(--color-amber-800);
+    --color-cyan-900: var(--color-amber-900);
+    --color-cyan-950: var(--color-amber-950);
+  }
+
+  /* Text Scale Settings */
+  :root {
+    --user-scale: 1;
+    --base-font-size: 16px;
+  }
+  html {
+    @apply font-sans;
+    font-size: calc(var(--base-font-size) * var(--user-scale));
+  }
+
+  /* Text Scale Overrides */
+  html[data-text-size="small"] { --user-scale: 0.9; }
+  html[data-text-size="normal"] { --user-scale: 1; }
+  html[data-text-size="large"] { --user-scale: 1.1; }
+  html[data-text-size="xlarge"] { --user-scale: 1.25; }
+
+  /* ==========================================
+     UI STYLE (BORDER RADIUS) OVERRIDES
+     ========================================== */
+  html[data-ui-style="sharp"] .rounded-2xl,
+  html[data-ui-style="sharp"] .rounded-xl,
+  html[data-ui-style="sharp"] .rounded-lg,
+  html[data-ui-style="sharp"] .rounded-md,
+  html[data-ui-style="sharp"] .rounded {
+    border-radius: 0px !important;
+  }
+
+  html[data-ui-style="pill"] .rounded-2xl,
+  html[data-ui-style="pill"] .rounded-xl,
+  html[data-ui-style="pill"] .rounded-lg {
+    border-radius: 2rem !important;
+  }
+  
+  html[data-ui-style="pill"] .rounded-md,
+  html[data-ui-style="pill"] .rounded {
+    border-radius: 1rem !important;
+  }
+
+  /* ==========================================
+     LIGHT MODE THEME (GENERIC)
+     ========================================== */
+  html[data-theme-mode="light"] body,
+  html[data-theme-mode="light"] main,
+  html[data-theme-mode="light"] [class*="bg-[#0A0E17]"] {
+    background-color: #f8fafc !important;
+    background-image: none !important;
+    color: #0f172a !important;
+  }
+  html[data-theme-mode="light"] aside {
+    background-color: #ffffff !important;
+    border-right: 1px solid #e2e8f0 !important;
+  }
+  html[data-theme-mode="light"] [class*="bg-[#0F141F]"],
+  html[data-theme-mode="light"] [class*="bg-slate-900"],
+  html[data-theme-mode="light"] [class*="bg-slate-800"],
+  html[data-theme-mode="light"] [class*="/10"] {
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+    background-image: none !important;
+  }
+  /* Preserve specific background components */
+  html[data-theme-mode="light"] [class*="bg-cyan-500"]:not([class*="/10"]),
+  html[data-theme-mode="light"] [class*="bg-emerald-500"]:not([class*="/10"]) {
+    background-color: var(--color-cyan-500) !important;
+    color: #ffffff !important;
+  }
+  /* Text conversions */
+  html[data-theme-mode="light"] [class*="text-slate-100"],
+  html[data-theme-mode="light"] [class*="text-slate-200"],
+  html[data-theme-mode="light"] [class*="text-slate-300"],
+  html[data-theme-mode="light"] [class*="text-slate-400"],
+  html[data-theme-mode="light"] [class*="text-white"] {
+    color: #0f172a !important;
+  }
+  html[data-theme-mode="light"] [class*="text-slate-500"] {
+    color: #64748b !important;
+  }
+  html[data-theme-mode="light"] [class*="text-cyan-"],
+  html[data-theme-mode="light"] [class*="text-emerald-"],
+  html[data-theme-mode="light"] [class*="text-amber-"],
+  html[data-theme-mode="light"] [class*="text-purple-"],
+  html[data-theme-mode="light"] [class*="text-rose-"] {
+    color: var(--color-cyan-600) !important;
+  }
+  html[data-theme-mode="light"] [class*="border-slate-"],
+  html[data-theme-mode="light"] [class*="border-cyan-"] {
+    border-color: #e2e8f0 !important;
+  }
+  html[data-theme-mode="light"] input,
+  html[data-theme-mode="light"] select {
+    background-color: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+  }
+
+  /* ==========================================
+     NEO-BRUTALISM GLOBAL THEME OVERRIDES
+     ========================================== */
+  html[data-ui-style="neo-brutal"] {
+    --radius: 0px;
+  }
+  html[data-ui-style="neo-brutal"] body,
+  html[data-ui-style="neo-brutal"] main,
+  html[data-ui-style="neo-brutal"] [class*="bg-[#0A0E17]"] {
+    background-color: #f4f4f5 !important;
+    background-image: none !important;
+    color: #000000 !important;
+  }
+  html[data-ui-style="neo-brutal"] aside {
+    background-color: #ffffff !important;
+    border-right: 4px solid #000000 !important;
+  }
+  /* Convert transparent/dark cards to white solid brutalist cards */
+  html[data-ui-style="neo-brutal"] [class*="bg-[#0F141F]"],
+  html[data-ui-style="neo-brutal"] [class*="bg-slate-900"],
+  html[data-ui-style="neo-brutal"] [class*="bg-slate-800"],
+  html[data-ui-style="neo-brutal"] [class*="/10"] {
+    background-color: #ffffff !important;
+    border: 3px solid #000000 !important;
+    box-shadow: 6px 6px 0px 0px #000000 !important;
+    backdrop-filter: none !important;
+    color: #000000 !important;
+    background-image: none !important;
+  }
+  /* Text conversions */
+  html[data-ui-style="neo-brutal"] [class*="text-slate-100"],
+  html[data-ui-style="neo-brutal"] [class*="text-slate-200"],
+  html[data-ui-style="neo-brutal"] [class*="text-slate-300"],
+  html[data-ui-style="neo-brutal"] [class*="text-slate-400"],
+  html[data-ui-style="neo-brutal"] [class*="text-white"] {
+    color: #000000 !important;
+    font-weight: 700;
+  }
+  html[data-ui-style="neo-brutal"] [class*="text-slate-500"] {
+    color: #52525b !important;
+  }
+  /* Accent Text conversions */
+  html[data-ui-style="neo-brutal"] [class*="text-cyan-"],
+  html[data-ui-style="neo-brutal"] [class*="text-emerald-"],
+  html[data-ui-style="neo-brutal"] [class*="text-amber-"],
+  html[data-ui-style="neo-brutal"] [class*="text-purple-"],
+  html[data-ui-style="neo-brutal"] [class*="text-rose-"] {
+    color: var(--color-cyan-700) !important;
+    font-weight: 900 !important;
+  }
+  /* Borders */
+  html[data-ui-style="neo-brutal"] [class*="border-slate-"],
+  html[data-ui-style="neo-brutal"] [class*="border-cyan-"] {
+    border-color: #000000 !important;
+  }
+  /* Inputs & Selects */
+  html[data-ui-style="neo-brutal"] input,
+  html[data-ui-style="neo-brutal"] select {
+    background-color: #ffffff !important;
+    border: 2px solid #000000 !important;
+    box-shadow: 3px 3px 0px 0px #000000 !important;
+    color: #000000 !important;
+  }
+  /* Interactive Buttons */
+  html[data-ui-style="neo-brutal"] button,
+  html[data-ui-style="neo-brutal"] .cursor-pointer {
+    border-radius: 0 !important;
+  }
+  html[data-ui-style="neo-brutal"] [class*="bg-cyan-500"]:not([class*="/10"]),
+  html[data-ui-style="neo-brutal"] [class*="bg-emerald-500"]:not([class*="/10"]) {
+    background-color: var(--color-cyan-500) !important;
+    border: 2px solid #000000 !important;
+    box-shadow: 4px 4px 0px 0px #000000 !important;
+    color: #ffffff !important;
+    font-weight: bold;
+    transform: translate(-2px, -2px);
+  }
+  html[data-ui-style="neo-brutal"] [class*="bg-cyan-500"]:not([class*="/10"]):active {
+    box-shadow: 0px 0px 0px 0px #000000 !important;
+    transform: translate(2px, 2px);
+  }
+
+  /* Font Family Overrides */
+  html[data-font="geist-sans"] {
+    --font-sans: var(--font-geist-sans);
+  }
+  html[data-font="geist-mono"] {
+    --font-sans: var(--font-geist-mono);
+  }
+  html[data-font="caveat"] {
+    --font-sans: var(--font-caveat);
+    --base-font-size: 17px; /* Slight bump */
+  }
+  html[data-font="patrick"] {
+    --font-sans: var(--font-patrick);
+    --base-font-size: 16.5px;
+  }
+  html[data-font="quicksand"] {
+    --font-sans: var(--font-quicksand);
+  }
+  html[data-font="nunito"] {
+    --font-sans: var(--font-nunito);
+  }
+  html[data-font="rajdhani"] {
+    --font-sans: var(--font-rajdhani);
+  }
+  html[data-font="chakra"] {
+    --font-sans: var(--font-chakra);
+  }
+  html[data-font="inter"] {
+    --font-sans: 'Inter', system-ui, sans-serif;
+  }
+  html[data-font="roboto"] {
+    --font-sans: 'Roboto', system-ui, sans-serif;
+  }
 }

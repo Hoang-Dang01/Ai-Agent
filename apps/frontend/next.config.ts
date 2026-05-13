@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  devIndicators: false, // Tắt hoàn toàn Dev Indicators (Next.js 15 syntax)
 };
 
 export default nextConfig;

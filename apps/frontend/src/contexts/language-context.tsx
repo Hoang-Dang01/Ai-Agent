@@ -74,6 +74,16 @@ type DictionaryContextType = {
   t: (key: TranslationKey) => string;
   vibeMode: boolean;
   toggleVibeMode: () => void;
+  themeColor: string;
+  setThemeColor: (color: string) => void;
+  fontFamily: string;
+  setFontFamily: (font: string) => void;
+  textSize: string;
+  setTextSize: (size: string) => void;
+  uiStyle: string;
+  setUiStyle: (style: string) => void;
+  themeMode: string;
+  setThemeMode: (mode: string) => void;
 };
 
 const LanguageContext = createContext<DictionaryContextType | undefined>(undefined);
@@ -81,6 +91,51 @@ const LanguageContext = createContext<DictionaryContextType | undefined>(undefin
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLang] = useState<Language>("vi");
   const [vibeMode, setVibeMode] = useState(true);
+  const [themeColor, setThemeColorState] = useState("cyan");
+  const [themeMode, setThemeModeState] = useState("dark");
+  const [fontFamily, setFontFamilyState] = useState("geist-sans");
+  const [textSize, setTextSizeState] = useState("normal");
+  const [uiStyle, setUiStyleState] = useState("rounded");
+
+  // Sync with document element
+  React.useEffect(() => {
+    document.documentElement.setAttribute("data-theme-mode", themeMode);
+  }, [themeMode]);
+  React.useEffect(() => {
+    document.documentElement.setAttribute("data-theme", themeColor);
+  }, [themeColor]);
+
+  React.useEffect(() => {
+    document.documentElement.setAttribute("data-font", fontFamily);
+  }, [fontFamily]);
+
+  React.useEffect(() => {
+    document.documentElement.setAttribute("data-text-size", textSize);
+  }, [textSize]);
+
+  React.useEffect(() => {
+    document.documentElement.setAttribute("data-ui-style", uiStyle);
+  }, [uiStyle]);
+
+  const setThemeColor = (color: string) => {
+    setThemeColorState(color);
+  };
+
+  const setFontFamily = (font: string) => {
+    setFontFamilyState(font);
+  };
+
+  const setTextSize = (size: string) => {
+    setTextSizeState(size);
+  };
+
+  const setUiStyle = (style: string) => {
+    setUiStyleState(style);
+  };
+
+  const setThemeMode = (mode: string) => {
+    setThemeModeState(mode);
+  };
 
   const toggleLang = () => {
     setLang(prev => (prev === "en" ? "vi" : "en"));
@@ -95,7 +150,12 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <LanguageContext.Provider value={{ lang, toggleLang, t, vibeMode, toggleVibeMode }}>
+    <LanguageContext.Provider value={{ 
+      lang, toggleLang, t, vibeMode, toggleVibeMode,
+      themeColor, setThemeColor, fontFamily, setFontFamily,
+      textSize, setTextSize, uiStyle, setUiStyle,
+      themeMode, setThemeMode
+    }}>
       {children}
     </LanguageContext.Provider>
   );
