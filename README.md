@@ -46,16 +46,44 @@ Các kịch bản tự động hóa, CI/CD, theo dõi file hệ thống (Watch m
 
 Dự án được quản lý tập trung thông qua `package.json` tại thư mục gốc.
 
-**1. Khởi động toàn bộ Hệ sinh thái (Apps & Bots song song):**
+### Quy Trình Triển Khai Sang Máy Mới (Deployment / Onboarding)
+Khi clone code sang một máy tính mới, hãy làm theo đúng 3 bước sau để khởi động hệ thống:
+
+**Bước 1: Cài đặt thư viện gốc**
+```bash
+npm install
+```
+
+**Bước 2: Cài đặt thư viện giao diện (Frontend)**
+```bash
+cd apps/frontend
+npm install
+cd ../..
+```
+
+**Bước 3: Khởi động hệ thống**
+Khởi động toàn bộ Hệ sinh thái (Apps & Bots song song):
 ```bash
 npm start
 ```
+Hoặc nếu chỉ muốn chạy riêng giao diện Frontend (Turing Hub UI):
+```bash
+npm run frontend
+```
 
-**2. Khởi động công cụ theo dõi tài liệu tự động (Chạy ngầm):**
-Giúp tự động vẽ lại cây bản đồ thư mục mỗi khi có file thay đổi.
+### Các Lệnh Tiện Ích Khác
+Khởi động công cụ theo dõi tài liệu tự động (Chạy ngầm giúp vẽ lại bản đồ thư mục mỗi khi có file thay đổi):
 ```bash
 npm run watch:docs
 ```
+
+---
+
+## 🎨 Kiến trúc Dynamic UI Engine
+Hệ thống Frontend (`apps/frontend`) được trang bị **Theme Engine** cấp độ công nghiệp, hỗ trợ hoán đổi phong cách thiết kế ngay trong thời gian thực (Real-time) mà không cần reload trang:
+- **Dark Mode (Vibe UI):** Mặc định với hiệu ứng Kính (Glassmorphism), viền Neon và ánh sáng hạt (Framer Motion).
+- **Light Mode (Neo-Brutalism):** Phong cách thô mộc, góc cạnh (Sci-Fi), nền sáng chói, viền đen nguyên khối và đổ bóng lệch siêu cứng cáp. Tối ưu cho thao tác xử lý dữ liệu tần suất cao.
+- **Hệ thống Typo động:** Hoán đổi qua lại giữa hàng loạt font chữ tùy chọn (Chakra Petch, Rajdhani, Geist, Caveat...) để định hình "tính cách" của AI Dashboard.
 
 ---
 > ⚠️ **LUẬT THÉP:** Mọi Developer (kể cả Human hay AI) khi tham gia đóng góp mã nguồn ĐỀU PHẢI đọc và tuân thủ tuyệt đối **[AGENTS.md](./AGENTS.md)** (The Antigravity Constitution V2.0). Việc thực thi trái phép mà không có bước *Pre-Flight Check* sẽ bị từ chối.
