@@ -1,0 +1,14 @@
+{
+  "name": "ai-minecraft-engine",
+  "version": "1.0.0",
+  "description": "Standalone Minecraft AFK & Vault Management Engine",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "mineflayer": "^4.20.1",
+    "socket.io": "^4.7.5"
+  }
+}

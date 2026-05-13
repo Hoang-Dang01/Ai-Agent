@@ -9,11 +9,12 @@
   },
   "scripts": {
     "start": "concurrently \"npm run frontend\" \"npm run backend\" \"npm run minecraft\" \"npm run ai\"",
-    "frontend": "cd src/frontend-ui && npm run dev",
-    "backend": "cd src/backend-orchestrator && npm start",
-    "minecraft": "cd src/minecraft-engine && npm start",
-    "ai": "cd src/ai-engine && ..\\..\\venv\\Scripts\\python main.py",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "frontend": "cd apps/frontend && npm run dev",
+    "backend": "cd apps/orchestrator && npm start",
+    "minecraft": "cd bots/minecraft-engine && npm start",
+    "ai": "cd apps/backend-ai && ..\\..\\venv\\Scripts\\python main.py",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch:docs": "node scripts/docs-utils/watch_tree.js"
   },
   "repository": {
     "type": "git",
