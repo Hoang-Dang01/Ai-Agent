@@ -4,13 +4,13 @@ import { FlaskConical, Play, Bug, Database, Sparkles, Server, Beaker, FileCode2 
 import { useLanguage } from "@/contexts/language-context";
 
 export default function ExperimentsPage() {
-  const { vibeMode } = useLanguage();
+  const { vibeMode, lang } = useLanguage();
 
   const experiments = [
     {
       id: "rag-chunking",
-      name: "DeepDoc Parser Test",
-      description: "Ném thử 1 file PDF vào để xem thuật toán RAGFlow băm bảng biểu và tiêu đề có chuẩn không trước khi đưa vào The Vault.",
+      name: lang === "vi" ? "Kiểm Thử DeepDoc Parser" : "DeepDoc Parser Test",
+      description: lang === "vi" ? "Kiểm tra thuật toán RAGFlow băm bảng biểu và tiêu đề trước khi đưa vào The Vault." : "Test RAGFlow algorithm for table and header chunking before Vault ingestion.",
       icon: Database,
       status: "Ready",
       colorClass: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
@@ -18,8 +18,8 @@ export default function ExperimentsPage() {
     },
     {
       id: "bot-stealth",
-      name: "Stealth AFK Ladder Test",
-      description: "Mở môi trường test nội bộ để thử nghiệm kịch bản Jitter Margin và thuật toán đá văng Bot khỏi server.",
+      name: lang === "vi" ? "Kiểm Thử Tàng Hình AFK" : "Stealth AFK Ladder Test",
+      description: lang === "vi" ? "Mở môi trường test nội bộ để thử nghiệm kịch bản Jitter Margin và thuật toán đá văng Bot khỏi server." : "Open internal test environment to experiment with Jitter Margin and Bot kick evasion algorithms.",
       icon: Bug,
       status: "In Progress",
       colorClass: "bg-amber-500/10 border-amber-500/20 text-amber-400",
@@ -27,8 +27,8 @@ export default function ExperimentsPage() {
     },
     {
       id: "scraper-proxy",
-      name: "Playwright Proxy Rotation",
-      description: "Test kịch bản cào dữ liệu: Tự động đổi IP Proxy khi bị dính Cloudflare Block.",
+      name: lang === "vi" ? "Đổi Proxy Playwright" : "Playwright Proxy Rotation",
+      description: lang === "vi" ? "Test kịch bản cào dữ liệu: Tự động đổi IP Proxy khi bị dính Cloudflare Block." : "Test data scraping scenario: Auto IP Proxy rotation when hit by Cloudflare block.",
       icon: Server,
       status: "Failed (Need Fix)",
       colorClass: "bg-rose-500/10 border-rose-500/20 text-rose-400",
@@ -36,8 +36,8 @@ export default function ExperimentsPage() {
     },
     {
       id: "llm-reasoning",
-      name: "Intent Router (PhoBERT)",
-      description: "Thử nghiệm bộ lọc câu hỏi tiếng Việt. Nhập một câu hỏi để xem AI điều hướng vào luồng nào.",
+      name: lang === "vi" ? "Bộ Định Tuyến Ý Định (PhoBERT)" : "Intent Router (PhoBERT)",
+      description: lang === "vi" ? "Thử nghiệm bộ lọc câu hỏi. Nhập một câu hỏi để xem AI điều hướng vào luồng nào." : "Test question filtering. Input a question to see which flow the AI routes it to.",
       icon: Sparkles,
       status: "Ready",
       colorClass: "bg-cyan-500/10 border-cyan-500/20 text-cyan-400",
@@ -59,12 +59,12 @@ export default function ExperimentsPage() {
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
             <FlaskConical className="w-7 h-7 text-amber-400" />
-            Experiments Sandbox
+            {lang === "vi" ? "Khu Thử Nghiệm Sandbox" : "Experiments Sandbox"}
           </h1>
-          <p className="text-slate-400 text-sm mt-1">Phòng thí nghiệm lõi. Nơi thử nghiệm các module rủi ro cao trước khi đưa ra Production.</p>
+          <p className="text-slate-400 text-sm mt-1">{lang === "vi" ? "Phòng thí nghiệm lõi. Nơi thử nghiệm các module rủi ro cao trước khi đưa ra Production." : "Core laboratory. Test high-risk modules here before deploying to Production."}</p>
         </div>
         <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white transition-colors font-medium text-sm border border-slate-700">
-          <FileCode2 className="w-4 h-4" /> View Scratchpads
+          <FileCode2 className="w-4 h-4" /> {lang === "vi" ? "Xem Bản Nháp" : "View Scratchpads"}
         </button>
       </div>
 
@@ -110,8 +110,8 @@ export default function ExperimentsPage() {
           className="border-2 border-dashed border-slate-800 hover:border-slate-600 rounded-2xl flex flex-col items-center justify-center p-8 text-slate-500 hover:text-slate-400 transition-colors cursor-pointer bg-slate-900/10 hover:bg-slate-900/20 min-h-[250px]"
         >
           <Beaker className="w-10 h-10 mb-3 opacity-50" />
-          <h3 className="font-bold">Create New Experiment</h3>
-          <p className="text-xs mt-1 text-center max-w-xs">Tạo sandbox mới để test một tính năng độc lập.</p>
+          <h3 className="font-bold">{lang === "vi" ? "Tạo Thử Nghiệm Mới" : "Create New Experiment"}</h3>
+          <p className="text-xs mt-1 text-center max-w-xs">{lang === "vi" ? "Tạo sandbox mới để test một tính năng độc lập." : "Create a new sandbox to test an isolated feature."}</p>
         </motion.div>
       </div>
     </div>

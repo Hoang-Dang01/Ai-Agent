@@ -10,14 +10,14 @@ export default function VaultPage() {
   const { lang, vibeMode } = useLanguage();
   
   const documents = [
-    { name: "agency-agents-overview.md", type: "markdown", status: "Indexed", date: "2 hours ago", size: "12 KB" },
-    { name: "Q1-Financial-Report.pdf", type: "pdf", status: "Indexing...", date: "Just now", size: "2.4 MB" },
-    { name: "Minecraft-Bot-Logic.ts", type: "code", status: "Indexed", date: "Yesterday", size: "8 KB" },
-    { name: "Company-Guidelines.pdf", type: "pdf", status: "Failed", date: "3 days ago", size: "1.1 MB" },
+    { name: "agency-agents-overview.md", type: "markdown", status: "Indexed", date: "2 hours ago", size: "12 KB", trustTier: 1.0, chunks: 45 },
+    { name: "Q1-Financial-Report.pdf", type: "pdf", status: "Indexing...", date: "Just now", size: "2.4 MB", trustTier: 0.9, chunks: "..." },
+    { name: "Minecraft-Bot-Logic.ts", type: "code", status: "Indexed", date: "Yesterday", size: "8 KB", trustTier: 0.8, chunks: 24 },
+    { name: "Company-Guidelines.pdf", type: "pdf", status: "Failed", date: "3 days ago", size: "1.1 MB", trustTier: 0.6, chunks: 0 },
   ];
 
   return (
-    <div className="flex flex-col h-full relative bg-[#0A0E17] overflow-hidden">
+    <div className="flex flex-col h-full relative overflow-hidden">
       {/* Background Particles */}
       <DataParticles vibeMode={vibeMode} />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.03)_0%,transparent_70%)] pointer-events-none z-0"></div>
@@ -32,6 +32,15 @@ export default function VaultPage() {
           <p className="text-sm text-slate-400 mt-1">Vector RAG Database & Knowledge Graph</p>
         </div>
         <div className="flex items-center gap-4">
+          {/* Hybrid Search Toggle */}
+          <div className="hidden lg:flex items-center gap-1 bg-slate-900/60 border border-slate-700/50 rounded-xl p-1 shadow-inner mr-2">
+            <button className="px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-500/20 text-purple-400 border border-purple-500/30 shadow-[0_0_10px_rgba(168,85,247,0.15)] transition-all">
+              Hybrid Search (RRF)
+            </button>
+            <button className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition-colors">
+              Vector Only
+            </button>
+          </div>
           <div className="relative group">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 group-focus-within:text-emerald-400 transition-colors" />
             <input 
@@ -66,6 +75,14 @@ export default function VaultPage() {
               <div>
                 <h3 className="text-slate-200 font-bold">{lang === "vi" ? "Kéo & Thả File" : "Drag & Drop Files"}</h3>
                 <p className="text-slate-500 text-sm mt-1">PDF, Markdown, TXT, CSV (Max 50MB)</p>
+                <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
+                  <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-bold uppercase tracking-wider shadow-[0_0_10px_rgba(99,102,241,0.1)]">
+                    Semantic Chunking
+                  </span>
+                  <span className="px-2 py-0.5 rounded-md bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[10px] font-bold uppercase tracking-wider shadow-[0_0_10px_rgba(6,182,212,0.1)]">
+                    Auto Trust-Tier
+                  </span>
+                </div>
               </div>
             </div>
           </motion.div>
@@ -94,6 +111,12 @@ export default function VaultPage() {
                     <p className="text-sm font-medium text-slate-200 truncate group-hover:text-emerald-400 transition-colors">{doc.name}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-[11px] text-slate-500">{doc.size} • {doc.date}</span>
+                      <span className="text-[10px] bg-slate-900/80 px-1.5 py-0.5 rounded text-slate-400 border border-slate-700/50">
+                        {lang === "vi" ? `Tin cậy: ${doc.trustTier}` : `Trust: ${doc.trustTier}`}
+                      </span>
+                      <span className="text-[10px] bg-slate-900/80 px-1.5 py-0.5 rounded text-slate-400 border border-slate-700/50">
+                        {doc.chunks} Chunks
+                      </span>
                     </div>
                   </div>
                   <div className="flex flex-col items-end">

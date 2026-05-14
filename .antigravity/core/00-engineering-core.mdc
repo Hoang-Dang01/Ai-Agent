@@ -1,0 +1,16 @@
+---
+description: Universal engineering laws, defensive coding, type safety, and architecture invariants.
+globs: *
+---
+# CORE 00: ENGINEERING INVARIANTS
+
+## 1. DEFENSIVE EXECUTION
+* **Null & Boundary Checks:** Never assume a payload or input is valid. Every function MUST implement strict bounds checking, Null/Undefined handling, and Type parsing (e.g., Zod).
+* **Idempotency:** State mutations MUST be idempotent. Retrying a failed function 10 times must yield the exact same system state as succeeding once.
+
+## 2. STRICT TYPING
+* **TypeScript/Python:** Use strict, deterministic typing. `any` or generic dictionaries are forbidden in core logic. Interfaces and Domain Models MUST be explicitly defined and exported.
+
+## 3. ERROR BOUNDARIES
+* **Fail Loudly, Recover Gracefully:** Do not swallow errors. Catch them, log them with contextual metadata (`TraceID`), and either recover via fallback or explicitly escalate.
+* **Never Hardcode Secrets:** Never write API keys, DB URIs, or authentication tokens in plaintext. Always use `.env` injection and Secret Vaults.

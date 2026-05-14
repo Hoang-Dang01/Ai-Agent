@@ -115,18 +115,18 @@ export function Sidebar() {
                 transition={{ duration: 0.2 }}
                 className="absolute bottom-full mb-2 py-2 rounded-xl border border-slate-700/80 bg-[#0A0E17]/95 backdrop-blur-xl shadow-[0_0_30px_rgba(0,0,0,0.5)] z-50 flex flex-col min-w-[200px] left-4"
               >
-              <div className="px-4 py-2.5 flex items-center justify-between text-slate-300 hover:bg-slate-800/50 cursor-pointer transition-colors group">
+              <Link href="/profile" onClick={() => setIsMenuOpen(false)} className="px-4 py-2.5 flex items-center justify-between text-slate-300 hover:bg-slate-800/50 cursor-pointer transition-colors group">
                 <span className="text-[13px] font-medium">{t("profile")}</span>
                 <UserCircle className="w-4 h-4 text-slate-500 group-hover:text-cyan-400 transition-colors" />
-              </div>
-              <div className="px-4 py-2.5 flex items-center justify-between text-slate-300 hover:bg-slate-800/50 cursor-pointer transition-colors group">
+              </Link>
+              <Link href="/shortcuts" onClick={() => setIsMenuOpen(false)} className="px-4 py-2.5 flex items-center justify-between text-slate-300 hover:bg-slate-800/50 cursor-pointer transition-colors group">
                 <span className="text-[13px] font-medium">{t("shortcuts")}</span>
                 <Command className="w-4 h-4 text-slate-500 group-hover:text-cyan-400 transition-colors" />
-              </div>
-              <div className="px-4 py-2.5 flex items-center justify-between text-slate-300 hover:bg-slate-800/50 cursor-pointer transition-colors group">
+              </Link>
+              <Link href="/docs" onClick={() => setIsMenuOpen(false)} className="px-4 py-2.5 flex items-center justify-between text-slate-300 hover:bg-slate-800/50 cursor-pointer transition-colors group">
                 <span className="text-[13px] font-medium">{t("help")}</span>
                 <BookOpen className="w-4 h-4 text-slate-500 group-hover:text-cyan-400 transition-colors" />
-              </div>
+              </Link>
               <div className="h-px bg-slate-700/80 my-1"></div>
               <div 
                 onClick={() => {

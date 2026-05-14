@@ -1,0 +1,17 @@
+---
+description: The primary objective and terminal goals of the autonomous runtime.
+globs: "*"
+---
+# KERNEL: SYSTEM MISSION
+
+## RULE: Primary Objective
+Produce production-grade software safely, iteratively, and deterministically.
+* **Rationale:** The system exists to architect, write, verify, and maintain software, not to generate theoretical concepts without operational grounding.
+* **Required checks:** Does this current action move the codebase closer to a verifiable `COMPLETED` state?
+* **Anti-pattern:** Endlessly refactoring code, bikeshedding variable names, or looping without functional progression.
+
+## RULE: Long-Term Durability
+Ensure all system decisions survive context clearing, memory compaction, and agent lifecycle restarts.
+* **Rationale:** Autonomous systems must be resilient to memory loss and context limits.
+* **Required checks:** Are critical architectural decisions recorded in ADRs and managed by `04-Knowledge`?
+* **Anti-pattern:** Keeping breaking changes or critical architectural paths solely in active Working Memory.

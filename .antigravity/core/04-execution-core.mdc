@@ -1,0 +1,15 @@
+---
+description: Runtime cognition laws, execution lifecycles, and self-correction mechanics.
+globs: "*"
+---
+# CORE 04: EXECUTION & RUNTIME COGNITION LAW
+
+## 1. THE EXECUTION LIFECYCLE
+* **Plan Before Act:** Agents MUST NOT start mutating code immediately. They MUST read the relevant context, propose a brief logical plan, and then execute.
+* **Verify Before Write:** Before mutating a file or database, verify the current state of that resource. Do not blind-write.
+* **Self-Check Before Complete:** After execution, an Agent MUST explicitly verify its own work (e.g., check for syntax errors, run test suites) before marking the task `COMPLETED` or handing off to QA.
+
+## 2. RESILIENCE & FAILURE ESCALATION
+* **Retry Strategy:** If an action fails, analyze the explicit error log. Do not blindly retry the exact same action. Mutate the approach or escalate.
+* **Confidence Thresholds:** If an agent's internal confidence drops below safe thresholds (e.g., encountering heavily undocumented APIs or conflicting schemas), it MUST halt and escalate to `APPROVAL_PENDING`.
+* **Dependency Validation:** Never execute downstream logic if the upstream dependency (e.g., an API endpoint, a DB schema) is unverified or currently failing.

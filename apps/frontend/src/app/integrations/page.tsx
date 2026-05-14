@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useLanguage } from "@/contexts/language-context";
 
 export default function IntegrationsPage() {
-  const { vibeMode } = useLanguage();
+  const { vibeMode, lang } = useLanguage();
   const [showKeys, setShowKeys] = useState<Record<string, boolean>>({});
 
   const toggleKey = (id: string) => {
@@ -16,7 +16,7 @@ export default function IntegrationsPage() {
     {
       id: "openai",
       name: "OpenAI API",
-      description: "Mô hình GPT-4o cho các tác vụ suy luận phức tạp.",
+      description: lang === "vi" ? "Mô hình GPT-4o cho các tác vụ suy luận phức tạp." : "GPT-4o model for complex reasoning tasks.",
       status: "connected",
       keyPreview: "sk-proj-8x7...",
       color: "emerald"
@@ -24,7 +24,7 @@ export default function IntegrationsPage() {
     {
       id: "anthropic",
       name: "Anthropic Claude",
-      description: "Mô hình Claude 3 Opus cho phân tích code và văn bản lớn.",
+      description: lang === "vi" ? "Mô hình Claude 3 Opus cho phân tích code và văn bản lớn." : "Claude 3 Opus model for massive text and code analysis.",
       status: "disconnected",
       keyPreview: "",
       color: "amber"
@@ -32,7 +32,7 @@ export default function IntegrationsPage() {
     {
       id: "openrouter",
       name: "OpenRouter",
-      description: "Hub trung gian truy cập hàng trăm mô hình Open-source.",
+      description: lang === "vi" ? "Hub trung gian truy cập hàng trăm mô hình Open-source." : "Intermediary hub to access hundreds of open-source models.",
       status: "connected",
       keyPreview: "sk-or-v1-...",
       color: "emerald"
@@ -40,7 +40,7 @@ export default function IntegrationsPage() {
     {
       id: "neo4j",
       name: "Neo4j AuraDB",
-      description: "Graph Database đám mây lưu trữ mạng lưới Knowledge Graph.",
+      description: lang === "vi" ? "Graph Database đám mây lưu trữ mạng lưới Knowledge Graph." : "Cloud Graph Database for Knowledge Graph storage.",
       status: "error",
       keyPreview: "neo4j-...",
       color: "rose"
@@ -61,12 +61,12 @@ export default function IntegrationsPage() {
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
             <Link2 className="w-7 h-7 text-purple-400" />
-            Integration Hub
+            {lang === "vi" ? "Trạm Kết Nối" : "Integration Hub"}
           </h1>
-          <p className="text-slate-400 text-sm mt-1">Trạm kết nối API Keys, Webhooks và các Dịch vụ bên ngoài</p>
+          <p className="text-slate-400 text-sm mt-1">{lang === "vi" ? "Quản lý API Keys, Webhooks và các Dịch vụ bên ngoài" : "Manage API Keys, Webhooks, and external services"}</p>
         </div>
         <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 transition-colors font-medium text-sm">
-          <Plus className="w-4 h-4" /> Custom Integration
+          <Plus className="w-4 h-4" /> {lang === "vi" ? "Thêm Kết Nối" : "Custom Integration"}
         </button>
       </div>
 
@@ -148,7 +148,7 @@ export default function IntegrationsPage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="font-bold text-white text-md">Discord Notification</h3>
-                <p className="text-xs text-slate-400 mt-1">Gửi cảnh báo rớt mạng Bot hoặc lỗi RAG về Discord.</p>
+                <p className="text-xs text-slate-400 mt-1">{lang === "vi" ? "Gửi cảnh báo rớt mạng Bot hoặc lỗi RAG về Discord." : "Send Bot disconnect or RAG error alerts to Discord."}</p>
               </div>
               <div className="w-10 h-5 bg-emerald-500 rounded-full flex items-center p-0.5 justify-end cursor-pointer">
                 <div className="w-4 h-4 bg-white rounded-full shadow"></div>
@@ -165,7 +165,7 @@ export default function IntegrationsPage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="font-bold text-white text-md">GitHub Auto-Sync</h3>
-                <p className="text-xs text-slate-400 mt-1">Tự động trigger pipeline khi có code mới trên main.</p>
+                <p className="text-xs text-slate-400 mt-1">{lang === "vi" ? "Tự động trigger pipeline khi có code mới trên main." : "Auto trigger pipeline on new commits to main."}</p>
               </div>
               <div className="w-10 h-5 bg-slate-700 rounded-full flex items-center p-0.5 justify-start cursor-pointer">
                 <div className="w-4 h-4 bg-slate-400 rounded-full shadow"></div>
@@ -177,9 +177,9 @@ export default function IntegrationsPage() {
             <div className="flex items-start gap-3">
               <ShieldCheck className="w-5 h-5 text-purple-400 mt-0.5" />
               <div>
-                <h4 className="font-bold text-slate-200 text-sm">Bảo mật Token</h4>
+                <h4 className="font-bold text-slate-200 text-sm">{lang === "vi" ? "Bảo mật Token" : "Token Security"}</h4>
                 <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                  Tất cả API Key đều được mã hóa nội bộ ở tầng Backend và không bao giờ bị lưu vào LocalStorage của trình duyệt. Hãy chắc chắn thêm <code>.env</code> vào `.gitignore` trước khi commit.
+                  {lang === "vi" ? "Tất cả API Key đều được mã hóa nội bộ ở tầng Backend và không bao giờ bị lưu vào LocalStorage của trình duyệt. Hãy chắc chắn thêm .env vào .gitignore trước khi commit." : "All API Keys are encrypted internally at the Backend and are never saved to browser LocalStorage. Ensure .env is added to .gitignore before committing."}
                 </p>
               </div>
             </div>

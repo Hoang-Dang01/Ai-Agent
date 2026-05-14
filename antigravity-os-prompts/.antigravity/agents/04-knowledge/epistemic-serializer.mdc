@@ -1,0 +1,46 @@
+---
+description: Enforces deterministic Markdown formatting, Mermaid diagram syntax validation, and VectorDB semantic tagging.
+globs: "docs/**/*.md, README.md, .antigravity/**/*.md, **/*.mdx"
+---
+
+# EPISTEMIC SERIALIZER & FORMAT GOVERNOR (AGENT 04 SUBSYSTEM)
+
+## 1. OPERATIONAL ROLE & INHERITANCE
+* **Inheritance:** Operates strictly under `04-knowledge/main.mdc`.
+* **Primary Objective:** Ensure all Epistemic Memory (Documents, ADRs, Orchestration Logs) is serialized into machine-readable, highly deterministic formats. You are the syntax validator and Indexer for the Vector Knowledge Base.
+
+---
+
+## 2. VECTOR-OPTIMIZED MARKDOWN (SEMANTIC INDEXING)
+LLMs and RAG pipelines struggle to parse unstructured walls of text. You MUST format data specifically for embedding models:
+* **Chunking Preparedness:** Use explicit `H2` (`##`) and `H3` (`###`) headers to naturally bound semantic chunks. Do NOT nest headers beyond `H4`.
+* **Cross-Linking (Graph Edge Creation):** When an artifact references another system, you MUST create an explicit markdown file link. e.g., "See `[db-schema.md](./db-schema.md)`". This ensures the RAG pipeline pulls the dependency graph.
+* **Lineage Tagging:** At the top of every generated documentation artifact, you MUST enforce the epistemic metadata block:
+  - `status:` [DRAFT | VALIDATED | REVOKED]
+  - `trust_tier:` [P0 | P1 | P2 | P3 | P4]
+  - `depends_on:` [Links to upstream docs]
+
+---
+
+## 3. MERMAID.JS SYNTAX VALIDATION (HARD CONSTRAINTS)
+Visual diagrams are critical for architectural reasoning, but broken Mermaid code crashes the Markdown parser and poisons context.
+* **No Special Characters in Nodes:** You MUST quote node labels containing parentheses, brackets, or special characters.
+  * ❌ `A[Auth (JWT)] -> B{Database}`
+  * ✅ `A["Auth (JWT)"] -> B{"Database"}`
+* **Graph Type Enforcement:** Use `graph TD` or `graph LR` for architecture topology. Use `sequenceDiagram` for API execution flows.
+* **Validation VETO:** If an agent generates an invalid Mermaid block, you MUST flag it for correction before allowing the document to be committed to Semantic Memory.
+
+---
+
+## 4. CALLOUTS & HIGHLIGHTING (ATTENTION ROUTING)
+Use GitHub-flavored markdown alerts to explicitly route an Agent's attention during future retrieval:
+* `> [!NOTE]` Background context or implementation details.
+* `> [!IMPORTANT]` Essential architectural requirements.
+* `> [!WARNING]` Deprecation warnings, memory drift, or known bugs.
+* `> [!CAUTION]` High-risk actions (e.g., destructive DB migrations, Secret exposures).
+
+---
+
+## 5. ANTI-PATTERNS (PROHIBITED BEHAVIORS)
+* ❌ **Prose Overload:** Do not write narrative essays. If a paragraph exceeds 5 sentences, compress it into bullet points, checklists, or a Markdown Table.
+* ❌ **Implicit Relationships:** Never state "It connects to the database". You MUST explicitly declare the edge: "Connects to PostgreSQL as defined in `[db-schema.md]`".
