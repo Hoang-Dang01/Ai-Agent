@@ -1,0 +1,78 @@
+---
+description: Governs context compaction, episodic vs persistent memory separation, state snapshots, and RAG poison defense.
+globs: "docs/**, memory/**, **/*.md"
+---
+
+# COGNITIVE MEMORY CONTROLLER PERSPECTIVE (AGENT 04)
+
+## 1. MEMORY PHILOSOPHY
+Memory in a cognitive runtime is NOT a raw context window. It is structured, tiered, and highly regulated.
+* **Working Memory:** Ephemeral scratchpad for the active workflow step (cleared post-execution).
+* **Episodic Memory:** Immutable history of execution traces, escalations, and human approvals.
+* **Semantic Memory:** Stable knowledge base (ADRs, architectural rules, environment context).
+* **Operational Memory:** Runtime telemetry and trace lineages.
+
+---
+
+## 2. MEMORY BOUNDARIES
+* **Unrestricted Retrieval Prohibited:** Never load the entire repository or unbounded log files into the context window.
+* **Cross-Domain Contamination:** Isolate UI state memory from Database mutation memory. Do not leak non-relevant semantic traces into focused execution contexts.
+* **Stale Resurrection:** Prevent resurrected/outdated state data from overriding current active working memory.
+
+---
+
+## 3. CONTEXT HYDRATION RULES
+Hydration is the process of injecting memory into an agent's context during the `CONTEXT_RESOLVED` state.
+* **Scoping:** Only retrieve memory strictly relevant to the current `TaskID` or `WorkflowID`.
+* **Relevance Threshold:** Discard low-relevance semantic chunks to preserve token bandwidth.
+* **Deterministic Injection:** Context must be injected chronologically and hierarchically to prevent temporal confusion.
+
+---
+
+## 4. CONTEXT COMPACTION (GARBAGE COLLECTION)
+To survive long-running orchestration, Working Memory must be continuously compacted.
+* Summarize stale reasoning chains into dense, action-oriented conclusions.
+* Compress repetitive traces (e.g., 10 failed retries become 1 summary of failure).
+* **Mandate:** Compaction MUST flawlessly preserve *Decision Lineage* and *Unresolved Blockers*. Do not discard the "Why" behind a technical decision.
+
+---
+
+## 5. EPISODIC PERSISTENCE
+Episodic memory is not a raw chat transcript. It is a structured operational log.
+* **MUST persist:** Workflow failures, HITL approvals, architectural deviations, and escalation triggers.
+* **MUST NOT persist:** Low-value chatter, intermediate formatting errors, or temporary test code.
+
+---
+
+## 6. MEMORY DECAY POLICIES (TTL)
+Not all memory lives forever. Enforce strict Time-To-Live (TTL) policies:
+* **Transient Traces:** Short TTL. Discarded immediately after task reaches `COMPLETED` state.
+* **Failed Experiments/Retries:** Medium TTL. Kept for post-mortem analysis, then summarized and deleted.
+* **Architectural Decisions (ADRs):** Permanent. Persisted as Semantic Memory.
+
+---
+
+## 7. RETRIEVAL GOVERNANCE
+* **Budget-Aware:** Retrieval operations must respect the current workflow's Token Budget. If retrieval exceeds the budget, trigger aggressive context compaction before proceeding.
+* **Permissioned:** Agents must hold the correct *Capability Scope* to retrieve sensitive semantic memory (e.g., `02-Frontend` cannot retrieve backend credential schemas).
+
+---
+
+## 8. HALLUCINATION CONTAINMENT (POISON DEFENSE)
+Memory systems are highly susceptible to recursive corruption (false continuity).
+* **Absolute Constraint:** Unverified generated memories (speculative assumptions, untested code blocks) MUST NOT be persisted into Semantic or Episodic memory.
+* Distinguish explicitly between retrieved facts and AI-inferred assumptions before committing to memory logs.
+
+---
+
+## 9. SNAPSHOT & RECOVERY
+* **State Checkpointing:** Before executing high-risk mutations (e.g., Database migrations), capture a cognitive snapshot of the active memory tree.
+* **Cognitive Rollback:** If a workflow enters `FAILED` or `INCIDENT_MODE`, revert the working memory to the last stable snapshot to prevent poisoned context from driving the retry logic.
+
+---
+
+## 10. TOKEN ECONOMY LAYER
+Memory management is fundamentally an economic operation within the orchestration runtime.
+* Treat context window tokens as a scarce computational resource.
+* Balance the latency trade-off between retrieving more context vs executing faster.
+* Exceeding token ceilings without explicit human approval is an architectural violation.

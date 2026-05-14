@@ -27,3 +27,35 @@ File này lưu lại lịch sử thay đổi của dự án. Không chỉ ghi L�
 - **Added:** Giao diện `Experiments Sandbox` (Khu thử nghiệm).
   - *Lý do (Why):* Cần một "Phòng thí nghiệm lõi" độc lập để chạy thử các thuật toán rủi ro cao (như thử DeepDoc OCR, thử Mineflayer auto-rest) trước khi tích hợp vào hệ thống chính.
 - **Audited:** Tạo báo cáo kiểm thử tại `docs/vault/lessons-learned/qa-report-vault-ui.md`.
+
+### DevOps & Monorepo Architecture (Phase 03)
+- **Architecture Decision:** Khóa cấu trúc Monorepo (`apps`, `packages`, `infra`, `docker`, `bots`, `scripts`).
+  - *Lý do (Why):* Giúp mở rộng (scale) sau này cực kỳ dễ dàng (chuẩn bị cho Turborepo hoặc pnpm workspace), tránh component/DTO bị lặp lại (DRY).
+- **Architecture Decision:** Áp dụng Nginx làm Reverse Proxy duy nhất.
+  - *Lý do (Why):* Centralized routing (`/api`, `/ai`), xử lý CORS, Rate Limit và SSL tập trung thay vì để từng Node app tự gồng gánh.
+- **Architecture Decision:** Tách file Compose thành `docker-compose.dev.yml` và `docker-compose.prod.yml`.
+  - *Lý do (Why):* Môi trường Local cần Hot-reload (Bind mount), trong khi Production cần Immutable Images và tối ưu resource. Không thể dùng chung 1 file được.
+- **Architecture Decision:** Áp dụng `uv` thay cho `pip` cho Python AI Engine.
+  - *Lý do (Why):* `uv` viết bằng Rust giúp cài đặt thư viện Python nhanh hơn 10-100 lần, cực kỳ quan trọng để giảm thời gian build Docker CI/CD cho AI.
+- **Architecture Decision:** Đưa Healthcheck và GPU Readiness vào tiêu chuẩn bắt buộc cho Docker Compose.
+  - *Lý do (Why):* Tránh lỗi dây chuyền khi Boot hệ thống (Orchestrator boot xong nhưng DB/AI chưa ready). Đảm bảo Container AI có thể map với GPU sau này mà không cần refactor file.
+
+### Completed Phase 03 (DevOps & Automation Execution)
+- **Added:** `apps/frontend/Dockerfile`, `apps/orchestrator/Dockerfile`, `apps/backend-ai/Dockerfile`.
+  - *Lý do (Why):* Đóng gói Monorepo thành các microservices độc lập theo chuẩn Multi-stage build để tối ưu size và bảo mật (non-root user).
+- **Added:** `docker/docker-compose.dev.yml` và `docker/docker-compose.prod.yml`.
+  - *Lý do (Why):* Tách bạch rõ môi trường. Dev dùng Bind mount để Hot Reload. Prod dùng Immutable Image với Healthchecks nghiêm ngặt.
+- **Added:** `infra/nginx/nginx.conf`.
+  - *Lý do (Why):* Hoạt động như API Gateway, điều hướng `/api/` về Node và `/ai/` về Python. Giải quyết triệt để CORS issue.
+- **Added:** `scripts/bootstrap.ps1` và `scripts/bootstrap.sh`.
+  - *Lý do (Why):* Script đa nền tảng giúp 1-click clone .env, cài Node modules, và xài `uv pip` cài Python. Xóa bỏ quá trình onboarding bằng tay.
+- **Added:** `.github/workflows/ci.yml`.
+  - *Lý do (Why):* Gác cổng chặn bug. Mỗi khi Push code, GitHub Actions sẽ check Lint, Type (TS), và build thử Docker để bắt lỗi hạ tầng ngay trên mây.
+
+### Architecture Review & Phase 04 Kickoff
+- **Architecture Review:** Đánh giá Maturity của dự án đạt 7.5/10 (SaaS nhỏ) -> Nâng cấp lên 9/10 qua bản tối ưu Phase 3.1. Đã phân tích và ghi nhận các "lỗ hổng" Enterprise cần bù đắp dần trong tương lai: Secrets Management, Observability, Queue System, Rate Limiting, Deployment Strategy, và True GPU Orchestration.
+  - *Lý do (Why):* Nhận thức đúng Tech Debt từ sớm giúp định hình mã nguồn (Source code) linh hoạt, dễ tích hợp các hệ thống này vào các Phase sau.
+- **Added Blueprint:** Khởi tạo `docs/plans/phase-04-orchestrator-blueprint.md`.
+  - *Lý do (Why):* Lên thiết kế lõi cho Phase 04 tập trung vào: Shared Contracts (DRY), Prisma Database, Queue System (BullMQ), và Real-time WebSockets. Chuyển đổi trạng thái từ "Infra skeleton" sang "AI Operating Platform".
+- **Documentation Sync:** Cập nhật `README.md` và `docs/directory-tree-simplified.md` với sơ đồ Monorepo mới nhất (bao gồm `infra`, `docker`, `packages`).
+  - *Lý do (Why):* Giữ cho Second Brain luôn đồng bộ với thực tế Codebase. Đảm bảo Dev mới clone về biết gõ lệnh Docker thay vì cài tay.

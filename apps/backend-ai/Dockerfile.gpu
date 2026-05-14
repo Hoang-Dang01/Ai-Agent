@@ -1,0 +1,45 @@
+# Base image with CUDA 12.1 runtime
+FROM nvidia/cuda:12.1.1-runtime-ubuntu22.04 AS builder
+
+# Set environment variables for Python and uv
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    UV_SYSTEM_PYTHON=1 \
+    DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies & Python 3.11
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.11 \
+    python3.11-venv \
+    python3-pip \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Map python3 to python
+RUN ln -s /usr/bin/python3.11 /usr/bin/python
+
+# Install uv (The ultra-fast Python package installer)
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+WORKDIR /app
+
+# Copy dependency files
+COPY requirements.txt ./
+
+# Install dependencies extremely fast using uv
+# LƯU Ý: requirements.txt nên chứa vllm hoặc thư viện CUDA tương ứng
+RUN uv pip install -r requirements.txt
+
+# Copy the rest of the application
+COPY . .
+
+# Run as non-root
+RUN useradd -m -u 1000 ai_user
+RUN chown -R ai_user /app
+USER ai_user
+
+EXPOSE 8000
+ENV PORT=8000
+
+# CMD ["fastapi", "run", "main.py", "--port", "8000"]
+CMD ["python", "main.py"]

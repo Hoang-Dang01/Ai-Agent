@@ -1,7 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
-import { Upload, Search, FileText, FileCode, Network, Database, Cpu, Plus, Sparkles, FolderArchive } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Upload, Search, FileText, FileCode, Network, Database, Plus, FolderArchive } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 
 import { DataParticles } from "@/components/ui/data-particles";

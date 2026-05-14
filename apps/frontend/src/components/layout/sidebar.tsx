@@ -1,5 +1,5 @@
 "use client";
-import { Settings, Database, Cpu, Network, LayoutGrid, BookOpen, FlaskConical, Blocks, User, UserCircle, Command, ChevronLeft, ChevronRight, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Settings, Database, Cpu, Network, LayoutGrid, BookOpen, FlaskConical, Blocks, User, UserCircle, Command, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";

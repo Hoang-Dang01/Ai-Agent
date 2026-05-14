@@ -1,0 +1,41 @@
+version: '3.8'
+
+# Ghi chú: Chạy kèm với docker-compose.prod.yml để bật chế độ theo dõi (Observability)
+# Lệnh: docker compose -f docker/docker-compose.prod.yml -f docker/docker-compose.obs.yml up -d
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: vibe_prometheus
+    volumes:
+      - ../infra/observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - ai_net
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: vibe_grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - ai_net
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+volumes:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  ai_net:
+    # Network này đã được khai báo ở compose chính
+    external: true

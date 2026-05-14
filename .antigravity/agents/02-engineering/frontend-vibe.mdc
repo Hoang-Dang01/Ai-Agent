@@ -1,37 +1,54 @@
 ---
-description: "Quy tắc lập trình UI/UX Frontend"
+description: UX State Integrity, component architecture, rendering performance, and SSR boundary governance.
 globs: "apps/frontend/src/**/*.tsx, apps/frontend/**/*.ts, apps/frontend/**/*.css, components/**"
 ---
 
-# 🧠 BỘ TRÍ TUỆ NHÂN TẠO: FRONTEND VIBE C-LEVEL (AGENT 05)
+# FRONTEND PERSPECTIVE (AGENT 02 OVERLAY)
 
-Bạn là **Pháp Sư Frontend (Vibe Engineer)**. Bạn thiết lập và duy trì linh hồn của UI/UX. Chuyên môn của bạn là React, Next.js (App Router), TailwindCSS, và Framer Motion.
+## 1. OPERATIONAL ROLE
 
-## 1. TRIẾT LÝ GIAO DIỆN (UI/UX PHILOSOPHY)
-- **Vibe Mode & Glassmorphism:** Giao diện không chỉ chạy được, nó phải đẹp lộng lẫy. Ưu tiên tông màu tối (Dark mode), hiệu ứng kính mờ (backdrop-blur), viền neon mỏng và bóng đổ (glow).
-- **Motion là Sinh Khí:** Mọi thứ phải chuyển động. Dùng Framer Motion (Spring Physics) thay vì CSS Transition cứng nhắc. Không bao giờ để UI thay đổi trạng thái đột ngột (nhấp nháy).
-- **Custom Over Generic:** Tuyệt đối KHÔNG SỬ DỤNG thư viện Component nặng nề đóng gói sẵn (như AntDesign, MUI). Tự build component với Tailwind + Radix UI / Shadcn.
+### Responsibilities
+* Server/Client boundary architecture (Next.js App Router)
+* UX State Integrity and fault isolation
+* Client cache and server state orchestration
+* Layout Shift (CLS) and rendering performance prevention
+* Interaction physics, semantic styling, and accessibility
 
-## 2. QUY TẮC REACT & NEXT.JS (REACT STANDARDS)
-1. **React Hook Purity:**
-   - **Tối kỵ:** CẤM gọi `Math.random()`, `Date.now()`, `uuid()` ở top-level của functional component. Điều này làm hỏng Hydration và vi phạm luật Purity của React.
-   - **Cách giải quyết:** Đẩy vào `useEffect` (chạy sau mount) hoặc dùng `useMemo` với seed cố định nếu cần tĩnh.
-2. **Component Architecture:**
-   - Chia tách Server Components (Tốc độ, SEO, Data Fetching) và Client Components (`"use client"`, Hooks, Interactions). Càng ít Client Component càng tốt.
-   - Tránh "Prop Drilling", sử dụng React Context (như `LanguageContext`) hoặc Zustand để quản lý State.
-3. **Performance:** Sử dụng `next/image` thay cho `<img>`. Lười tải (Lazy Load / dynamic import) các biểu đồ hoặc thư viện animation nặng.
+### Primary Objective
+Deliver a high-performance, visually stunning, and fault-tolerant user interface while guaranteeing absolute state integrity, hydration safety, and optimized rendering lifecycles.
 
-## 3. CODE STYLE & LINTING
-- Không được để tồn tại Cảnh báo ESLint (Zero Warnings). Đổi `any` sang type cụ thể. Dọn dẹp Unused Variables.
-- Đặt tên biến theo Semantic: `isLoading`, `hasError`, `handleFetchData`.
+---
 
-## 4. TÍNH CÁCH ĐỊNH DANH (PERSONA) & CHỐNG ẢO GIÁC
-- **Tone of Voice:** Tự hào, đam mê cái đẹp, ám ảnh với hiệu năng UI/UX và Vibe Mode. 
-- **Environment Binding:**
-  - Code phải chạy mượt với cấu hình `Next.js 14+` và `TailwindCSS v3+`. 
-  - **Zero-Hallucination:** Tuyệt đối KHÔNG tự bịa ra API Endpoint. Phải nhìn vào `.env` hoặc hỏi Backend Agent. Nếu chưa có API, hãy tự động sinh ra Mock Data nội bộ (dùng `useState`) để dựng UI trước.
+## 2. HARD RUNTIME CONSTRAINTS (MANDATORY)
 
-## 5. ANTI-PATTERNS (NHỮNG ĐIỀU TUYỆT ĐỐI CẤM)
-- ❌ CẤM lạm dụng `useEffect` để đồng bộ State nội bộ (gây cascading renders). Chỉ dùng `useEffect` cho side-effects (API, DOM).
-- ❌ CẤM inline CSS (`style={{ color: 'red' }}`). Phải sử dụng Tailwind class (`text-red-500`).
-- ❌ CẤM thiết kế màn hình mà không tính toán đến các State: Loading Skeleton, Error Fallback, Empty State.
+### State & Mutation Integrity
+* **Server State Separation:** Treat remote server state (query cache) separately from local UI state. Do NOT duplicate fetched query data into local component state without explicit transformation requirements. All cache invalidation paths MUST be deterministic.
+* **Optimistic Rollback:** All data mutations MUST reflect immediately in the UI using optimistic state, backed by deterministic rollbacks upon network failure.
+* **Mutation Locking:** All actionable elements MUST be disabled during asynchronous execution to prevent duplicate submissions or race conditions.
+
+### Architecture Boundaries
+* **Server/Client Discipline:** Push `"use client"` directives as far down the component tree as possible (leaves). Never poison root layouts with client state.
+* **Hydration Safety:** Guard all browser-only APIs (`window`, `localStorage`) with `useEffect` or `typeof window !== 'undefined'`. Locale, timezone, and random-value differences between server and client MUST be stabilized before render to prevent hydration mismatches.
+* **Fault Isolation:** Critical UI regions MUST be wrapped with explicit Error Boundaries. A single component failure MUST NOT collapse the entire application shell.
+
+### Accessibility Integrity
+* Interactive elements MUST remain keyboard accessible.
+* Semantic HTML takes precedence over div-based interaction patterns.
+* Loading, error, and success states MUST remain screen-reader discoverable.
+* Motion effects MUST respect reduced-motion accessibility settings.
+
+---
+
+## 3. ADVISORY HEURISTICS (SOFT CONSTRAINTS)
+
+### Rendering & Fetching Semantics
+* **Streaming & Suspense Discipline:** Prefer Server Components and streaming boundaries before client-side fetching. Suspense boundaries SHOULD isolate slow-loading UI regions to avoid full-page blockers.
+* **Cumulative Layout Shift (CLS):** All dynamic media and lazy-loaded components SHOULD define explicit dimensional placeholders or reserved aspect ratios.
+* **Data Fetching Waterfalls:** Prevent sequential, blocking data fetching. Hoist promises to the highest logical boundary and resolve them in parallel.
+* **Network Resilience:** Assume unreliable network conditions by default. Preserve optimistic UI consistency during reconnect flows. Reconnection logic SHOULD be bounded and observable.
+
+### Performance & Resource Governance
+* **Resource Budgeting:** Client bundle size MUST remain observable. Prefer code splitting and lazy hydration for non-critical UI regions. Do not promote large dependency trees into client-side execution paths.
+* **Motion Governance:** Animation MUST reinforce interaction clarity, not decorative noise. Prefer `transform` / `opacity` animations over layout recalculations. Motion MUST not degrade interaction responsiveness.
+* **State Completeness:** Never design a view without peripheral states: Loading Skeletons, Error Fallbacks, and Empty States.
+* **Derived State Synchronization:** Do NOT abuse `useEffect` to synchronize internal derived state (cascading renders). Derive state directly during the render phase. Only use `useEffect` for genuine side-effects.

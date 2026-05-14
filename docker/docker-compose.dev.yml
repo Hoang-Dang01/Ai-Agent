@@ -1,0 +1,105 @@
+version: '3.8'
+
+services:
+  gateway:
+    image: nginx:alpine
+    container_name: vibe_gateway_dev
+    ports:
+      - "80:80"
+    volumes:
+      - ../infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - ai_net
+    depends_on:
+      - frontend
+      - orchestrator
+      - backend-ai
+
+  frontend:
+    build:
+      context: ../apps/frontend
+      target: deps
+    container_name: vibe_frontend_dev
+    command: npm run dev
+    volumes:
+      - ../apps/frontend:/app
+      - /app/node_modules # Prevent host overriding
+    environment:
+      - NODE_ENV=development
+    networks:
+      - ai_net
+
+  orchestrator:
+    build:
+      context: ../apps/orchestrator
+      target: deps
+    container_name: vibe_orchestrator_dev
+    command: npm start
+    volumes:
+      - ../apps/orchestrator:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - REDIS_URL=redis://redis:6379
+      - DB_URL=postgresql://ai_admin:mysecretpassword@postgres:5432/ai_study_hub
+    networks:
+      - ai_net
+    depends_on:
+      - redis
+      - postgres
+
+  backend-ai:
+    build:
+      context: ../apps/backend-ai
+    container_name: vibe_ai_dev
+    command: python main.py
+    volumes:
+      - ../apps/backend-ai:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+      - REDIS_URL=redis://redis:6379
+      - DB_URL=postgresql://ai_admin:mysecretpassword@postgres:5432/ai_study_hub
+    networks:
+      - ai_net
+    depends_on:
+      - redis
+      - postgres
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: vibe_db_dev
+    environment:
+      POSTGRES_USER: ai_admin
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: ai_study_hub
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data_dev:/var/lib/postgresql/data
+    networks:
+      - ai_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ai_admin"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:alpine
+    container_name: vibe_redis_dev
+    ports:
+      - "6379:6379"
+    networks:
+      - ai_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+networks:
+  ai_net:
+    driver: bridge
+
+volumes:
+  pg_data_dev:

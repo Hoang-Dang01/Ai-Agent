@@ -1,0 +1,121 @@
+version: '3.8'
+
+services:
+  gateway:
+    image: nginx:alpine
+    container_name: vibe_gateway_prod
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - ai_net
+    depends_on:
+      frontend:
+        condition: service_healthy
+      orchestrator:
+        condition: service_healthy
+      backend-ai:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ../apps/frontend
+    container_name: vibe_frontend_prod
+    env_file:
+      - ../apps/frontend/.env.production
+    networks:
+      - ai_net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  orchestrator:
+    build:
+      context: ../apps/orchestrator
+    container_name: vibe_orchestrator_prod
+    env_file:
+      - ../apps/orchestrator/.env.production
+    networks:
+      - ai_net
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  backend-ai:
+    build:
+      context: ../apps/backend-ai
+    container_name: vibe_ai_prod
+    env_file:
+      - ../apps/backend-ai/.env.production
+    networks:
+      - ai_net
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/docs')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: vibe_db_prod
+    environment:
+      POSTGRES_USER: ${DB_USER:-ai_admin}
+      POSTGRES_PASSWORD: ${DB_PASS:-mysecretpassword}
+      POSTGRES_DB: ${DB_NAME:-ai_study_hub}
+    volumes:
+      - pg_data_prod:/var/lib/postgresql/data
+    networks:
+      - ai_net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ai_admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:alpine
+    container_name: vibe_redis_prod
+    volumes:
+      - redis_data_prod:/data
+    networks:
+      - ai_net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  ai_net:
+    driver: bridge
+
+volumes:
+  pg_data_prod:
+  redis_data_prod:

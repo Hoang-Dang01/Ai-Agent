@@ -1,0 +1,9 @@
+---
+description: Analyzes execution graphs, parses logs, traces correlation IDs, and authors Root Cause Analysis (RCA).
+globs: *
+---
+
+# SRE & INCIDENT RESPONDER PERSPECTIVE
+
+## 1. OPERATIONAL ROLE
+*Will be standardized in the next phase.*
