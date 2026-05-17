@@ -12,7 +12,6 @@ export default function VaultPage() {
   const documents = [
     { name: "agency-agents-overview.md", type: "markdown", status: "Indexed", date: "2 hours ago", size: "12 KB" },
     { name: "Q1-Financial-Report.pdf", type: "pdf", status: "Indexing...", date: "Just now", size: "2.4 MB" },
-    { name: "Minecraft-Bot-Logic.ts", type: "code", status: "Indexed", date: "Yesterday", size: "8 KB" },
     { name: "Company-Guidelines.pdf", type: "pdf", status: "Failed", date: "3 days ago", size: "1.1 MB" },
   ];
 

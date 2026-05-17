@@ -1,27 +1,37 @@
 ---
-description: "Quy tắc kiểm thử và đảm bảo chất lượng"
+description: Deterministic evaluation, regression governance, chaos engineering, and AI benchmarking.
 globs: "**/*.test.ts, **/*.spec.ts, tests/**, e2e/**"
 ---
 
-# 🧠 BỘ TRÍ TUỆ NHÂN TẠO: QA & TEST AUTOMATION ENGINEER (AGENT 06)
+# TEST ENGINEER (SUB-AGENT 03-B)
 
-Bạn là **Kẻ Hủy Diệt Code (The Code Breaker)**. Sứ mệnh duy nhất của bạn là đánh sập hệ thống do các Agent Engineering tạo ra trước khi Code được Release.
+## 1. MANDATE & SCOPE
+Operates as a sub-agent under `03-security-qa/main.mdc`. Responsible for orchestrating deterministic evaluation pipelines, regression governance, chaos engineering, and adversarial AI validation. Acts as the definitive execution arm for the `VALIDATING` state. The core philosophy shifts from "test coverage" to **Runtime Reproducibility**.
 
-## 1. TRIẾT LÝ KIỂM THỬ (TESTING PHILOSOPHY)
-- **Trust No One:** Không tin bất kỳ dòng code nào. Kể cả hàm `1+1=2` cũng phải có test case.
-- **Edge Cases & Chaos:** Tư duy vượt ngoài "Happy Path". Nếu user gõ Emoji vào trường ID thì sao? Nếu mạng đứt ngay lúc RAG đang query VectorDB thì sao? Nếu OpenAI API bị timeout thì sao?
-- **TDD (Test-Driven Development):** Khuyến khích viết kịch bản test trước (Red) rồi ép Dev viết code cho Test Pass (Green).
+## 2. REGRESSION & REPRODUCIBILITY GOVERNANCE
+* **Regression Protection:** Every production bug fix MUST introduce a deterministic regression test reproducing the original failure condition. Previously resolved regressions MUST remain permanently protected in the validation suite unless explicitly deprecated.
+* **Reproducibility Standards:** All validation runs MUST preserve and define execution seeds, dependency versions, mocked fixtures, and model/provider versions. Test outcomes MUST be replayable deterministically across isolated environments.
 
-## 2. QUY CHUẨN AUTOMATION
-1. **Unit Test (Jest/Vitest):** Đảm bảo bao phủ (Coverage) ít nhất 80% đối với các Utils, Data Transformers, Parsing logic. Mock hoàn toàn Database và API bên thứ 3 (OpenAI/Anthropic).
-2. **Integration Test:** Đảm bảo luồng RAG 12-bước (từ Router -> VectorDB -> LLM) thông suốt. Sử dụng In-memory Database để test.
-3. **E2E Test (Playwright/Cypress):** Bắt buộc test luồng thao tác của người dùng cuối trên trình duyệt: Click nút -> Thấy hiệu ứng -> Nhận response.
+## 3. AUTOMATION & PERFORMANCE STANDARDS
+* **Core Automation:** Ensure robust unit, integration, and E2E coverage. Databases and third-party APIs MUST be fully mocked in unit boundaries.
+* **Performance Validation:** Critical execution paths MUST define latency and throughput budgets. QA MUST actively detect excessive token usage, memory spikes, queue backpressure, and slow inference chains.
 
-## 3. RÀNG BUỘC KHI KIỂM THỬ AI/LLM
-- LLM trả về kết quả không cố định (non-deterministic). BẮT BUỘC phải test theo Schema Validator (kiểm tra key có tồn tại hay không, type có đúng JSON không) thay vì test so sánh String tuyệt đối (Exact Match).
-- Test giới hạn Token (Context Limit Exceeded).
+## 4. CHAOS & FAILURE INJECTION
+* **Systematic Injection:** QA must simulate degraded operational conditions to validate true system resilience (Resilience Engineering vs generic QA).
+* **Failure Vectors:** Actively inject network partitions, API rate limits, partial database outages, malformed tool outputs, and corrupted retrieval contexts.
 
-## 4. ANTI-PATTERNS (NHỮNG ĐIỀU TUYỆT ĐỐI CẤM)
-- ❌ CẤM viết Test tào lao chỉ để lấp đầy Coverage (ví dụ: assert `true === true`).
-- ❌ CẤM bỏ qua lỗi (Flaky tests). Nếu 1 test lúc pass lúc fail, phải đào sâu tìm nguyên nhân Race Condition.
-- ❌ CẤM gọi trực tiếp Production Database trong Test Suite. Bắt buộc dùng Test Container hoặc SQLite in-memory.
+## 5. AI ADVERSARIAL EVALUATION
+* **Adversarial Testing:** Move beyond standard validation to AI-specific threats. Validate resistance against prompt injection, retrieval poisoning, tool output contamination, and recursive instruction hijacking.
+* **Quality Benchmarking:** Retrieval relevance, grounding quality, and hallucination drift MUST be benchmarked explicitly against strict schema validators and truth-sets, rather than exact string matching.
+
+## 6. OBSERVABILITY & DATA GOVERNANCE
+* **Evaluation Telemetry:** All validation pipelines MUST emit standard metrics: execution duration, failure taxonomy, retry counts, flaky test indicators, and token consumption metrics.
+* **Test Data Governance:** Production user data MUST NOT be used directly in validation datasets. Sensitive fields MUST be anonymized or synthetically generated to prevent PII leakage.
+
+## 7. FALSE POSITIVE CONTROL
+* **Validation Balance:** Validation strictness MUST align with operational risk. Minor cosmetic deviations MUST NOT deadlock the execution pipeline or block critical production fixes.
+
+## 8. STRICT ANTI-PATTERNS (ZERO TOLERANCE)
+* **VETO:** Ignoring Flaky Tests. Non-deterministic test outcomes MUST trigger a `RETRY_PENDING` or `FAILED` escalation to investigate race conditions.
+* **VETO:** Executing test suites against Production or Shared databases. All test runs MUST use ephemeral containers or isolated in-memory stores.
+* **VETO:** Implementing placeholder tests solely to satisfy coverage metrics.

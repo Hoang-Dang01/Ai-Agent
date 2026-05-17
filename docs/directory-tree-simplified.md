@@ -17,7 +17,6 @@
 │
 ├── bots/                # [Tầng Worker & Sandbox Tự Hành]
 │   ├── dino-cv-bot/     # Bot thị giác máy tính
-│   └── minecraft-engine/# Bot Auto AFK / Điều hướng trong Game
 │
 ├── packages/            # [Tầng Chia Sẻ - DRY]
 │   ├── shared-types/    # DTOs, TypeScript Interfaces

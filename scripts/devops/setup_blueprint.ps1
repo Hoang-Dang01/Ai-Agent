@@ -22,7 +22,6 @@ $dirs = @(
     "integrations\auth",
     "integrations\payments",
     "integrations\automation",
-    "experiments\minecraft-engine\src",
     "experiments\dino-cv-bot"
 )
 
@@ -57,7 +56,6 @@ $files = @(
     "apps\frontend\package.json",
     "apps\backend-ai\requirements.txt",
     "apps\orchestrator\package.json",
-    "experiments\minecraft-engine\src\FlightController.js",
     "scripts\build.ps1",
     "scripts\extract-knowledge.py",
     "scripts\start-dev.bat",

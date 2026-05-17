@@ -8,7 +8,7 @@ Xây dựng một "Hệ sinh thái AI Cá nhân" (Personal AI Ecosystem) có kh�
 
 ## 2. 3 Trụ cột Tính năng (The 3 Pillars)
 1. **The Study Brain (Trợ lý Học tập):** Tự động tổng hợp data cào từ Internet, nhúng vào Vector Database để tạo thành một AI Tutor chuyên giải đáp kiến thức cá nhân hóa.
-2. **The ML Lab (Phòng Thí Nghiệm):** Giao diện Control Panel (Dashboard) để quản lý, theo dõi và test các mô hình/bot Deep Learning do tác giả tự train (Minecraft Bot, Dino CV Bot...).
+2. **The ML Lab (Phòng Thí Nghiệm):** Giao diện Control Panel (Dashboard) để quản lý, theo dõi và test các mô hình/bot Deep Learning do tác giả tự train (Dino CV Bot...).
 3. **The Sentinel (Trợ lý Nhắc việc):** Hệ thống tự động cào dữ liệu từ trang web trường học, theo dõi deadline bài tập và gửi cảnh báo lên Web (sau này mở rộng bắn tin nhắn sang Discord).
 
 ## 3. Phong cách thiết kế (The Vibe)

@@ -9,18 +9,6 @@ export default function AIEnginesPage() {
   
   const engines = [
     {
-      id: "minecraft",
-      name: "Minecraft AFK Swarm",
-      description: "Tự động farm, auto-reconnect, né Admin. Giao tiếp qua Mineflayer Protocol.",
-      icon: Gamepad2,
-      status: "online",
-      colorClass: "bg-emerald-500/10 border-emerald-500/20",
-      iconColor: "text-emerald-400",
-      uptime: "12h 45m",
-      memory: "450 MB",
-      action: "Farming Carrots"
-    },
-    {
       id: "vision",
       name: "Vision OCR Bot",
       description: "Phân tích Layout, đọc bảng biểu và trích xuất dữ liệu từ PDF/Ảnh (DeepDoc Engine).",
