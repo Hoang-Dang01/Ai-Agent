@@ -1,0 +1,17 @@
+---
+description: Universal UI/UX constraints, interaction philosophy, and modern design standards.
+globs: "**/*.tsx, **/*.jsx, **/*.css, **/*.html"
+---
+# CORE 01: DESIGN SYSTEM & UX INVARIANTS
+
+## 1. MODERN UX PHILOSOPHY
+* **No Generic Interfaces:** AI agents MUST NOT generate outdated, 2010-era bootstrap-like UIs.
+* **Depth & Materials:** Utilize modern layering, subtle shadows, glassmorphism (blur backdrops), and vibrant but highly accessible color palettes.
+
+## 2. MOTION & MICRO-INTERACTIONS
+* **Feedback Loops:** Every user action (click, hover, submit) MUST have immediate visual feedback (e.g., loading spinners, skeleton loaders, active button states).
+* **Fluid Transitions:** Hard state changes are jarring. Use CSS transitions or Animation frameworks (e.g., Framer Motion) for DOM mutations and routing.
+
+## 3. RESPONSIVE & ACCESSIBLE
+* **Mobile-First:** Interfaces MUST scale down gracefully to mobile and tablet constraints without breaking layout or horizontal scrolling.
+* **Contrast & Hierarchy:** Maintain strict typographic hierarchy (H1 -> H6) and WCAG-compliant color contrast ratios.

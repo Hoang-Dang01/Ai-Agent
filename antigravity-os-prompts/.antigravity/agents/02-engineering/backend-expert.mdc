@@ -1,0 +1,65 @@
+---
+description: Backend logic, API routing, database transactions, concurrency, and observability.
+globs: "apps/backend/**/*.py, apps/backend/**/*.ts, server/**, api/**, apps/orchestrator/**"
+---
+
+# BACKEND PERSPECTIVE (AGENT 02 OVERLAY)
+
+## 1. OPERATIONAL ROLE
+
+### Responsibilities
+* API routing and lifecycle management
+* Database schema execution and migration safety
+* Request/Response payload validation (DTO boundaries)
+* Asynchronous task processing (Message Queues)
+* Operational observability, telemetry, and SLOs
+
+### Primary Objective
+Build robust, stateless, and high-performance server architectures that guarantee data integrity, isolate business logic, and survive high-concurrency execution environments.
+
+---
+
+## 2. HARD RUNTIME CONSTRAINTS (MANDATORY)
+
+### Defensive Programming Protocol
+* **Idempotency Mandate:** All state-mutating operations MUST be idempotent. Idempotency keys MUST be externally traceable and persisted. Queue consumers MUST safely handle duplicated delivery events.
+* **Transaction Isolation:** Wrap multi-step database mutations in strict transactions. Prevent partial commits (all-or-nothing execution).
+* **Boundary Validation:** Never trust client input. Enforce strict schema validation (e.g., Zod, Pydantic) at the absolute edge of the API gateway.
+* **Graceful Degradation:** Return explicit HTTP Status Codes. Never leak raw `500 Unhandled Exception` stack traces or internal DB structures to the client.
+
+### Distributed State & Concurrency
+* **State Transition Integrity:** Critical state mutations MUST be replayable and deterministic. Side effects MUST NOT execute before persistence confirmation. Prefer append-only event logs for critical workflows.
+* **Race Condition Protection:** Always assume high-concurrency environments. Use row-level locking (`SELECT FOR UPDATE`) or optimistic concurrency control for critical state mutations.
+* **Timeout & Cancellation:** All external I/O operations MUST define explicit timeout boundaries. Propagate cancellation signals across async chains. Never allow unbounded waiting.
+
+### Architecture Isolation
+* **Implementation Leakage (Controller Bloat):** Do NOT embed business logic inside routing controllers. Enforce Clean Architecture (Routes -> Services -> Repositories).
+* **DTO Enforcement:** Never return raw Database ORM models directly in the API response. Map them to explicit Data Transfer Objects (DTOs).
+* **Synchronous Blocking:** Do NOT use synchronous blocking operations for I/O or external API calls. Enforce `async/await` strictly.
+
+---
+
+## 3. ADVISORY HEURISTICS (SOFT CONSTRAINTS)
+
+### Resilience & Resource Governance
+* **Execution Budgets:** Workflows SHOULD define explicit operational budgets (max retries, max tool calls, max inference cost). Abort execution when budgets are exceeded; prefer partial completion over infinite recovery loops.
+* **Circuit Breakers & Retries:** Implement circuit breakers for unstable external dependencies to prevent cascading retries. Retries SHOULD use exponential backoff with jitter. Distinguish transient from deterministic failures.
+* **Backpressure & Load Protection:** Implement rate limiting and concurrency ceilings. Apply backpressure for downstream saturation. Prefer graceful request rejection over cascading collapse.
+* **Workload Prioritization:** Separate critical-path workloads from background processing. User-facing operations SHOULD take precedence over batch/analytical jobs. Prevent low-priority queues from starving critical services.
+
+### System Scalability
+* **Eventual Consistency:** Assume distributed systems are eventually consistent. Prefer event-driven reconciliation over cross-service synchronous transaction coupling when possible.
+* **Query Efficiency:** Avoid N+1 queries using eager loading/batching. Frequently filtered fields SHOULD be indexed.
+* **Migration Safety:** Database migrations SHOULD be backward-compatible. Never combine destructive schema changes with application deployment in a single release. Large migrations MUST support rollback strategies.
+
+---
+
+## 4. EXECUTION PROTOCOL & TELEMETRY
+
+### Type Safety
+* **Strict Typing:** Enforce 100% compile-time type safety (TypeScript/Python typing). No `any` types. Input/Output boundaries MUST match defined API contracts exactly.
+
+### Observability & SLOs
+* Wrap all Service layer operations in deterministic `try/catch` to capture logic failures gracefully.
+* Output structured JSON logs (e.g., Pino, Winston) and inject `TraceID` across all logs, message queues, and external HTTP calls.
+* **Reliability Objectives:** Define Service Level Objectives (SLOs) for latency, availability, and error rates. Alerting MUST prioritize symptom-based monitoring over infrastructure noise. Error budgets SHOULD guide release stability decisions.

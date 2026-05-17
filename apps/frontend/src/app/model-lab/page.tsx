@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Brain, BookOpen } from "lucide-react";
+import { useLanguage } from "@/contexts/language-context";
 
 // Import các modules thuật toán
 import { LinearRegressionVisualizer } from "@/components/model-lab/algorithms/linear-regression";
@@ -14,6 +15,7 @@ const ALGORITHM_REGISTRY = [
     id: "linear_regression",
     title: "Linear Regression",
     subtitle: "Hồi quy tuyến tính",
+    subtitleEn: "Linear Regression",
     color: "cyan",
     component: LinearRegressionVisualizer
   },
@@ -21,6 +23,7 @@ const ALGORITHM_REGISTRY = [
     id: "logistic_regression",
     title: "Logistic Regression",
     subtitle: "Phân loại nhị phân",
+    subtitleEn: "Binary Classification",
     color: "purple",
     component: LogisticRegressionVisualizer
   },
@@ -28,6 +31,7 @@ const ALGORITHM_REGISTRY = [
     id: "decision_trees",
     title: "Decision Trees",
     subtitle: "Cây quyết định (CART)",
+    subtitleEn: "Decision Trees (CART)",
     color: "emerald",
     component: DecisionTreesVisualizer
   },
@@ -35,6 +39,7 @@ const ALGORITHM_REGISTRY = [
     id: "neural_networks",
     title: "Neural Networks",
     subtitle: "Mạng Nơ-ron đa tầng",
+    subtitleEn: "Multi-layer Neural Network",
     color: "amber",
     component: NeuralNetworksVisualizer
   },
@@ -42,6 +47,7 @@ const ALGORITHM_REGISTRY = [
     id: "data_flow",
     title: "System Data Flow",
     subtitle: "Luồng dữ liệu (Sequence)",
+    subtitleEn: "Data Flow (Sequence)",
     color: "blue",
     component: DataFlowVisualizer
   }
@@ -49,23 +55,24 @@ const ALGORITHM_REGISTRY = [
 
 export default function ModelLabPage() {
   const [activeAlgoId, setActiveAlgoId] = useState("linear_regression");
+  const { lang } = useLanguage();
 
   // Tìm component đang active
   const activeAlgo = ALGORITHM_REGISTRY.find(a => a.id === activeAlgoId);
   const ActiveComponent = activeAlgo?.component;
 
   return (
-    <div className="flex-1 p-8 overflow-y-auto custom-scrollbar flex flex-col gap-6 relative bg-[#0A0E17]">
+    <div className="flex-1 p-8 overflow-y-auto custom-scrollbar flex flex-col gap-6 relative">
       {/* Background Cinematic */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none z-0"></div>
 
       {/* Header */}
       <div className="relative z-10 mb-2">
         <h1 className="text-3xl font-bold text-slate-100 flex items-center gap-3">
-          <BookOpen className="w-8 h-8 text-cyan-400" /> Không Gian Học Tập ML
+          <BookOpen className="w-8 h-8 text-cyan-400" /> {lang === "vi" ? "Không Gian Học Tập ML" : "ML Model Lab"}
         </h1>
         <p className="text-slate-400 mt-2 text-sm max-w-2xl">
-          Nơi chạy thuật toán thời gian thực (Real-time). Thử nghiệm toán học đằng sau AI theo từng Module.
+          {lang === "vi" ? "Nơi chạy thuật toán thời gian thực (Real-time). Thử nghiệm toán học đằng sau AI theo từng Module." : "Run algorithms in real-time. Experiment with the mathematics behind AI, module by module."}
         </p>
       </div>
 
@@ -95,7 +102,7 @@ export default function ModelLabPage() {
                     {algo.title}
                   </h3>
                   <p className={`text-xs ${isActive ? 'text-slate-400' : 'text-slate-500'}`}>
-                    {algo.subtitle}
+                    {lang === 'vi' ? algo.subtitle : algo.subtitleEn}
                   </p>
                 </div>
               );

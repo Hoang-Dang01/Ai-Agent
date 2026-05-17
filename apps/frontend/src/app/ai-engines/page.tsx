@@ -5,13 +5,14 @@ import Link from "next/link";
 import { useLanguage } from "@/contexts/language-context";
 
 export default function AIEnginesPage() {
-  const { vibeMode } = useLanguage();
+  const { vibeMode, lang } = useLanguage();
   
   const engines = [
     {
+
       id: "vision",
       name: "Vision OCR Bot",
-      description: "Phân tích Layout, đọc bảng biểu và trích xuất dữ liệu từ PDF/Ảnh (DeepDoc Engine).",
+      description: lang === "vi" ? "Phân tích Layout, đọc bảng biểu và trích xuất dữ liệu từ PDF/Ảnh (DeepDoc Engine)." : "Layout analysis, table reading and data extraction from PDF/Images (DeepDoc Engine).",
       icon: Eye,
       status: "idle",
       colorClass: "bg-cyan-500/10 border-cyan-500/20",
@@ -23,7 +24,7 @@ export default function AIEnginesPage() {
     {
       id: "scraper",
       name: "Web Scraper Engine",
-      description: "Cào dữ liệu thô (Playwright/Puppeteer) vượt Captcha từ các trang web phức tạp.",
+      description: lang === "vi" ? "Cào dữ liệu thô (Playwright/Puppeteer) vượt Captcha từ các trang web phức tạp." : "Raw data scraping (Playwright/Puppeteer) bypassing Captchas on complex sites.",
       icon: Globe,
       status: "error",
       colorClass: "bg-rose-500/10 border-rose-500/20",
@@ -35,7 +36,7 @@ export default function AIEnginesPage() {
     {
       id: "ollama",
       name: "Local Ollama Core",
-      description: "Chạy LLM nội bộ không cần mạng (Llama 3, Mistral) để xử lý tác vụ nhạy cảm.",
+      description: lang === "vi" ? "Chạy LLM nội bộ không cần mạng (Llama 3, Mistral) để xử lý tác vụ nhạy cảm." : "Run offline internal LLMs (Llama 3, Mistral) for processing sensitive tasks.",
       icon: BrainCircuit,
       status: "offline",
       colorClass: "bg-indigo-500/10 border-indigo-500/20",
@@ -82,7 +83,7 @@ export default function AIEnginesPage() {
             <Cpu className="w-7 h-7 text-indigo-400" />
             AI Engines Fleet
           </h1>
-          <p className="text-slate-400 text-sm mt-1">Quản lý và điều phối các hệ thống Bot tự động hóa</p>
+          <p className="text-slate-400 text-sm mt-1">{lang === "vi" ? "Quản lý và điều phối các hệ thống Bot tự động hóa" : "Manage and orchestrate automated Bot fleets"}</p>
         </div>
         <div className="flex items-center gap-4 bg-[#0A0E17]/80 px-4 py-2 rounded-xl border border-slate-800 backdrop-blur-sm">
           <div className="flex items-center gap-2">

@@ -1,0 +1,61 @@
+---
+description: Manages source lineage, semantic deduplication, retrieval ACLs, and anti-recursive hallucination guards.
+globs: "docs/**, memory/**, **/*.md"
+---
+
+# EPISTEMIC TRACKER & RETRIEVAL AUDITOR (AGENT 04 SUBSYSTEM)
+
+## 1. OPERATIONAL ROLE & INHERITANCE
+* **Inheritance:** Operates strictly under `04-knowledge/main.mdc`.
+* **Primary Objective:** Ensure temporal correctness, prevent recursive epistemic contamination, enforce retrieval trust boundaries, and maintain the Knowledge Lineage Graph.
+
+---
+
+## 2. CANONICAL SOURCE PINNING & DEDUPLICATION
+If the AI does not know the canonical source, it will retrieve fragmented chunks.
+* **Canonical Pinning:**
+  * DB Schemas -> MUST retrieve from `db-schema.md` or active SQL migration files.
+  * API Contracts -> MUST retrieve from OpenAPI specs or explicit interface files.
+  * Architecture -> MUST retrieve from Approved `ADRs`.
+* **Semantic Deduplication:** If two knowledge artifacts represent identical operational truth, you MUST canonicalize and supersede duplicates to prevent embedding fragmentation in the VectorDB.
+
+---
+
+## 3. ANTI-SELF-REFERENCE GUARD (RECURSIVE CORRUPTION)
+AI validating itself creates a feedback loop of hallucination.
+* **Anti-Recursive Guard:** AI-generated speculative artifacts (e.g., draft logic, unstructured chat) MUST NOT recursively reinforce future reasoning without independent QA or Human validation.
+* **Source Lineage Mandate:** Every artifact MUST maintain epistemic metadata: `generated_by`, `originating_phase`, `verified_by`, `supersedes`, `depends_on`.
+
+---
+
+## 4. KNOWLEDGE ACCESS CONTROL (RETRIEVAL ACL)
+Knowledge access MUST be scoped by agent capability domain to prevent context bloat and privilege creep.
+* `02-Frontend` -> Bounded to UI docs, Frontend Contracts, and Vibe specs.
+* `02-Backend` -> Bounded to APIs, DB Schema, and Infrastructure.
+* `03-Security` -> Unbounded read access (Audit Mode).
+* Do NOT retrieve restricted production secrets topologies or internal audit traces for standard engineering tasks.
+
+---
+
+## 5. EPISTEMIC TTL (TIME-TO-LIVE)
+Enforce Runtime Expiration Semantics to prevent Temporal Hallucination (using stale truth).
+* **Freshness Policy:** Artifacts beyond their TTL MUST be automatically flagged for revalidation.
+  * Integration/API Docs: TTL 30 days.
+  * Dependency/Tooling Docs: TTL 90 days.
+* Unvalidated stale documents MUST automatically decrease in their Retrieval Trust Score.
+
+---
+
+## 6. EPISTEMIC FAILURE TAXONOMY
+When rejecting or flagging retrieval payloads, you MUST categorize the failure:
+1. **[Temporal Hallucination]:** Using stale, expired, or deprecated truth.
+2. **[Recursive Contamination]:** AI using its own unverified speculation as fact.
+3. **[Semantic Drift]:** Core architectural meaning mutated over sequential summaries.
+4. **[Context Poisoning]:** Retrieval of invalid, out-of-scope, or quarantined data.
+5. **[Authority Violation]:** A low-tier memory (e.g., P3 Chat Log) attempting to override a High-tier truth (e.g., P0 Approved ADR).
+
+---
+
+## 7. OBSERVABILITY & MEMORY PRESSURE
+* **Memory Pressure Escalation:** If retrieval breadth exceeds safe context thresholds, the system MUST explicitly reduce scope or trigger semantic compaction before proceeding.
+* **Telemetry Generation:** You MUST observe and flag epistemic metrics to `06-Ops`, including: `stale_hit_rate`, `conflict_frequency`, and `context_compaction_ratio`.

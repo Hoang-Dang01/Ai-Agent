@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useLanguage } from "@/contexts/language-context";
 
 export function Header() {
-  const { lang, toggleLang, t } = useLanguage();
+  const { lang, toggleLang, t, vibeMode, toggleVibeMode } = useLanguage();
 
   return (
     <header className="h-16 border-b border-slate-800/60 bg-[#0A0E17]/80 backdrop-blur-xl flex items-center justify-between px-8 z-10 sticky top-0">
@@ -27,8 +27,8 @@ export function Header() {
       </div>
       
       <div className="flex items-center gap-5">
-        <Search className="w-5 h-5 text-slate-400 hover:text-slate-200 cursor-pointer transition-colors" />
-        <div className="relative">
+        <Search onClick={() => alert('Search feature requires VectorDB ingestion (Phase 6)')} className="w-5 h-5 text-slate-400 hover:text-slate-200 cursor-pointer transition-colors" />
+        <div className="relative" onClick={() => alert('No new notifications')}>
           <Bell className="w-5 h-5 text-slate-400 hover:text-slate-200 cursor-pointer transition-colors" />
           <span className="absolute top-0 right-0 w-2 h-2 bg-rose-500 rounded-full border-2 border-[#0A0E17]"></span>
         </div>
@@ -45,12 +45,13 @@ export function Header() {
         </motion.button>
 
         <motion.button 
+          onClick={toggleVibeMode}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-950/40 border border-cyan-800/50 text-cyan-400 text-sm font-medium hover:bg-cyan-900/40 transition-colors shadow-[0_0_15px_rgba(34,211,238,0.1)] ml-1"
+          className={`flex items-center gap-2 px-4 py-1.5 rounded-full border text-sm font-medium transition-colors ml-1 ${vibeMode ? 'bg-cyan-950/40 border-cyan-800/50 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.1)] hover:bg-cyan-900/40' : 'bg-slate-800/40 border-slate-700/50 text-slate-400 hover:bg-slate-700/50'}`}
         >
           <Sun className="w-4 h-4" />
-          Vibe UI
+          {vibeMode ? 'Vibe UI' : 'Clean UI'}
         </motion.button>
       </div>
     </header>
