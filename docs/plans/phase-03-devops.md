@@ -11,7 +11,6 @@ Hệ thống sẽ tuân thủ tuyệt đối cấu trúc sau từ Phase 03:
 │   ├── orchestrator/   # Node.js API Gateway / Event Bus
 │   └── backend-ai/     # FastAPI Python Engine
 ├── bots/               # Các bot tự hành độc lập
-│   ├── minecraft-engine/
 │   └── dino-cv-bot/
 ├── packages/           # Thư viện dùng chung
 │   ├── shared-types/   # TypeScript Interfaces dùng chung giữa Frontend & Node

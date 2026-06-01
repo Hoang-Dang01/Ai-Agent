@@ -16,7 +16,7 @@ Dự án được xây dựng trên kiến trúc Monorepo, đóng vai trò như 
 - **Chức năng:** 
   - Hiển thị danh sách các Bot hiện có.
   - Có Nút Bấm (Bật/Tắt) để điều khiển Bot từ xa qua giao diện Web thay vì gõ lệnh Terminal.
-  - Cửa sổ Log thời gian thực (Real-time Stream) để theo dõi xem Bot đang làm gì (VD: Bot Minecraft đang chặt cây hay đang đánh quái).
+  - Cửa sổ Log thời gian thực (Real-time Stream) để theo dõi xem Bot đang làm gì (VD: Tiến trình đang chạy ngầm).
 
 ### 🧩 Module 3: University Sentinel (Trợ lý Deadline)
 - **Nguồn dữ liệu:** Web trường học. Tự động cào định kỳ qua kịch bản Automation.

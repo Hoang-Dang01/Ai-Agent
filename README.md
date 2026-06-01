@@ -14,7 +14,6 @@ Dự án được cấu trúc theo triết lý "Hạt nhân & Phòng ban" nhằm
 - `orchestrator/`: Nhạc trưởng điều phối dữ liệu, Database Schema và API Gateway nội bộ (Node.js/Express, tích hợp BullMQ/Redis).
 
 ### 2. 🤖 `bots/` (Khu Vực Sandbox Tự Hành)
-- `minecraft-engine/`: Bot tự hành trong môi trường vật lý ảo (Minecraft AFK & Navigation).
 - `dino-cv-bot/`: Bot nhận diện hình ảnh Computer Vision.
 
 ### 3. 📦 `packages/` (Tầng Chia Sẻ)

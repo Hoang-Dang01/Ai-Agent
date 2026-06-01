@@ -8,10 +8,9 @@
     "test": "tests"
   },
   "scripts": {
-    "start": "concurrently \"npm run frontend\" \"npm run backend\" \"npm run minecraft\" \"npm run ai\"",
+    "start": "concurrently \"npm run frontend\" \"npm run backend\" \"npm run ai\"",
     "frontend": "cd apps/frontend && npm run dev",
     "backend": "cd apps/orchestrator && npm start",
-    "minecraft": "cd bots/minecraft-engine && npm start",
     "ai": "cd apps/backend-ai && ..\\..\\venv\\Scripts\\python main.py",
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch:docs": "node scripts/docs-utils/watch_tree.js"

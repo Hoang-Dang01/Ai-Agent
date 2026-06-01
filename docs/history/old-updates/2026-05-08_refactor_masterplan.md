@@ -18,7 +18,6 @@ Ai-Agent/
 │   ├── backend-orchestrator/    <-- (Node.js API, WorkflowRunner)
 │   ├── ai-engine/               <-- (Python, RAG, Prompts)
 │   ├── frontend-ui/             <-- (Vanilla JS/CSS, HTML)
-│   ├── minecraft-engine/        <-- (Node.js Bot/Mineflayer)
 │   └── tools/                   <-- (Shared utils)
 │
 ├── deploy/                      <-- (Docker, Scripts)

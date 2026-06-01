@@ -29,7 +29,6 @@
 - [ ] **Phase 16:** Xử lý Real-time Streaming UI (WebSockets / SSE) để hiển thị luồng tư duy của AI.
 
 ## 🧪 PHẦN 5: BOTS & AUTONOMOUS AGENTS (Thực nghiệm & Tự hành)
-- [ ] **Phase 17:** Tích hợp Minecraft Engine (Bot điều khiển tự động / FlightController).
 - [ ] **Phase 18:** Tích hợp Dino CV Bot (Module nhận diện hình ảnh Computer Vision).
 - [ ] **Phase 19:** Triệu hồi "Virtual Customer Swarm" (Phòng Research) để stress-test hệ thống.
 - [ ] **Phase 20:** Tối ưu hóa toàn diện, Security Audit và Deploy lên Production (Vercel + DigitalOcean) -> **V1.0 Launch!**

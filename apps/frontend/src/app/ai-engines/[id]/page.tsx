@@ -7,22 +7,6 @@ import { useLanguage } from "@/contexts/language-context";
 // Cấu hình mock data tạm thời
 const getEngineConfig = (id: string) => {
   const configs: Record<string, {name: string, status: string, env: {key: string, value: string}[], logs: string[]}> = {
-    minecraft: {
-      name: "Minecraft AFK Swarm",
-      status: "online",
-      env: [
-        { key: "MC_SERVER_IP", value: "play.hypixel.net" },
-        { key: "MC_PORT", value: "25565" },
-        { key: "AUTO_RECONNECT", value: "true" },
-        { key: "ANTI_AFK_INTERVAL", value: "300" }
-      ],
-      logs: [
-        "[10:45:01] INFO: Connecting to play.hypixel.net...",
-        "[10:45:03] SUCCESS: Logged in as TuringBot_01",
-        "[10:46:12] ACTION: Farming carrots in slot 1",
-        "[10:50:00] WARNING: Admin 'Notch' joined the server. Activating stealth mode."
-      ]
-    },
     vision: {
       name: "Vision OCR Bot",
       status: "idle",
@@ -169,83 +153,6 @@ export default function EngineDetailPage({ params }: { params: Promise<{ id: str
                 </div>
               )}
             </div>
-          </div>
-
-          {/* Minecraft Specific: Multi-Account Swarm Manager */}
-          {engineId === 'minecraft' && (
-            <div className="bg-[#0A0E17] rounded-2xl border border-slate-800 overflow-hidden shadow-xl flex-col flex">
-              <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/30">
-                <div className="flex items-center gap-3">
-                  <Users className="w-5 h-5 text-indigo-400" />
-                  <h2 className="font-bold text-white">Swarm Accounts & AFK Tracker</h2>
-                </div>
-                <button className="flex items-center gap-1.5 text-xs font-medium text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 px-3 py-1.5 rounded-lg border border-indigo-500/20 transition-colors">
-                  <Plus className="w-3.5 h-3.5" /> Thêm Account
-                </button>
-              </div>
-              <div className="p-0 overflow-x-auto">
-                <table className="w-full text-left border-collapse text-sm">
-                  <thead>
-                    <tr className="bg-slate-900/50 border-b border-slate-800/80 text-slate-400 text-xs">
-                      <th className="p-4 font-medium">Tên Đăng Nhập</th>
-                      <th className="p-4 font-medium">Mật Khẩu</th>
-                      <th className="p-4 font-medium">Tình Trạng</th>
-                      <th className="p-4 font-medium"><div className="flex items-center gap-1"><Clock className="w-3.5 h-3.5"/> Thời Gian Treo</div></th>
-                      <th className="p-4 font-medium">Mục Tiêu (Cày Top)</th>
-                      <th className="p-4 font-medium text-right">Thao Tác</th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-slate-300 divide-y divide-slate-800/60">
-                    <tr className="hover:bg-slate-800/20 transition-colors">
-                      <td className="p-4 font-mono text-cyan-400">TuringBot_01</td>
-                      <td className="p-4 font-mono text-slate-500">********</td>
-                      <td className="p-4">
-                        <span className="inline-flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_5px_#10b981]"></span>
-                          Đang treo máy
-                        </span>
-                      </td>
-                      <td className="p-4 font-mono font-bold text-white">12h 45m</td>
-                      <td className="p-4 font-mono text-amber-400">24h 00m</td>
-                      <td className="p-4 text-right">
-                        <button className="text-slate-500 hover:text-white transition-colors text-xs font-medium uppercase tracking-wider">Sửa</button>
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-slate-800/20 transition-colors">
-                      <td className="p-4 font-mono text-cyan-400">TuringBot_02</td>
-                      <td className="p-4 font-mono text-slate-500">********</td>
-                      <td className="p-4">
-                        <span className="inline-flex items-center gap-1.5 text-xs text-amber-400 bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                          Đang kết nối lại...
-                        </span>
-                      </td>
-                      <td className="p-4 font-mono font-bold text-white">08h 20m</td>
-                      <td className="p-4 font-mono text-amber-400">12h 00m</td>
-                      <td className="p-4 text-right">
-                        <button className="text-slate-500 hover:text-white transition-colors text-xs font-medium uppercase tracking-wider">Sửa</button>
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-slate-800/20 transition-colors">
-                      <td className="p-4 font-mono text-slate-500">TuringBot_03</td>
-                      <td className="p-4 font-mono text-slate-500">********</td>
-                      <td className="p-4">
-                        <span className="inline-flex items-center gap-1.5 text-xs text-slate-400 bg-slate-500/10 px-2 py-1 rounded border border-slate-500/20">
-                          <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
-                          Nghỉ ngơi
-                        </span>
-                      </td>
-                      <td className="p-4 font-mono font-bold text-slate-500">00h 00m</td>
-                      <td className="p-4 font-mono text-amber-400">48h 00m</td>
-                      <td className="p-4 text-right">
-                        <button className="text-slate-500 hover:text-white transition-colors text-xs font-medium uppercase tracking-wider">Sửa</button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
