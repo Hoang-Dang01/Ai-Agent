@@ -15,10 +15,15 @@
 │   ├── agent-runtime/   # [LÕI HOST RUNTIME CORE - C# .NET 9] Hệ điều hành tác nhân (Agent OS)
 │   │   └── src/          # Thư mục bọc mã nguồn chính của solution C#
 │   │       ├── OfflineAgent.Core/ # Lõi logic tương tác Windows
-│   │       │   ├── Tools/        # Hệ thống công cụ vật lý (OpenApplication, Click, TypeText)
-│   │       │   ├── ToolRegistry/ # Danh mục công cụ chuẩn hóa (ToolCatalog.cs)
-│   │       │   ├── WorldState/   # Cảm biến trạng thái môi trường (WorldStateEngine.cs)
+│   │       │   ├── Automation/   # Bộ điều khiển FlaUI tương tác UI Windows
+│   │       │   ├── Events/       # Telemetry Event Bus phát sự kiện nội bộ
+│   │       │   ├── Plugins/      # Chứa định nghĩa AgentContext và SalesPlugin
+│   │       │   ├── Reflection/   # Bộ thẩm định Critic & Replanner chẩn đoán sửa lỗi
+│   │       │   ├── Runtime/      # Bộ điều phối Workflow DAG, Goal & Checkpoints
 │   │       │   ├── Security/     # Bộ kiểm duyệt đặc quyền (CapabilitySecurity.cs)
+│   │       │   ├── Storage/      # Lưu trữ Artifacts vật lý (PNG/XML) ra ổ đĩa
+│   │       │   ├── ToolRegistry/ # Danh mục công cụ chuẩn hóa (ToolCatalog.cs)
+│   │       │   ├── Tools/        # Hệ thống công cụ vật lý (OpenApplication, Click, TypeText)
 │   │       │   └── Vision/       # Nhúng mô hình thị giác cục bộ (LocalVisionModel)
 │   │       ├── OfflineAgent.UI/   # Giao diện WPF điều hành tại máy trạm
 │   │       └── OfflineAgent.sln
@@ -31,7 +36,7 @@
 │   │       ├── middlewares/  # auth.middleware.ts, rateLimiter.middleware.ts
 │   │       ├── queue/        # connection.ts, taskQueue.ts, taskWorker.ts (BullMQ)
 │   │       ├── services/     # db.service.ts, world-state.service.ts (quản lý trạng thái môi trường)
-│   │       └── types/        # shared-types.ts (bản sao cục bộ contract)
+│   │       └── types/        # shared-types.ts (bản sao cục bộ contract để decoupling build layer lúc dev)
 │   │
 │   ├── backend-ai/      # [DỊCH VỤ NHẬN THỨC - Python FastAPI] Động cơ AI kép
 │   │   └── app/          # Thư mục bọc mã nguồn chính FastAPI
