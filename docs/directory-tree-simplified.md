@@ -45,8 +45,10 @@
 │   │
 │   └── frontend/        # [CONTROL DECK UI - Next.js 15] Giao diện buồng lái quan sát & can thiệp
 │       └── src/
-│           ├── components/rag/   # Monitor RAG, so sánh phiên bản tài liệu
-│           └── components/agent/ # Giám sát World State, Task Graph, Logs, HITL Approval
+│           ├── components/dashboard/ # Giám sát World State, Task Graph, Logs, HITL Gate
+│           ├── components/vault/     # Giám sát kho tri thức RAG và so sánh đối chiếu tài liệu
+│           ├── components/model-lab/ # Thử nghiệm Qwen ONNX, verifier cục bộ
+│           └── components/ui/        # Các thành phần giao diện dùng chung (buttons, inputs...)
 │
 ├── packages/            # [TẦNG CHIA SẺ DỮ LIỆU & HỢP ĐỒNG - DRY]
 │   │
