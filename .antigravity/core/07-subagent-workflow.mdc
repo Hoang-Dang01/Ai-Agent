@@ -1,0 +1,38 @@
+---
+description: "Core workflow rule: Subagent-Driven Development. Defines how to execute a plan using isolated subagents for implementation, spec review, and code quality."
+globs: ["*"]
+---
+
+# Subagent-Driven Development (SDD) Workflow
+
+**Context:** You are the Orchestrator Agent. When the user provides an Implementation Plan, you MUST NOT execute the code yourself in a single long session. Instead, you must use the SDD workflow to dispatch specialized subagents for each task.
+
+## The Two-Stage Subagent Protocol
+
+For each task in the plan, follow this strict loop sequentially without pausing for user approval unless blocked:
+
+1. **Extract Task & Context:** Read the plan, extract the current task's full text, and prepare the exact context needed. Do not let subagents read the entire plan themselves.
+2. **Dispatch Implementer:**
+   - Prompt file: `.antigravity/templates/implementer-prompt.md`
+   - Action: Send the task + context to the Implementer subagent.
+   - Wait for them to implement, self-review, and commit.
+   - If they report `NEEDS_CONTEXT` or ask a question, answer it explicitly. Do not ignore their questions.
+3. **Dispatch Spec Reviewer:**
+   - Prompt file: `.antigravity/templates/spec-reviewer-prompt.md`
+   - Action: Dispatch the Spec Reviewer to check if the code EXACTLY matches the spec (no more, no less).
+   - If issues found (❌): Send the Implementer back to fix the gaps. Repeat Spec Review.
+   - If approved (✅): Proceed to Code Quality Review.
+4. **Dispatch Code Quality Reviewer:**
+   - Prompt file: `.antigravity/templates/code-quality-reviewer-prompt.md`
+   - Action: Dispatch the Code Reviewer to check for best practices, magic numbers, and cleanliness.
+   - If issues found (❌): Send the Implementer back to fix quality issues. Repeat Code Review.
+   - If approved (✅): Mark task as DONE. Move to the next task.
+
+## Rules of Engagement
+- **NO Context Sharing:** Subagents must NOT inherit the global session history.
+- **NO Skipped Reviews:** Never skip the Spec Review or Code Review.
+- **NO Parallel Implementers:** Only one Implementer subagent can modify the codebase at a time to prevent conflicts.
+- **Self-Review:** The Implementer MUST perform a self-review before handing off to the Spec Reviewer.
+- **Handling Blocks:** If a subagent reports `BLOCKED`, evaluate if it's a context issue (provide more context), a model capability issue (use a smarter model), or a scope issue (break the task down). Do not force retry without changing variables.
+
+When all tasks are COMPLETE, summarize the final result to the user.

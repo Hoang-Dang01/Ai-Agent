@@ -59,3 +59,25 @@ File này lưu lại lịch sử thay đổi của dự án. Không chỉ ghi L�
   - *Lý do (Why):* Lên thiết kế lõi cho Phase 04 tập trung vào: Shared Contracts (DRY), Prisma Database, Queue System (BullMQ), và Real-time WebSockets. Chuyển đổi trạng thái từ "Infra skeleton" sang "AI Operating Platform".
 - **Documentation Sync:** Cập nhật `README.md` và `docs/directory-tree-simplified.md` với sơ đồ Monorepo mới nhất (bao gồm `infra`, `docker`, `packages`).
   - *Lý do (Why):* Giữ cho Second Brain luôn đồng bộ với thực tế Codebase. Đảm bảo Dev mới clone về biết gõ lệnh Docker thay vì cài tay.
+
+### Vision Agent Research & BA Specification (Phase 04 Addendum) - 27-05-2026
+- **Added:** Tài liệu Đặc tả Yêu cầu Nghiệp vụ (BRD) tại `docs/vault/ba_report_local_agent.md` cho Local Vision-Based Computer Use Agent ("OpenClaw").
+  - *Lý do (Why):* Trước khi tiến hành viết code logic điều khiển (PyAutoGUI) và thị giác (YOLOv8), cần định nghĩa rõ ranh giới nghiệp vụ (Business Rules), hạn mức tài chính, cơ chế an toàn dừng khẩn cấp (Fail-Safe), và các kịch bản kiểm thử UAT để đảm bảo hệ thống an toàn 100% khi chạy On-Premise trên máy trạm Legion R9000P và tương tác với các API cơ sở dữ liệu nội bộ Medstand.
+
+### Tích hợp Lõi Nhận Thức Xác Định (Deterministic Cognitive Runtime - Phase 05 Kickoff) - 01-06-2026
+- **Added:** Thư mục cấu hình tác nhân `.agent/` từ `prompt_sample` chứa các lớp định nghĩa tác nhân (`agents/`), nhân vật (`kernel/`), cấu hình dự án (`project/`), và lớp trạng thái (`runtime/`).
+  - *Lý do (Why):* Định hình hành vi và ranh giới hoạt động của tác nhân trong IDE (ví dụ: các luật `cognitive-laws`, `manifest` của từng vai trò) một cách rõ ràng và kiểm soát được thay vì để tác nhân tự do suy luận bừa bãi.
+- **Merged:** Tích hợp 6 định luật nhận thức bất biến (6 Immutable Laws) của Lõi Nhận Thức Xác Định vào file `AGENTS.md` ở thư mục gốc.
+  - *Lý do (Why):* Đảm bảo tính nhất quán tuyệt đối giữa Đạo luật vận hành Antigravity (Operating Doctrine) và các định luật nhận thức xác định (Deterministic Cognitive Laws) tại thời điểm thực thi.
+
+### Triển khai Hoàn Tất Phase 04: AI Operating Platform (Orchestrator & Database) - 01-06-2026
+- **Added:** Gói kiểu dữ liệu dùng chung `packages/shared-types` và bản sao cục bộ `apps/orchestrator/src/types/shared-types.ts`.
+  - *Lý do (Why):* Định hình hợp đồng dữ liệu chuẩn hóa (User, Goal, Task, Tool, World State) đồng nhất xuyên suốt Monorepo.
+- **Added:** Khởi tạo cấu hình và bộ ghi log chuyên dụng `apps/orchestrator/src/config/env.ts` và `logger.ts` sử dụng `pino` và `dotenv`.
+  - *Lý do (Why):* Tăng cường tính năng tự quan sát (Observability) và kiểm duyệt chặt chẽ tính sẵn sàng của tài nguyên hệ thống khi khởi động.
+- **Added:** Thiết kế Schema dữ liệu `prisma/schema.prisma` và dịch vụ `src/services/db.service.ts`.
+  - *Lý do (Why):* Cung cấp lõi dữ liệu cho kiến trúc Goal-driven với khả năng mô hình hóa Đồ thị Đồ tác vụ (DAG Task Graph) và kích hoạt tự động phần mở rộng `pgvector` phục vụ RAG.
+- **Added:** Tích hợp hàng đợi xử lý tác vụ bất đồng bộ `src/queue/taskQueue.ts`, `connection.ts` và worker `taskWorker.ts` sử dụng BullMQ và Redis.
+  - *Lý do (Why):* Cho phép thực thi các tác vụ nặng (như mở ứng dụng, tương tác UI, chụp ảnh màn hình) ở chế độ ngầm và cập nhật trạng thái chi tiết của từng lớp nhận thức.
+- **Added:** Thiết lập middleware bảo mật `auth.middleware.ts`, `rateLimiter.middleware.ts` và tái cấu trúc `server.ts` tích hợp Socket.io.
+  - *Lý do (Why):* Bảo vệ API chống spam bằng bộ giới hạn tần suất dựa trên Redis, xác thực bằng JWT Bearer, và truyền phát log thời gian thực về Dashboard phục vụ quan sát.

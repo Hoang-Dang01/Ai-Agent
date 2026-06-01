@@ -1,15 +1,31 @@
 ---
-description: Runtime cognition laws, execution lifecycles, and self-correction mechanics.
-globs: "*"
+description: "Runtime cognition laws, execution lifecycles, and self-correction mechanics."
+globs: ["*"]
 ---
 # CORE 04: EXECUTION & RUNTIME COGNITION LAW
 
-## 1. THE EXECUTION LIFECYCLE
-* **Plan Before Act:** Agents MUST NOT start mutating code immediately. They MUST read the relevant context, propose a brief logical plan, and then execute.
-* **Verify Before Write:** Before mutating a file or database, verify the current state of that resource. Do not blind-write.
-* **Self-Check Before Complete:** After execution, an Agent MUST explicitly verify its own work (e.g., check for syntax errors, run test suites) before marking the task `COMPLETED` or handing off to QA.
+This is the Master Execution Flow for the Cognitive Agent OS. All tasks must adhere to this unified pipeline to prevent context bloat, hallucination, and regressions.
 
-## 2. RESILIENCE & FAILURE ESCALATION
-* **Retry Strategy:** If an action fails, analyze the explicit error log. Do not blindly retry the exact same action. Mutate the approach or escalate.
-* **Confidence Thresholds:** If an agent's internal confidence drops below safe thresholds (e.g., encountering heavily undocumented APIs or conflicting schemas), it MUST halt and escalate to `APPROVAL_PENDING`.
-* **Dependency Validation:** Never execute downstream logic if the upstream dependency (e.g., an API endpoint, a DB schema) is unverified or currently failing.
+## 1. THE UNIFIED PIPELINE (PLAN -> DISPATCH -> DEBUG)
+
+**PHASE 1: PLANNING (Mandatory)**
+- Before mutating any code, you MUST generate a formal implementation plan.
+- Follow the strict rules in `09-planning-protocol.mdc`. Break the feature down into micro-steps following TDD.
+- Never write business logic directly in the first response. Produce the plan, save it, and present the Execution Handoff options to the User.
+
+**PHASE 2: DISPATCHING (Execution)**
+Once the plan is approved, do NOT execute the entire plan inline in a single long session.
+- Evaluate the tasks: Are there multiple independent tasks or unrelated test failures?
+  - **YES:** Dispatch parallel subagents following `08-parallel-dispatch.mdc` to save time.
+  - **NO:** Dispatch sequential subagents using the 2-stage QA review following `07-subagent-workflow.mdc`.
+- **Your Role:** You act as the Orchestrator. Provide exact, isolated context to your subagents via the templates in `.antigravity/templates/`.
+
+**PHASE 3: DEBUGGING & RESILIENCE**
+If a subagent gets stuck (`BLOCKED`), a test fails, or the app crashes:
+- STOP. Do not blindly retry, and forbid subagents from "shotgun debugging".
+- Enforce the scientific method outlined in `10-systematic-debugging.mdc` (Gather telemetry -> Formulate Hypotheses -> Verify Read-Only -> Minimal Fix -> Revert if failed).
+
+## 2. STATE VERIFICATION & GUARDRAILS
+- **Verify Before Write:** Before dispatching an implementer, ensure you have verified the current state of the target files via `view_file` or `grep_search`.
+- **Dependency Validation:** Never execute downstream logic if the upstream dependency (e.g., an API endpoint, a DB schema) is unverified or currently failing.
+- **Circuit Breaker:** If subagents repeatedly fail or loop on the exact same error 3 times, HALT execution immediately. Aggregate the error logs and escalate to the User for manual intervention.

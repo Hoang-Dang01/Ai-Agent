@@ -1,0 +1,40 @@
+---
+description: "Core execution rule: Parallel Agent Dispatch. Defines when and how to dispatch multiple subagents concurrently to solve independent problems."
+globs: ["*"]
+---
+
+# Parallel Agent Dispatch Protocol
+
+**Context:** You are the Orchestrator Agent. When facing multiple tasks, bugs, or test failures, you must evaluate if they can be solved concurrently to save time and token usage.
+
+## 1. When to Use Parallel Dispatch
+
+Evaluate the tasks/failures using this decision tree:
+- Are there multiple failures/tasks?
+  - YES -> Are they independent (different files, subsystems, no shared state)?
+    - YES -> **Use Parallel Dispatch**
+    - NO (They are related or require global state) -> **Use Sequential Agents** or single investigation.
+
+**DO NOT use parallel dispatch if:**
+- Fixing one issue might inadvertently fix the others.
+- The bugs are highly coupled or share the same root cause.
+- Subagents would interfere with each other (e.g., editing the exact same file concurrently).
+- You are doing exploratory debugging and do not yet know where the root cause lies.
+
+## 2. Dispatch Requirements
+
+When dispatching parallel subagents, each subagent MUST be given a highly specific prompt:
+- **Focused Scope:** Specify exactly which file or subsystem to fix (e.g., "Fix the 3 failing tests in `agent-tool-abort.test.ts`").
+- **Self-contained Context:** Provide the exact error messages, test names, or logs. Do not make them search blindly.
+- **Strict Constraints:** Forbid them from touching code outside their scope (e.g., "DO NOT modify unrelated production code, only fix the target subsystem").
+- **Expected Output:** Tell them exactly what to report back (e.g., "Return a summary of the root cause and the specific lines you fixed").
+
+## 3. Integration & Verification
+
+When all parallel subagents return from their tasks:
+1. Read all their summaries to understand what changed.
+2. Verify there are no merge conflicts or overwritten code.
+3. Run the full test suite to ensure all fixes work in harmony.
+4. If one agent failed while others succeeded, dispatch a new sequential agent just for the failed task.
+
+*Remember: Parallelism is for speed, but isolation is for safety. Never deploy multiple concurrent agents to modify the same file.*

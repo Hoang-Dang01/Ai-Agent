@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WorldStateFrame",
+  "description": "Standard schema for capturing Environment Layer frames (snapshots of host OS)",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "taskId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "toolExecutionId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "screenshotUrl": {
+      "type": "string",
+      "description": "Base64 encoded screenshot or path to image file"
+    },
+    "uiTreeXml": {
+      "type": "string",
+      "description": "XML representation of active window UI Tree (e.g. FlaUI Tree)"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": ["id", "timestamp"]
+}

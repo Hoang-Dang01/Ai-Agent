@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ToolExecution",
+  "description": "Standard schema for Execution Layer transactions detailing tool invocations",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "taskId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "toolName": {
+      "type": "string"
+    },
+    "args": {
+      "type": "object"
+    },
+    "result": {
+      "type": "object"
+    },
+    "riskLevel": {
+      "type": "string",
+      "enum": ["SAFE", "WARNING", "CRITICAL"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["SUCCESS", "FAILED"]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": ["id", "taskId", "toolName", "riskLevel", "status"]
+}

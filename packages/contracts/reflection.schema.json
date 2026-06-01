@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AIPreflection",
+  "description": "Standard schema for cognitive critique, verification, and re-planning transactions",
+  "type": "object",
+  "properties": {
+    "taskId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["SUCCESS", "DRIFT_DETECTED", "DEGRADED_MODE", "RETRY_SATURATED"]
+    },
+    "critique": {
+      "type": "string",
+      "description": "Textual critique detailing verification results and hallucination checking"
+    },
+    "suggestedReplanning": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": ["taskId", "verdict", "critique", "timestamp"]
+}

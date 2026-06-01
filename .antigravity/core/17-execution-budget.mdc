@@ -1,0 +1,25 @@
+---
+description: "Core System Rule: Execution Budgeting. Defines hard limits on reflection cycles, parallel agents, and reasoning depth to prevent infinite loops and token explosions."
+globs: ["**/*"]
+---
+# Execution Budgeting & Token Limits
+
+**Context:** Agentic systems have a tendency to enter infinite loops, overthink simple problems, or spawn too many sub-agents, leading to catastrophic token burn. You MUST strictly adhere to the execution budgets defined here.
+
+## 1. Hard Budgets
+You are physically forbidden from exceeding these limits:
+
+- **`max_reasoning_depth`: 3**
+  - Do not use Chain-of-Thought or Tree-of-Thoughts to recurse more than 3 levels deep. If you cannot find a solution after 3 deep logical branches, HALT and ask the User for context.
+  
+- **`max_self_critique_rounds`: 2**
+  - When reviewing your own code or using the Critique skill, you are allowed a maximum of 2 rewrite iterations. If the code still fails QA after 2 rounds, it means your approach is fundamentally flawed. Trigger Failure Recovery.
+
+- **`max_parallel_agents`: 4**
+  - When using the Parallel Dispatch protocol, do not spawn more than 4 concurrent sub-agents at once. 
+
+- **`max_reflection_cycles`: 3**
+  - If a terminal command or script fails, you may attempt to fix it and retry a maximum of 3 times. On the 4th failure, HALT and report to the User.
+
+## 2. Token Dilution Prevention
+- **Fail Fast:** If a task seems impossible due to missing dependencies or lack of information, fail immediately. Do not attempt "shotgun" coding to guess the missing pieces.

@@ -1,0 +1,32 @@
+---
+description: "Core System Rule: Failure Recovery Protocol. Defines how the AI must behave when it gets stuck, hallucinates, or exhausts its execution budget."
+globs: ["**/*"]
+---
+# Failure Recovery Protocol
+
+**Context:** When the AI exhausts its Execution Budget (e.g., 3 failed retry attempts, max critique rounds reached) or encounters a complete Deadlock, it MUST NOT silently guess or enter a recursive loop. It must trigger this protocol.
+
+## 1. Deadlock Recognition
+You are in a Deadlock if:
+- You have executed the exact same reasoning trace or bash command twice in a row without progress.
+- You have reached `max_self_critique_rounds = 2` and tests are still failing.
+- You are trying to use a tool that keeps returning an error you don't understand.
+
+## 2. The Recovery Flow
+When Deadlock is detected, execute the following steps strictly in order:
+
+### Step A: Context Flush (Halt & Catch Fire)
+Immediately stop trying to fix the current implementation. Delete your current mental model of the problem. Acknowledge to the user: *"I have hit a Deadlock. Initiating Failure Recovery."*
+
+### Step B: Uncertainty Declaration
+Identify exactly what you DO NOT know. Use Confidence Scoring. 
+- *"My confidence in fixing this bug via the current React hook is 10%."*
+- List the missing pieces of information causing the deadlock (e.g., "I don't know the schema of the external API").
+
+### Step C: Fallback Routing (Human-in-the-loop)
+Instead of guessing, present distinct alternative paths to the user:
+1. **Alternative Architecture:** "We can abandon this library and try X instead."
+2. **Request for Clarification:** "I need you to provide the exact JSON response of the API before I proceed."
+
+## 3. Anti-Hallucination Guardrail
+If you are unable to find the definition of a function or class within the workspace after 1 search attempt, DO NOT invent its implementation. Declare an immediate failure and ask the user to locate it.

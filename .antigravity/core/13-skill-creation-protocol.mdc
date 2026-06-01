@@ -1,0 +1,43 @@
+---
+description: "Core engineering rule: Skill Creation & Iteration Protocol. Defines the full workflow for interviewing, drafting, testing, evaluating, and optimizing new AI skills."
+globs: ["**/*.md", "**/*.mdc"]
+---
+# Skill Creation & Iteration Protocol
+
+**Context:** Creating a new skill is not just writing a markdown file. It is a rigorous, iterative process of drafting, quantitative testing, human evaluation, and trigger optimization. Whenever you are tasked with creating or improving a skill, you MUST follow this workflow.
+
+## 1. Interview & Intent Capture
+Do not start writing the skill immediately. First, extract intent:
+- **Goal:** What should this skill enable the AI to do?
+- **Triggers:** What specific user phrases, file types, or contexts should trigger it?
+- **Format:** What is the exact expected output format?
+- **Test Cases:** Proactively ask the user for edge cases, dependencies, and example inputs.
+
+## 2. Drafting & Progressive Disclosure
+Break the skill down into a directory: `SKILL.mdc` (main instructions, < 500 lines), `references/` (for large docs), and `scripts/` (for deterministic Python/Node tasks).
+- **The "Pushy" Description:** AI models tend to "undertrigger" skills. To combat this, your `description` in the YAML frontmatter MUST be aggressive.
+  - *Weak:* "How to build a dashboard."
+  - *Strong:* "How to build a dashboard. Make sure to use this skill whenever the user mentions dashboards, data visualization, internal metrics, or wants to display company data, even if they don't explicitly ask for a dashboard."
+- **Writing Style:** Use imperative form. Explain the *why* behind rules instead of just yelling `MUST` or `ALWAYS`. A model with theory of mind performs better when it understands the underlying reason.
+
+## 3. The Iteration & Eval Loop
+Never assume a skill works perfectly on the first draft.
+1. **Draft Test Cases:** Come up with 2-3 realistic prompts (casual, messy, like a real user would type) and save them to `evals/evals.json`. Show them to the user for approval.
+2. **Parallel Runs:** Spawn two subagents for each test case simultaneously:
+   - *With-skill run:* The agent executing the prompt with the new skill.
+   - *Baseline run:* The agent executing the prompt without the skill (or using the old version).
+3. **Draft Assertions:** While the runs execute, write objective, verifiable assertions (e.g., "Output contains a valid JSON block").
+4. **Human Review:** Do not evaluate the results yourself exclusively. You MUST present the outputs and benchmark data to the User so they can provide qualitative feedback.
+5. **Iterate (Generalize, don't overfit):** Read the transcripts. If the user complains about an issue, do not just add a narrow, fiddly rule for that specific example. Generalize the fix. If subagents keep struggling with the same deterministic logic, write a Python utility script in `scripts/` and have the skill call it instead of relying on LLM generation.
+
+## 4. Description Optimization (Anti-Undertriggering)
+After the skill logic is finalized, you must bulletproof its trigger mechanism:
+1. **Generate 20 Eval Queries:** 10 `should_trigger` (true) and 10 `should_not_trigger` (false).
+   - *True cases:* Must be realistic, messy, with typos, implicit requests, and varying lengths.
+   - *False cases:* Must be "near-misses" (adjacent domains where a naive keyword match would trigger, but shouldn't).
+2. **Review:** Show these 20 queries to the user for approval.
+3. **Refine:** Evaluate the skill description against these queries. If the AI fails to trigger on the `true` queries, rewrite the description to catch them.
+
+## 5. The Principle of Lack of Surprise
+- A skill's contents MUST NOT surprise the user. It must do exactly what the description says.
+- Reject any requests to create skills that facilitate unauthorized access, data exfiltration, or malicious exploits.

@@ -1,86 +1,79 @@
-# LỘ TRÌNH 60 NGÀY KỸ SƯ AI (AI-GIA-SƯ PROJECT)
+# LỘ TRÌNH 60 NGÀY KỸ SƯ AI AGENT (AI AGENT ENGINEER ROADMAP)
 
-## 📅 THÁNG 1: XÂY DỰNG NỀN TẢNG (THE FOUNDATION)
+## 📅 THÁNG 1: HOST RUNTIME & SYSTEMS ENGINEERING (Hạ Tầng Hệ Thống)
 
-### Tuần 1: Làm chủ Python & Tư duy lập trình
-- **Ngày 1**: Cài đặt môi trường (Miniconda, VS Code/Antigravity). Tạo Repo Git đầu tiên cho dự án "AI-Gia-Su".
-- **Ngày 2**: Biến và Kiểu dữ liệu. Thử thách: Viết script tính điểm trung bình môn học tại UTH.
-- **Ngày 3**: List & Dictionary. Đây là "nguyên liệu" để lưu trữ kiến thức cho Bot.
-- **Ngày 4**: Câu lệnh điều kiện (If/Else) và Vòng lặp (For/While).
-- **Ngày 5**: Viết Hàm (Functions) và Module. Đóng gói các tính năng nhỏ của Bot thành hàm.
-- **Ngày 6**: Xử lý lỗi (Try/Except). Đảm bảo Bot không "văng" khi người dùng nhập sai.
-- **Ngày 7**: Project 1: Viết script tự động đọc tất cả file `.md` trong thư mục `docs/` và đếm số từ.
+### Tuần 1: C# (.NET 9) & Thực thi Vật lý (OS Automation)
+- **Ngày 1**: Cài đặt môi trường (VS Code, .NET 9 SDK, SQLite/PostgreSQL local). Thiết lập Repo Git đầu tiên cho dự án "Agent-Runtime".
+- **Ngày 2**: Syntax C# cơ bản, Class, Interface và Dependency Injection. Tạo interface `ITool` chuẩn hóa.
+- **Ngày 3**: Tự động hóa UI chuẩn Windows bằng **FlaUI.UIA3**. Truy cập Automation Tree và tìm kiếm phần tử bằng ID/Name.
+- **Ngày 4**: Lập kịch bản Click và Nhập liệu mô phỏng hành vi tự nhiên (Natural Typing Speed, Bezier Curves).
+- **Ngày 5**: Xây dựng **Capability Security Guard** kiểm duyệt đặc quyền của Agent trước khi gọi tool (Access Control).
+- **Ngày 6**: WebView2 Automation cơ bản: Tương tác với Chromium nhúng trong Windows.
+- **Ngày 7**: **Project 1:** Viết single-file `.exe` WPF C# App tự động mở Notepad, nhập văn bản "Hello World" và lưu file bằng FlaUI.
 
-### Tuần 2: Xử lý dữ liệu & Chuẩn bị cho RAG
-- **Ngày 8**: Làm việc với File (Đọc/Ghi txt, json). Lưu lịch sử chat của Bot vào file JSON.
-- **Ngày 9**: List Comprehension & Lambda. Giúp code Python gọn và "pro" hơn.
-- **Ngày 10**: Thư viện `os` và `pathlib`. Quản lý cấu trúc thư mục dự án tự động.
-- **Ngày 11**: Regular Expression (Regex). Dùng để làm sạch văn bản trước khi nạp vào AI.
-- **Ngày 12**: Tìm hiểu JSON & API cơ bản. Thử gọi một API thời tiết đơn giản.
-- **Ngày 13**: Asyncio cơ bản. Hiểu cách Bot xử lý nhiều yêu cầu cùng lúc.
-- **Ngày 14**: Project 2: Xây dựng bộ lọc tài liệu: Tự động di chuyển file vào các thư mục `Toan/`, `Python/` dựa trên từ khóa.
+### Tuần 2: Backend Orchestrator & API Gateway (Node.js TS & Redis)
+- **Ngày 8**: TypeScript nâng cao và thiết lập dự án Node.js với Express.
+- **Ngày 9**: Cài đặt và cấu hình **Redis** local làm cache ngữ cảnh hội thoại.
+- **Ngày 10**: Tích hợp **BullMQ** và `ioredis`. Khởi tạo hàng đợi tác vụ bất đồng bộ `ai-tasks`.
+- **Ngày 11**: Viết Worker lắng nghe BullMQ, cập nhật trạng thái tác vụ (`PENDING` $\rightarrow$ `PROCESSING` $\rightarrow$ `COMPLETED`).
+- **Ngày 12**: Tích hợp **Socket.io** truyền phát log tiến trình (Thought Stream) thời gian thực về Frontend.
+- **Ngày 13**: Thiết lập bộ giới hạn tần suất API (Rate Limiter) dựa trên Redis.
+- **Ngày 14**: **Project 2:** Xây dựng server Gateway nhận yêu cầu từ client, đẩy vào BullMQ và phát tín hiệu progress qua Socket.io.
 
-### Tuần 3: Đại số tuyến tính (Cách AI nhìn thế giới)
-- **Ngày 15**: Vector: Định nghĩa và các phép toán cơ bản.
-- **Ngày 16**: Ma trận (Matrix): Cộng, trừ và chuyển vị ma trận.
-- **Ngày 17**: Phép nhân ma trận (Matrix Multiplication). Đây là phép toán quan trọng nhất trong AI.
-- **Ngày 18**: Dot Product và Cosine Similarity. Ứng dụng: So sánh độ giống nhau giữa 2 câu văn.
-- **Ngày 19**: Ma trận đơn vị và Ma trận nghịch đảo.
-- **Ngày 20**: Hệ cơ sở và Phép biến đổi tuyến tính.
-- **Ngày 21**: Tổng kết tuần bằng cách dùng thư viện NumPy để thực hiện lại các phép toán trên.
+### Tuần 3: Dữ liệu & Tri thức cục bộ (PostgreSQL & Vector DB)
+- **Ngày 15**: Thiết lập CSDL PostgreSQL và cài đặt phần mở rộng `pgvector`.
+- **Ngày 16**: Cấu hình **Prisma Client** (CommonJS/TS) kết nối tới Postgres.
+- **Ngày 17**: Thiết kế Schema CSDL lưu vết 4 lớp nhận thức: `UserGoal` $\rightarrow$ `AITask` (DAG) $\rightarrow$ `ToolExecution` $\rightarrow$ `WorldStateFrame`.
+- **Ngày 18**: Tìm hiểu cơ bản về Embeddings Model và Vector Database (**Qdrant** / FAISS).
+- **Ngày 19**: Thực hiện tìm kiếm tương đồng vector (Similarity Search) lấy Top K tài liệu liên quan.
+- **Ngày 20**: Viết hàm RAG cơ bản: Gom Context kết quả RAG ghép vào Prompt.
+- **Ngày 21**: **Project 3:** Xây dựng module CRUD tài liệu và tự động sinh vector lưu vào Qdrant/pgvector.
 
-### Tuần 4: Giải tích & Xác suất (Cách AI học tập)
-- **Ngày 22**: Đạo hàm (Derivatives): Tốc độ thay đổi của hàm số.
-- **Ngày 23**: Đạo hàm riêng và Gradient.
-- **Ngày 24**: Thuật toán Gradient Descent: Cách AI tìm ra đáp án đúng nhất.
-- **Ngày 25**: Xác suất cơ bản: Biến ngẫu nhiên và các kiểu phân phối dữ liệu.
-- **Ngày 26**: Định lý Bayes: Nền tảng của việc dự đoán thông tin.
-- **Ngày 27**: Thống kê mô tả (Mean, Median, Standard Deviation) để hiểu độ lệch của dữ liệu.
-- **Ngày 28**: Dùng con Bot hiện tại, yêu cầu nó giải thích lại 1 khái niệm toán khó nhất trong tháng. Nếu ông hiểu, ông đã thắng!
-
----
-
-## 📅 THÁNG 2: KỸ THUẬT & TRIỂN KHAI (THE ENGINEERING)
-
-### Tuần 5: NumPy & Pandas (Phù thủy dữ liệu)
-- **Ngày 29**: NumPy Arrays: Khởi tạo, Broadcasting và tính toán vector hóa.
-- **Ngày 30**: Slicing & Masking dữ liệu cực nhanh với NumPy.
-- **Ngày 31**: Pandas DataFrame: Cách AI quản lý dữ liệu giống như Excel.
-- **Ngày 32**: Làm sạch dữ liệu: Xử lý giá trị trống (Missing data) và dữ liệu trùng.
-- **Ngày 33**: Gom nhóm và biến đổi dữ liệu (Groupby & Pivot).
-- **Ngày 34**: Thống kê nhanh dữ liệu học tập bằng Pandas.
-- **Ngày 35**: Thực hành: Dùng Pandas phân tích file lịch sử chat của Bot để xem ông thường hỏi về chủ đề nào nhất.
-
-### Tuần 6: Trực quan hóa & Thu thập dữ liệu
-- **Ngày 36**: Matplotlib cơ bản: Vẽ biểu đồ đường, cột, tròn.
-- **Ngày 37**: Seaborn: Vẽ biểu đồ phân phối dữ liệu chuyên nghiệp.
-- **Ngày 38**: Trực quan hóa các Vector dữ liệu trong không gian.
-- **Ngày 39**: Web Scraping cơ bản với BeautifulSoup/Playwright.
-- **Ngày 40**: Tự động hóa việc lấy tài liệu từ các trang blog AI uy tín.
-- **Ngày 41**: Xử lý văn bản thô từ web về dạng Markdown sạch.
-- **Ngày 42**: Project 3: Xây dựng công cụ tự động cập nhật tin tức AI mỗi sáng cho con Bot.
-
-### Tuần 7: MLOps & Công cụ triển khai
-- **Ngày 43**: Làm chủ Git/GitHub nâng cao (Branching, Merging).
-- **Ngày 44**: Môi trường ảo (Virtual Env) và Quản lý thư viện với `requirements.txt`.
-- **Ngày 45**: Docker cơ bản: Tạo Image đầu tiên cho con Bot.
-- **Ngày 46**: Docker Compose: Chạy cùng lúc Bot, Database và n8n.
-- **Ngày 47**: Cấu hình VPS: Trỏ Domain, cài đặt Nginx và SSL.
-- **Ngày 48**: CI/CD cơ bản: Cứ đẩy code lên GitHub là VPS tự cập nhật.
-- **Ngày 49**: Bảo mật cơ bản cho API của Bot.
-
-### Tuần 8: Machine Learning & Hoàn thiện dự án
-- **Ngày 50**: Scikit-learn: Bài toán Hồi quy (Dự đoán giá trị số).
-- **Ngày 51**: Bài toán Phân loại (Phân loại tài liệu học tập tự động).
-- **Ngày 52**: Đánh giá mô hình: Độ chính xác, Precision, Recall.
-- **Ngày 53**: Tích hợp RAG hoàn chỉnh: Kết nối Vector Database với con Bot.
-- **Ngày 54**: Tối ưu hóa UI/UX: Thiết kế giao diện Dark Mode tối giản cho Bot.
-- **Ngày 55**: Kiểm thử (Testing): Nhờ bạn bè dùng thử và tìm lỗi.
-- **Ngày 56 - 60**: Final Polish: Hoàn thiện tài liệu dự án, tối ưu tốc độ phản hồi và chính thức đưa "Gia sư AI" vào hoạt động 24/7.
+### Tuần 4: Lõi Nhận thức Python & FastAPI Gateway
+- **Ngày 22**: Cài đặt Python 3.11/3.12 sử dụng `uv` làm quản lý thư viện tốc độ cao.
+- **Ngày 23**: Viết Web API đầu tiên bằng **FastAPI**, xử lý các router Async.
+- **Ngày 24**: Nạp và chạy suy luận mô hình cục bộ nhẹ (như YOLOv8-UI hoặc Qwen-1.5B) bằng **ONNX Runtime** để định vị UI.
+- **Ngày 25**: Kết nối LLM cục bộ (Ollama) và API Cloud (OpenRouter).
+- **Ngày 26**: Viết parser phân tách đầu ra của LLM từ ngôn ngữ tự nhiên thành cấu trúc DAG JSON Task Graph.
+- **Ngày 27**: Đấu nối API nhận thức Python với Node.js API Gateway.
+- **Ngày 28**: **Project 4:** Tích hợp bộ Planner Python nhận lệnh, phân rã thành DAG gửi về Node.js enqueuer.
 
 ---
 
-### 💡 Lời khuyên để không bỏ cuộc:
-- **Mỗi ngày 2 tiếng**: Đừng học dồn vào cuối tuần. AI cần sự thấm nhuần mỗi ngày.
-- **Học đến đâu, nạp đến đó**: Vừa học xong bài nào, ông hãy dùng con Bot để tóm tắt và lưu vào Knowledge Base của nó ngay.
-- **Cấu hình máy mạnh**: Tận dụng tối đa con Legion R9000P của ông để chạy Docker và training các mô hình nhỏ tại máy local trước khi đẩy lên VPS.
+## 📅 THÁNG 2: COGNITIVE ORCHESTRATION & OBSERVABILITY (Nhận Thức & Giám Sát)
+
+### Tuần 5: LangGraph (Đồ thị trạng thái & Nhận thức)
+- **Ngày 29**: Nguyên lý đồ thị trạng thái: Nodes, Edges, State và Reducers trong **LangGraph**.
+- **Ngày 30**: Xây dựng cấu trúc Graph lập kế hoạch: Planner $\rightarrow$ Executor $\rightarrow$ Critic (Self-Correction Loop).
+- **Ngày 31**: Tích hợp cơ chế tạm dừng đợi duyệt **Human-in-the-Loop (HITL)** trong LangGraph.
+- **Ngày 32**: Xử lý nén trạng thái (State Compression) và lưu vết bộ nhớ cuộc hội thoại (Memory System).
+- **Ngày 33**: Viết cơ chế tự sửa lỗi (Self-Correction) khi một bước hành động UI bị lỗi (Ví dụ: click trượt).
+- **Ngày 34**: Tối ưu hóa bộ compiler lắp ráp System Prompt dựa trên ngữ cảnh lấy từ RAG.
+- **Ngày 35**: **Project 5:** Xây dựng đồ thị Agent tự sửa lỗi đăng nhập ERP cơ bản bằng LangGraph.
+
+### Tuần 6: Giám sát toàn diện & Giảm thiểu sai lệch (Observability & Telemetry)
+- **Ngày 36**: Tích hợp **OpenTelemetry** thu thập traces giữa các phân hệ đa ngôn ngữ (C# $\rightarrow$ TS $\rightarrow$ Python).
+- **Ngày 37**: Cài đặt và cấu hình **Prometheus** để đo lường metrics thời gian thực.
+- **Ngày 38**: Thiết lập dashboard **Grafana** hiển thị biểu đồ CPU, RAM, Redis queue size và độ trễ LLM inference.
+- **Ngày 39**: Tích hợp **Langfuse** hoặc Helicone để theo dõi chất lượng sinh văn bản và traces gọi API LLM.
+- **Ngày 40**: Xử lý logic Circuit Breaker: Dừng khẩn cấp sau 3 lần retry thất bại.
+- **Ngày 41**: Viết logs tự động ghi nhận tỷ lệ Hallucination (AI nói nhảm) của Planner.
+- **Ngày 42**: **Project 6:** Thiết lập Dashboard Grafana hoàn chỉnh hiển thị Metrics và Traces của một luồng xử lý Agent bất đồng bộ.
+
+### Tuần 7: Dashboard Hợp nhất & Cinematic UI/UX (Frontend Deck)
+- **Ngày 43**: Khởi tạo Next.js 15 App Router kết hợp Tailwind CSS v4 và Shadcn UI.
+- **Ngày 44**: Áp dụng triết lý Glassmorphism (blur, border-white/10) xuyên suốt các trang Dashboard.
+- **Ngày 45**: Xây dựng `LiveThoughtStream` hiển thị telemetry log chạy real-time qua Socket.io.
+- **Ngày 46**: Vẽ đồ thị topo mạng RAG (`RAGMonitoring`) sử dụng Framer Motion và SVG.
+- **Ngày 47**: Thiết kế widget giám sát đồ thị tác vụ `MasterPlanWidget` hiển thị trạng thái động của DAG.
+- **Ngày 48**: Tích hợp nút bấm HITL Approval (Duyệt/Từ chối) và nút dừng khẩn cấp (Kill Switch) kết nối tới C# Client.
+- **Ngày 49**: **Project 7:** Hoàn thiện giao diện Dashboard buồng lái (Control Deck) cinematic đẹp mắt.
+
+### Tuần 8: Tích hợp Thực nghiệm & Nghiệm thu
+- **Ngày 50**: Đấu nối toàn bộ chu trình: User Goal $\rightarrow$ Planner (Python) $\rightarrow$ TS Gateway $\rightarrow$ C# Host Runtime $\rightarrow$ Windows OS.
+- **Ngày 51**: Thử nghiệm Agent chạy offline hoàn toàn trong mạng nội bộ.
+- **Ngày 52**: Tạo kịch bản kiểm thử UAT 1: Đối soát & Điền điểm tự động trên ERP Medstand giả lập.
+- **Ngày 53**: Tạo kịch bản kiểm thử UAT 2: Xử lý sự cố nút bấm bị ẩn/thay đổi vị trí.
+- **Ngày 54**: Đo lường và đánh giá hiệu năng (TTFT, VRAM consumption, CPU load).
+- **Ngày 55**: Tiến hành kiểm thử chịu tải (Load Testing) xem hệ thống chịu được bao nhiêu tiến trình song song.
+- **Ngày 56 - 60**: Đóng gói Single-File Offline Installer cho Windows trạm Legion R9000P. Viết báo cáo UAT hoàn tất dự án.

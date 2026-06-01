@@ -1,0 +1,19 @@
+{
+  "id": "sales-csharp",
+  "name": "Sales Department [C# Executable]",
+  "description": "T\u1EF1 \u0111\u1ED9ng h\u00F3a \u0111\u1ED1i so\u00E1t \u0111i\u1EC3m t\u00EDch l\u0169y kh\u00E1ch h\u00E0ng, c\u00F4ng n\u1EE3 chi ti\u1EBFt v\u00E0 ch\u00EDnh s\u00E1ch gi\u00E1 Medstand.",
+  "version": "1.2.0",
+  "icon": "sales",
+  "commands": [
+    {
+      "name": "/sales:sync",
+      "description": "Ch\u1EA1y file SQL truy v\u1EA5n \u0111i\u1EC3m t\u00EDch l\u0169y Medstand v\u00E0 t\u1EF1 \u0111\u1ED9ng \u0111\u1ED3ng b\u1ED9 l\u00EAn c\u1ED5ng \u0111\u1ED1i t\u00E1c.",
+      "prompt": "H\u00E3y ki\u1EC3m tra th\u00F4ng tin \u0111\u1ED1i so\u00E1t \u0111i\u1EC3m t\u1EEB SQL v\u00E0 \u0111\u1EC1 xu\u1EA5t c\u1EA5u h\u00ECnh \u0111\u1ED3ng b\u1ED9 d\u1EEF li\u1EC7u chu\u1EA9n."
+    },
+    {
+      "name": "/sales:tax-lookup",
+      "description": "Tra c\u1EE9u th\u00F4ng tin doanh nghi\u1EC7p qua m\u00E3 s\u1ED1 thu\u1EBF b\u1EB1ng c\u00E1ch t\u1EF1 \u0111\u1ED9ng c\u00E0o d\u1EEF li\u1EC7u t\u1EEB masothue.com v\u00E0 ph\u00E2n t\u00EDch b\u1EB1ng AI.",
+      "prompt": "H\u00E3y ph\u00E2n t\u00EDch th\u00F4ng tin doanh nghi\u1EC7p c\u00E0o \u0111\u01B0\u1EE3c,vi\u1EBFt th\u00E0nh b\u00E1o c\u00E1o, ch\u1EC9 c\u1EA7n t\u00EAn ,m\u00E3 s\u1ED1 thu\u1EBF , t\u00ECnh tr\u1EA1ng ho\u1EA1t \u0111\u1ED9ng "
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+# Dotnet (C#) Build Outputs
+[Bb]in/
+[Oo]bj/
+[Tt]emp/
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+*.pidb
+*.suo
+*.suo.tmp
+
+# Python files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.venv/
+venv/
+ENV/
+env/
+
+# Office Word Lock files
+~$*.docx
+~$*.doc
+~$*.xlsx
+~$*.xls
+
+# OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store

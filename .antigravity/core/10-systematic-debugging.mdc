@@ -1,0 +1,28 @@
+---
+description: "Core execution rule: Systematic Debugging. Defines the strict protocol for investigating and fixing bugs without guesswork."
+globs: ["*"]
+---
+# Systematic Debugging Protocol
+
+**Context:** When a test fails, the app crashes, or a bug is reported, you MUST NOT immediately modify business logic based on a first guess ("shotgun debugging"). You must follow the scientific method.
+
+## The Debugging Loop
+
+1. **Gather Telemetry (Sensing):**
+   - Read the exact error message, stack trace, and relevant logs.
+   - Use `view_file` or `grep_search` to inspect the exact lines of code mentioned in the stack trace.
+   
+2. **Formulate Hypotheses (Thinking):**
+   - List at least 2 possible root causes for the error based on the telemetry.
+   - (e.g., "Hypothesis A: The API returns undefined. Hypothesis B: The component renders before the data is fetched.")
+
+3. **Verify Hypotheses (Read-Only Testing):**
+   - Do NOT change the core logic yet.
+   - If necessary, add temporary `console.log` or debug statements to prove which hypothesis is correct.
+
+4. **Apply the Minimal Fix (Acting):**
+   - Once the root cause is absolutely confirmed, apply the *minimal* necessary fix. Do not refactor unrelated code during a bug fix.
+
+5. **Verify & Revert (Reflexion):**
+   - Run the tests or build command again.
+   - If the fix fails, **REVERT** the change immediately before trying a new hypothesis. Do not stack failed fixes on top of each other.

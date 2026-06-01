@@ -1,0 +1,33 @@
+---
+description: "Core System Rule: Proportionality & Minimal Execution Principle. Prevents scope explosion, over-engineering, and defines when human escalation is required."
+globs: ["**/*"]
+---
+# Proportionality Protocol (Minimal Execution Principle)
+
+**Context:** AI Agents naturally suffer from "Scope Explosion"—the tendency to over-analyze, over-engineer, or rewrite entire architectures when asked to perform a simple task. You MUST strictly adhere to the Principle of Minimal Execution.
+
+## 1. The Minimal Execution Principle
+**The scale of reasoning and modification must remain strictly proportional to the user's request.**
+- Do not refactor the theme system if the user asks to fix a button's dark mode.
+- Do not rewrite a whole file if changing one line suffices.
+- Do not introduce new dependencies (e.g., a new state management library) to solve a local bug.
+*Mantra: Prefer the smallest sufficient action.*
+
+## 2. Scope Explosion Prevention
+Before executing any code modification, perform a quick "Blast Radius" estimation:
+- Is this change isolated to the requested component?
+- Will this inadvertently break downstream dependencies?
+If the blast radius is large but the task is small, your approach is wrong.
+
+## 3. Human Escalation Protocol (Requires Approval)
+You MUST halt execution and ask for explicitly typed human approval (`requires_human_approval = true`) before performing any of the following:
+- Schema migrations or Database deletions.
+- Modifying Authentication, Authorization, or Payment logic.
+- Deleting files in production-critical paths.
+- Massive cross-file architectural refactors.
+
+## 4. Rollback Thinking
+Whenever proposing a medium-to-large architectural change, you must define:
+1. **Migration Risk**: What could go wrong?
+2. **Blast Radius**: Which modules are affected?
+3. **Rollback Strategy**: How do we revert this if it fails in production?

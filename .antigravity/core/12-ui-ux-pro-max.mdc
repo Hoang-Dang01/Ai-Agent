@@ -1,0 +1,101 @@
+---
+description: "Core design rule: Comprehensive UI/UX Pro Max Intelligence. Includes all 10 domains of design rules (Accessibility, Touch, Layout, Animation, Forms, Nav) and the exhaustive Pre-Delivery Checklist."
+globs: ["apps/frontend/**/*.{ts,tsx,css,scss}", "**/*.{ts,tsx,css}"]
+---
+# UI/UX Pro Max - Design Intelligence (Comprehensive)
+
+**Context:** You are operating as a Principal UI/UX Engineer. When working on frontend UI (Web or Mobile), you MUST apply these exhaustive rules across all 10 design domains. 
+
+## 1. Accessibility (CRITICAL)
+- **color-contrast:** Minimum 4.5:1 ratio for normal text (large text 3:1).
+- **focus-states:** Visible focus rings on interactive elements (2-4px). Never remove focus rings.
+- **aria-labels & alt-text:** Use `aria-label` for icon-only buttons. All images must have descriptive `alt` text.
+- **keyboard-nav:** Tab order must match visual order. Full keyboard support.
+- **color-not-only:** Don't convey info by color alone (always add an icon or text).
+- **dynamic-type:** Support system text scaling; avoid truncation as text grows.
+
+## 2. Touch & Interaction (CRITICAL)
+- **touch-target-size:** Min 44x44pt (Apple) / 48x48dp (Material). Extend hit area beyond visual bounds if needed.
+- **hover-vs-tap:** Use click/tap for primary interactions; don't rely on hover alone (breaks mobile).
+- **loading-buttons:** Disable button during async operations; show spinner or progress.
+- **press-feedback:** Visual feedback on press (ripple/highlight) must happen within 100ms.
+- **safe-area-awareness:** Keep primary touch targets away from notch, Dynamic Island, and screen edges.
+- **no-precision-required:** Avoid requiring pixel-perfect taps on small icons or thin edges.
+
+## 3. Performance (HIGH)
+- **image-optimization:** Use WebP/AVIF, responsive images, and lazy load non-critical assets.
+- **image-dimension:** Declare width/height or use `aspect-ratio` to prevent layout shift (CLS < 0.1).
+- **font-loading:** Use `font-display: swap` to avoid FOIT. Preload only critical fonts.
+- **virtualize-lists:** Virtualize lists with 50+ items to improve memory efficiency and scroll performance.
+- **main-thread-budget:** Keep per-frame work under ~16ms for 60fps.
+
+## 4. Style Selection (HIGH)
+- **no-emoji-icons:** Use vector SVG icons (Heroicons, Lucide), NEVER use emojis (🎨 🚀) as icons.
+- **elevation-consistent:** Use a consistent elevation/shadow scale for cards, sheets, modals. Avoid random shadow values.
+- **dark-mode-pairing:** Design light/dark variants together. Dark mode uses desaturated tonal variants, not inverted colors.
+- **blur-purpose:** Use blur to indicate background dismissal (modals), not just as decoration.
+
+## 5. Layout & Responsive (HIGH)
+- **mobile-first:** Design mobile-first, then scale up to tablet and desktop.
+- **horizontal-scroll:** No horizontal scroll on mobile; ensure content fits viewport width.
+- **readable-font-size:** Minimum 16px body text on mobile (avoids iOS auto-zoom on inputs).
+- **spacing-scale:** Use 4pt/8dp incremental spacing system.
+- **z-index-management:** Define layered z-index scale (e.g. 0 / 10 / 20 / 40 / 100 / 1000).
+
+## 6. Typography & Color (MEDIUM)
+- **line-height:** Use 1.5-1.75 for body text.
+- **color-semantic:** Define semantic color tokens (primary, secondary, error) not raw hex in components.
+- **number-tabular:** Use tabular/monospaced figures for data columns, prices, and timers to prevent layout shift.
+- **truncation-strategy:** Prefer wrapping over truncation. When truncating, use ellipsis and provide a tooltip.
+
+## 7. Animation (MEDIUM)
+- **duration-timing:** Use 150-300ms for micro-interactions; complex transitions ≤400ms.
+- **transform-performance:** Use transform/opacity only; avoid animating width/height/top/left (causes reflows).
+- **motion-meaning:** Every animation must express a cause-effect relationship, not just be decorative.
+- **interruptible:** Animations must be interruptible; user tap/gesture cancels in-progress animation immediately.
+- **scale-feedback:** Subtle scale (0.95-1.05) on press for tappable cards/buttons; restore on release.
+
+## 8. Forms & Feedback (MEDIUM)
+- **input-labels:** Visible label per input (not placeholder-only).
+- **inline-validation:** Validate on blur (not keystroke); show error only after user finishes input.
+- **error-recovery:** Error messages must state the cause and include a clear recovery path.
+- **destructive-emphasis:** Destructive actions use semantic danger color (red) and are visually separated.
+- **progressive-disclosure:** Reveal complex options progressively; don't overwhelm users upfront.
+
+## 9. Navigation Patterns (HIGH)
+- **bottom-nav-limit:** Bottom navigation max 5 items; use labels with icons.
+- **back-behavior:** Back navigation must be predictable and preserve scroll/state.
+- **deep-linking:** All key screens must be reachable via deep link / URL.
+- **modal-escape:** Modals and sheets must offer a clear close/dismiss affordance.
+
+## 10. Charts & Data (LOW)
+- **chart-type:** Match chart type to data type (trend → line, comparison → bar, proportion → pie).
+- **empty-data-state:** Show meaningful empty state when no data exists, not a blank chart.
+- **tooltip-on-interact:** Provide tooltips/data labels on hover or tap showing exact values.
+- **loading-chart:** Use skeleton or shimmer placeholder while chart data loads.
+
+---
+
+## Pre-Delivery Checklist
+Before delivering UI code, the Code Quality Reviewer MUST verify these items:
+
+### Visual Quality
+- [ ] No emojis used as icons (use SVG instead).
+- [ ] Pressed-state visuals do not shift layout bounds or cause jitter.
+- [ ] Semantic theme tokens are used consistently (no ad-hoc per-screen hardcoded colors).
+
+### Interaction
+- [ ] All tappable elements provide clear pressed feedback (ripple/opacity/elevation).
+- [ ] Touch targets meet minimum size (>=44x44pt iOS, >=48x48dp Android).
+- [ ] Micro-interaction timing stays in the 150-300ms range with native-feeling easing.
+- [ ] Disabled states are visually clear and non-interactive.
+
+### Light/Dark Mode
+- [ ] Primary text contrast >=4.5:1 in both light and dark mode.
+- [ ] Both themes are explicitly tested (not inferred from a single theme).
+
+### Layout
+- [ ] Safe areas are respected for headers, tab bars, and bottom CTA bars.
+- [ ] 4/8dp spacing rhythm is maintained across component, section, and page levels.
+
+*Violating any of these rules means the PR is rejected.*

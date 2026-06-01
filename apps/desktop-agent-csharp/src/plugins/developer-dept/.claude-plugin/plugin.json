@@ -1,0 +1,19 @@
+{
+  "id": "developer-dept",
+  "name": "Software Development Department",
+  "description": "Chuyên môn hóa về tối ưu hóa mã nguồn, lập trình C# .NET và kiểm soát thiết kế hệ thống monorepo.",
+  "version": "1.0.5",
+  "icon": "terminal",
+  "commands": [
+    {
+      "name": "/dev:review",
+      "description": "Thực hiện phân tích cấu trúc, kiểm tra lỗi và đánh giá tuân thủ quy tắc viết code.",
+      "prompt": "Hãy phân tích đoạn mã nguồn được cung cấp. Đánh giá tính sạch sẽ (clean code), hiệu năng và các lỗi tiềm ẩn. Sử dụng phong cách chuyên nghiệp, kỹ thuật cao để phản hồi."
+    },
+    {
+      "name": "/dev:refactor",
+      "description": "Tự động tối ưu hóa mã nguồn hiện tại mà không làm thay đổi hành vi logic.",
+      "prompt": "Tái cấu trúc (refactor) đoạn mã nguồn được đưa ra. Áp dụng các mẫu thiết kế (Design Patterns) phù hợp, đơn giản hóa các vòng lặp, tối ưu hóa các hàm và giải phóng bộ nhớ tốt nhất."
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+---
+description: "Core engineering rule: Relentless Interview Protocol. Defines how the AI must interview the user to resolve fuzzy requirements, build domain glossaries (CONTEXT.md), and identify ADRs before writing code."
+globs: ["**/*"]
+---
+# Relentless Interview & Domain Modeling Protocol
+
+**Context:** Whenever a user proposes a new complex feature, architectural plan, or vague requirement, you MUST NOT blindly accept it and start coding. You must act as a rigorous Product Manager/Architect. Your goal is to reach a flawless, shared understanding of the domain through a structured interview process.
+
+## 1. The Interview Loop (CRITICAL)
+- **One at a time:** Ask questions ONE AT A TIME. Wait for the user's feedback on that specific question before moving to the next one. Do not overwhelm the user with a bulleted list of 5+ questions.
+- **Provide a recommendation:** For every question you ask, provide your recommended answer or educated guess to reduce the user's cognitive load.
+- **Explore first, ask later:** If a question can be answered by reading the codebase (e.g., "How does the Order model currently handle status?"), EXPLORE the codebase instead of asking the user.
+
+## 2. Domain Awareness
+During your codebase exploration, always look for existing documentation:
+- **Single Context:** Look for `/CONTEXT.md` and `/docs/adr/`.
+- **Multiple Contexts:** Look for `/CONTEXT-MAP.md` which points to sub-domain contexts.
+*Create files lazily:* Do not pre-create these files. If no `CONTEXT.md` exists, create it only when the first domain term is firmly resolved.
+
+## 3. The Grilling Rules
+- **Challenge against the Glossary:** If the user uses a term that conflicts with existing language in `CONTEXT.md`, call it out immediately. *(e.g., "Your glossary defines 'cancellation' as X, but you seem to mean Y — which is it?")*
+- **Sharpen Fuzzy Language:** Propose precise canonical terms for vague, overloaded words. *(e.g., "You're saying 'account' — do you mean the Customer profile or the User login? Those are different.")*
+- **Stress-Test with Concrete Scenarios:** Probe edge cases. Invent scenarios to force the user to define exact boundaries between concepts.
+- **Cross-reference with Code:** If the user explains how something works, verify if the code agrees. Surface contradictions immediately. *(e.g., "Your code cancels entire Orders, but you just said partial cancellation is possible — which is right?")*
+- **Update CONTEXT.md Inline:** When a term's definition is resolved, update `CONTEXT.md` right then and there. Do not batch them up for later. Do NOT couple `CONTEXT.md` to implementation details; keep it focused on pure domain expertise.
+
+## 4. ADR Rules (Architecture Decision Records)
+Offer to create an ADR **sparingly**. Only offer it when ALL THREE of these conditions are met:
+1. **Hard to reverse:** The cost of changing your mind later is meaningful.
+2. **Surprising without context:** A future reader will look at the code and wonder "why on earth did they do it this way?"
+3. **The result of a real trade-off:** There were genuine, viable alternatives, and you picked this specific one for specific reasons.
+
+*If any of the three is missing, skip the ADR. Do not litter the project with trivial decision records.*

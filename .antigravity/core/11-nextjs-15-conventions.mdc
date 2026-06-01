@@ -1,0 +1,47 @@
+---
+description: "Core engineering rule: Next.js 15+ Best Practices and App Router Conventions. Enforces RSC boundaries, async APIs, and optimized frontend data patterns."
+globs: ["apps/frontend/**/*.{ts,tsx}", "**/*.{ts,tsx}"]
+---
+# Next.js 15+ App Router Conventions
+
+**Context:** The frontend of this project is built on Next.js 15+ using the App Router. Any Implementer or Code Quality Reviewer modifying frontend code MUST strictly adhere to these conventions to prevent hydration errors, data waterfalls, and boundary violations.
+
+## 1. RSC Boundaries & Directives
+- **Server Components by Default:** All components are React Server Components (RSC) unless explicitly marked with `'use client'`.
+- **Invalid Patterns:** 
+  - NEVER mark an async component with `'use client'`. Client components cannot be async.
+  - NEVER pass non-serializable props (e.g., functions, class instances) across the Server-Client boundary.
+- **Directives:**
+  - `'use client'`: Only for interactivity (useState, useEffect, event handlers, browser APIs). Push client components as low in the tree as possible.
+  - `'use server'`: Only for Server Actions.
+  - `'use cache'`: Next.js 15 caching directive.
+
+## 2. Async API Patterns (Next.js 15+ Breaking Change)
+In Next.js 15+, dynamic runtime APIs are completely asynchronous. You MUST `await` them.
+- `params` and `searchParams` in `page.tsx` and `layout.tsx` are Promises.
+- `cookies()` and `headers()` are Promises.
+*Example:* `const { slug } = await params;`
+
+## 3. Data Fetching & Waterfalls
+- **Avoid Waterfalls:** Use `Promise.all()` to fetch independent data concurrently in Server Components.
+- **Streaming:** Wrap slow data fetches in `<Suspense>` boundaries to stream the UI rather than blocking the entire page render.
+- **Mutations:** Prefer Server Actions over traditional API Routes for form submissions and database mutations.
+
+## 4. Routing & Error Handling
+- **Route Handlers:** API routes (`route.ts`) must not exist in the exact same directory level as a `page.tsx` if they both use the `GET` method (causes a conflict).
+- **Error UIs:** Use `error.tsx` (must be a Client Component) and `not-found.tsx` for granular error handling.
+- **Specific Errors:** Use `redirect()`, `notFound()`, `forbidden()`, and `unauthorized()` properly. Use `unstable_rethrow` inside `catch` blocks if you are catching Next.js internal errors.
+
+## 5. UI Optimizations
+- **next/image:** ALWAYS use `<Image />` instead of `<img>`. Provide dimensions or `fill`. Use the `priority` attribute for the Largest Contentful Paint (LCP) image.
+- **next/font:** Always use `next/font` for loading fonts to prevent Layout Shifts.
+- **next/script:** Use for third-party scripts. Inline scripts MUST have an `id` attribute.
+
+## 6. Suspense Boundary Constraints (Hydration)
+- **CSR Bailout:** Using hooks like `useSearchParams()` or `usePathname()` inside a Client Component forces the entire route to render on the client UNLESS the component is wrapped in a `<Suspense>` boundary. You MUST wrap them.
+- **Hydration Errors:** Common causes include rendering invalid HTML (e.g., `<div>` inside `<p>`), mismatching dates generated on server vs client, and using `window` before mounting.
+
+## 7. Advanced Routing (Parallel & Intercepting)
+- Use `@folder` for Parallel Routes and `(.)folder` for Intercepting Routes (commonly used for modal dialogs over the current page context).
+- Always provide a `default.tsx` for parallel routes to prevent 404s when the state resets.
+- Close intercepting route modals via `router.back()`.

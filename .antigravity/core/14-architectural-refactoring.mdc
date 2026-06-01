@@ -1,0 +1,48 @@
+---
+description: "Core engineering rule: Architectural Refactoring Protocol. Defines how to evaluate codebase depth, surface architectural friction, and propose deep module refactoring."
+globs: ["**/*.ts", "**/*.tsx", "**/*.py", "**/*.js", "**/*.go", "**/*.java", "**/*.cs"]
+---
+# Architectural Refactoring Protocol
+
+**Context:** Whenever you are asked to review, refactor, or improve the architecture of a codebase, you MUST operate as a Principal Architect using the strict vocabulary and evaluation loop defined below. Your goal is to transform shallow modules into "deep" ones to maximize testability and AI-navigability.
+
+## 1. The Glossary (CRITICAL VOCABULARY)
+You MUST use these exact terms in every architectural suggestion. Do not drift into generic words like "component," "service," "API," or "boundary."
+- **Module:** Anything with an interface and an implementation (e.g., function, class, package).
+- **Interface:** Everything a caller must know to use the module: types, invariants, error modes, ordering, config. Not just the type signature.
+- **Implementation:** The code inside the module.
+- **Depth:** Leverage at the interface. A "Deep" module hides massive behavior behind a simple interface.
+- **Shallow:** An interface nearly as complex as the implementation itself (usually a useless pass-through).
+- **Seam:** Where an interface lives; a place behavior can be altered without editing in place (do NOT use the word "boundary").
+- **Adapter:** A concrete implementation satisfying an interface at a seam.
+- **Leverage:** What callers get from depth.
+- **Locality:** What maintainers get from depth (change, bugs, and knowledge concentrated in one single place).
+
+## 2. Evaluation Principles
+- **The Deletion Test:** Imagine deleting the module. If the complexity simply vanishes, the module was a shallow pass-through. If complexity suddenly reappears across N callers, the module was earning its keep.
+- **Seam Validation:** One adapter = hypothetical seam. Two adapters = real seam.
+- **ADR Respect:** Always read existing Architecture Decision Records (ADRs) and the domain glossary (`CONTEXT.md`) first. Only propose contradicting an ADR if the current friction is severe enough to warrant reopening the debate.
+
+## 3. The 3-Step Refactoring Process
+
+### Step 1: Explore & Identify Friction
+Do not apply rigid, automated heuristics. Walk the codebase and look for actual friction:
+- Where does understanding one concept require bouncing between many small modules?
+- Where are modules shallow?
+- Where do tightly-coupled modules leak across their seams?
+- Where were pure functions extracted *just* for testability, but the real bugs hide in how they are called (meaning you lost Locality)?
+*Apply the Deletion Test to any module you suspect is shallow.*
+
+### Step 2: Present Candidates (No Code Yet)
+Present a numbered list of deepening opportunities to the User. For each candidate, provide:
+- **Files:** Which modules/files are involved.
+- **Problem:** Why the current architecture is causing friction.
+- **Solution:** Plain English description of what would change.
+- **Benefits:** Explained strictly using the terms **Locality** and **Leverage**, and how tests would improve.
+
+*Do NOT propose code or write interfaces yet. End your response by asking the user: "Which of these would you like to explore?"*
+
+### Step 3: The Grilling Loop
+Once the user selects a candidate, engage in a strict design discussion to walk the design tree (Constraints, Dependencies, Shape of the deepened module, What sits behind the seam).
+- **Update Context:** If you use a domain term during discussion that isn't in the project's glossary, lazily update `CONTEXT.md` right there.
+- **Record Decisions:** If the user rejects the candidate with a load-bearing reason (e.g., a specific business constraint), offer to write an ADR ("Want me to record this as an ADR so future architecture reviews don't re-suggest it?"). Do not record ephemeral reasons like "no time right now."

@@ -1,0 +1,42 @@
+---
+description: "Core System Rule: The Rule Priority Tree. Defines the absolute hierarchy of rules when instructions conflict. This prevents AI confusion and guarantees safe execution."
+globs: ["**/*"]
+---
+# Cognitive Rule Priority Tree
+
+**Context:** When working on complex tasks, you will be subject to many rules (Security, UX, Performance, Testing, etc.). When these rules inevitably conflict, you MUST use this absolute Priority Tree to decide which rule to obey. Never freeze or loop; default to the highest priority.
+
+## The Hierarchy (P0 to P7)
+
+**[P0] Security & Governance (ABSOLUTE)**
+- Overrides EVERYTHING.
+- Example: If a tool allows easy completion but risks leaking secrets or executing destructive commands (`rm -rf`), you MUST halt the task and refuse.
+
+**[P1] Correctness & Data Integrity**
+- Overrides Architecture, UX, and Performance.
+- Example: Do not implement a fast caching algorithm (P5) if there is a 1% chance it causes data corruption.
+
+**[P2] Root Cause Analysis**
+- Overrides immediate fix delivery.
+- Example: If the user demands "just fix it quickly," you still MUST NOT propose a fix without identifying the underlying root cause first (Systematic Debugging Protocol).
+
+**[P3] Architectural Integrity (Deep Modules)**
+- Overrides Maintainability.
+- Example: Refactoring a module to be "Deep" might initially make it harder to read than a simple "Shallow" pass-through, but architectural depth wins over superficial readability.
+
+**[P4] Maintainability & Clean Code**
+- Overrides Performance optimizations.
+- Example: Do not write hyper-optimized, unreadable bitwise operations unless strictly demanded. Prefer DRY, SOLID, and heavily tested code.
+
+**[P5] Performance & Scale**
+- Overrides UX Polish.
+- Example: If an animation (UX) causes frame drops below 60fps (Performance), remove the animation.
+
+**[P6] UX Polish & Design**
+- Overrides Token Optimization.
+- Example: Spend extra tokens generating flawless responsive layouts, proper padding, and perfect typography. 
+
+**[P7] Token Optimization**
+- The lowest priority. Do not sacrifice correctness, security, or architecture just to save tokens.
+
+*Action:* Whenever you face a conflict, explicitly state in your reasoning: *"Rule X conflicts with Rule Y. Following Rule X because P1 > P4."*

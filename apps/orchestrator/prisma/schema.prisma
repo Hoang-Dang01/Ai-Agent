@@ -1,0 +1,94 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector]
+}
+
+model User {
+  id        String     @id @default(uuid())
+  email     String     @unique
+  password  String
+  sessions  Session[]
+  goals     UserGoal[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserGoal {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goal      String
+  status    String   // PENDING, ACTIVE, COMPLETED, FAILED
+  tasks     AITask[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AITask {
+  id               String            @id @default(uuid())
+  goalId           String
+  goal             UserGoal          @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  title            String
+  status           String            // PENDING, PROCESSING, COMPLETED, FAILED
+  payload          Json?             // Inputs/parameters
+  result           Json?             // Outputs
+  error            String?
+  toolExecutions   ToolExecution[]
+  worldStateFrames WorldStateFrame[]
+  
+  // self-relation for DAG dependencies
+  dependencies     AITask[]          @relation("TaskDependencies")
+  dependents       AITask[]          @relation("TaskDependencies")
+
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model ToolExecution {
+  id               String            @id @default(uuid())
+  taskId           String
+  task             AITask            @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  toolName         String
+  args             Json?
+  result           Json?
+  riskLevel        String            // SAFE, WARNING, CRITICAL
+  status           String            // SUCCESS, FAILED
+  worldStateFrames WorldStateFrame[]
+  createdAt        DateTime          @default(now())
+}
+
+model WorldStateFrame {
+  id              String         @id @default(uuid())
+  taskId          String?
+  task            AITask?        @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  toolExecutionId String?
+  toolExecution   ToolExecution? @relation(fields: [toolExecutionId], references: [id], onDelete: SetNull)
+  screenshotUrl   String?        // Base64 screenshot or file path
+  uiTreeXml       String?        // FlaUI environment UI tree XML
+  createdAt       DateTime       @default(now())
+}
+
+model Document {
+  id        String                 @id @default(uuid())
+  title     String
+  content   String
+  vector    Unsupported("vector")? // Supports generic pgvector column
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
+}
