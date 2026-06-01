@@ -1,6 +1,6 @@
-# 📂 CÂY THƯ MỤC KIẾN TRÚC MONOREPO (VIBE PLATFORM)
+# 📂 CÂY THƯ MỤC KIẾN TRÚC MONOREPO (AI OPERATING PLATFORM)
 
-Đây là bản đồ cấu trúc tiêu chuẩn cấp độ doanh nghiệp (Enterprise Offline Agent Architecture) được tối ưu hóa sau Phase 04.
+Đây là bản đồ cấu trúc tiêu chuẩn cấp độ doanh nghiệp (Enterprise AI Operating Platform) đạt chuẩn 10/10.
 
 ```text
 / Ai-Agent (Root)
@@ -12,18 +12,24 @@
 │
 ├── apps/                # [TẦNG MICROSERVICES & APPLICATIONS]
 │   │
-│   ├── desktop-agent-csharp/ # [LÕI HOST RUNTIME CORE - C# .NET 9] Trái tim thực thi
-│   │   ├── OfflineAgent.Core/ # AgentHost, ToolSystem, WorldState, CapabilitySecurity, FlaUI
-│   │   └── OfflineAgent.UI/   # Giao diện WPF điều hành tại máy trạm
+│   ├── agent-runtime/   # [LÕI HOST RUNTIME CORE - C# .NET 9] Hệ điều hành tác nhân (Agent OS)
+│   │   ├── OfflineAgent.Core/ # Lõi logic tương tác Windows
+│   │   │   ├── Tools/        # Hệ thống công cụ vật lý (OpenApplication, Click, TypeText)
+│   │   │   ├── ToolRegistry/ # Danh mục công cụ chuẩn hóa (ToolCatalog.cs)
+│   │   │   ├── WorldState/   # Cảm biến trạng thái môi trường (WorldStateEngine.cs)
+│   │   │   ├── Security/     # Bộ kiểm duyệt đặc quyền (CapabilitySecurity.cs)
+│   │   │   └── Vision/       # Nhúng mô hình thị giác cục bộ (LocalVisionModel)
+│   │   ├── OfflineAgent.UI/   # Giao diện WPF điều hành tại máy trạm
+│   │   └── OfflineAgent.sln
 │   │
-│   ├── orchestrator/    # [NHẠC TRƯỞNG ĐIỀU PHỐI - Node.js TS] API Gateway & Queue Manager
+│   ├── orchestrator/    # [NHẠC TRƯỞNG ĐIỀU PHỐI - Node.js TS] API Gateway & Hàng đợi
 │   │   ├── prisma/
 │   │   │   └── schema.prisma # Datasource PostgreSQL & pgvector, Model DAG Tasks, Goals
 │   │   └── src/
 │   │       ├── config/       # env.ts (strict config), logger.ts (pino)
 │   │       ├── middlewares/  # auth.middleware.ts, rateLimiter.middleware.ts
 │   │       ├── queue/        # connection.ts, taskQueue.ts, taskWorker.ts (BullMQ)
-│   │       ├── services/     # db.service.ts (Prisma Wrapper & Auto vector extension)
+│   │       ├── services/     # db.service.ts, world-state.service.ts (quản lý trạng thái môi trường)
 │   │       └── types/        # shared-types.ts (bản sao cục bộ contract)
 │   │
 │   ├── backend-ai/      # [DỊCH VỤ NHẬN THỨC - Python FastAPI] Động cơ AI kép
@@ -32,7 +38,10 @@
 │   │       ├── planner/      # Lập kế hoạch AI (Qwen ONNX / local LLM xuất DAG Task Graph)
 │   │       ├── memory/       # RAG pipeline, LangChain, pgvector, embeddings
 │   │       ├── vision/       # YOLOv8 UI, VLM Qwen2-VL phân tích ngữ cảnh hình ảnh
-│   │       └── reflection/   # Bộ đối chứng criticism/verification nhận thức
+│   │       └── reflection/   # Bộ đối chứng nhận thức
+│   │           ├── verifier/ # Rule-Based Verification (kiểm tra cứng cửa sổ, file, control)
+│   │           ├── critic/   # LLM-Based Diagnosis (chẩn đoán nguyên nhân thất bại)
+│   │           └── replanner/# Correction Logic (đề xuất sửa đổi kế hoạch)
 │   │
 │   └── frontend/        # [CONTROL DECK UI - Next.js 15] Giao diện buồng lái quan sát & can thiệp
 │       └── src/
@@ -41,7 +50,7 @@
 │
 ├── packages/            # [TẦNG CHIA SẺ DỮ LIỆU & HỢP ĐỒNG - DRY]
 │   │
-│   ├── contracts/       # [MỚI - POLYGLOT SCHEMAS] Schema JSON dùng chung đa ngôn ngữ
+│   ├── contracts/       # [POLYGLOT SCHEMAS] Schema JSON dùng chung đa ngôn ngữ
 │   │   ├── task.schema.json
 │   │   ├── world-state.schema.json
 │   │   ├── tool-call.schema.json
@@ -51,7 +60,7 @@
 │       ├── index.ts
 │       └── package.json
 │
-├── examples/            # [MỚI - AGENT IMPLEMENTATIONS] Các ứng dụng Agent chạy trên nền tảng
+├── solutions/           # [AGENT IMPLEMENTATIONS] Các ứng dụng Agent hoàn chỉnh chạy trên nền tảng
 │   ├── dino-cv-agent/   # Agent thị giác máy tính chơi game Dino
 │   └── minecraft-agent/ # Agent tự hành AFK / điều khiển trong game Minecraft
 │

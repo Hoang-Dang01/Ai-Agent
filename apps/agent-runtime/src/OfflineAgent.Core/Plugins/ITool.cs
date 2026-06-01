@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using OfflineAgent.Core.Security;
 
 namespace OfflineAgent.Core.Plugins
 {

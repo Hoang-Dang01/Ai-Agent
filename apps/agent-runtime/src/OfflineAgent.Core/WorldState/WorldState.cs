@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace OfflineAgent.Core.Plugins
+namespace OfflineAgent.Core.WorldState
 {
     public class GoalState
     {
