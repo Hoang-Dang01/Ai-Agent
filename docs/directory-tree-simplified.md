@@ -13,14 +13,15 @@
 ├── apps/                # [TẦNG MICROSERVICES & APPLICATIONS]
 │   │
 │   ├── agent-runtime/   # [LÕI HOST RUNTIME CORE - C# .NET 9] Hệ điều hành tác nhân (Agent OS)
-│   │   ├── OfflineAgent.Core/ # Lõi logic tương tác Windows
-│   │   │   ├── Tools/        # Hệ thống công cụ vật lý (OpenApplication, Click, TypeText)
-│   │   │   ├── ToolRegistry/ # Danh mục công cụ chuẩn hóa (ToolCatalog.cs)
-│   │   │   ├── WorldState/   # Cảm biến trạng thái môi trường (WorldStateEngine.cs)
-│   │   │   ├── Security/     # Bộ kiểm duyệt đặc quyền (CapabilitySecurity.cs)
-│   │   │   └── Vision/       # Nhúng mô hình thị giác cục bộ (LocalVisionModel)
-│   │   ├── OfflineAgent.UI/   # Giao diện WPF điều hành tại máy trạm
-│   │   └── OfflineAgent.sln
+│   │   └── src/          # Thư mục bọc mã nguồn chính của solution C#
+│   │       ├── OfflineAgent.Core/ # Lõi logic tương tác Windows
+│   │       │   ├── Tools/        # Hệ thống công cụ vật lý (OpenApplication, Click, TypeText)
+│   │       │   ├── ToolRegistry/ # Danh mục công cụ chuẩn hóa (ToolCatalog.cs)
+│   │       │   ├── WorldState/   # Cảm biến trạng thái môi trường (WorldStateEngine.cs)
+│   │       │   ├── Security/     # Bộ kiểm duyệt đặc quyền (CapabilitySecurity.cs)
+│   │       │   └── Vision/       # Nhúng mô hình thị giác cục bộ (LocalVisionModel)
+│   │       ├── OfflineAgent.UI/   # Giao diện WPF điều hành tại máy trạm
+│   │       └── OfflineAgent.sln
 │   │
 │   ├── orchestrator/    # [NHẠC TRƯỞNG ĐIỀU PHỐI - Node.js TS] API Gateway & Hàng đợi
 │   │   ├── prisma/
@@ -33,15 +34,14 @@
 │   │       └── types/        # shared-types.ts (bản sao cục bộ contract)
 │   │
 │   ├── backend-ai/      # [DỊCH VỤ NHẬN THỨC - Python FastAPI] Động cơ AI kép
-│   │   ├── main.py
-│   │   └── services/
-│   │       ├── planner/      # Lập kế hoạch AI (Qwen ONNX / local LLM xuất DAG Task Graph)
-│   │       ├── memory/       # RAG pipeline, LangChain, pgvector, embeddings
-│   │       ├── vision/       # YOLOv8 UI, VLM Qwen2-VL phân tích ngữ cảnh hình ảnh
-│   │       └── reflection/   # Bộ đối chứng nhận thức
-│   │           ├── verifier/ # Rule-Based Verification (kiểm tra cứng cửa sổ, file, control)
-│   │           ├── critic/   # LLM-Based Diagnosis (chẩn đoán nguyên nhân thất bại)
-│   │           └── replanner/# Correction Logic (đề xuất sửa đổi kế hoạch)
+│   │   └── app/          # Thư mục bọc mã nguồn chính FastAPI
+│   │       ├── main.py   # Tệp chạy chính cung cấp REST API cho Reflection
+│   │       ├── routers/  # Định tuyến Endpoints API (reflection.py)
+│   │       └── services/ # Các động cơ dịch vụ trí tuệ AI cục bộ
+│   │           ├── planner/      # Lập kế hoạch AI (Qwen ONNX / local LLM xuất DAG Task Graph)
+│   │           ├── memory/       # RAG pipeline, LangChain, pgvector, embeddings
+│   │           ├── vision/       # YOLOv8 UI, VLM Qwen2-VL phân tích ngữ cảnh hình ảnh
+│   │           └── reflection/   # Bộ đối chứng nhận thức (verifier, critic, replanner)
 │   │
 │   └── frontend/        # [CONTROL DECK UI - Next.js 15] Giao diện buồng lái quan sát & can thiệp
 │       └── src/
