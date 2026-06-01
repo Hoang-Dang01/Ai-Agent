@@ -21,6 +21,15 @@ namespace OfflineAgent.Core.WorldState
         }
 
         /// <summary>
+        /// Giải phóng (xóa) cache của UI Tree ngay lập tức để buộc quét lại trong chu kỳ quan sát tiếp theo.
+        /// </summary>
+        public void Invalidate()
+        {
+            _cachedUiTree = string.Empty;
+            _lastCacheTime = DateTime.MinValue;
+        }
+
+        /// <summary>
         /// Quét hệ thống hiện hành và trích xuất Frame trạng thái đầy đủ (WorldState Frame DTO).
         /// </summary>
         public WorldStateFrame CaptureStateFrame(string taskId, string toolExecutionId)
