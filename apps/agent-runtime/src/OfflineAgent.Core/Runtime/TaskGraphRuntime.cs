@@ -19,7 +19,10 @@ namespace OfflineAgent.Core.Runtime
         Failed,
         Retrying,
         Timeout,
-        Cancelled
+        Cancelled,
+        Blocked,
+        WaitingApproval,
+        Skipped
     }
 
     public class TaskNode
@@ -70,8 +73,33 @@ namespace OfflineAgent.Core.Runtime
             var executionOrder = SolveTopologicalSort();
             context.Logger("[Workflow Runtime] Thứ tự thực thi topo được xác lập thành công.");
 
+            // Kiểm tra xem có Checkpoint cũ để hồi phục hay không
+            string goalId = GoalManager.Instance.ActiveGoal?.GoalId ?? "default";
+            string goalText = GoalManager.Instance.ActiveGoal?.GoalText ?? string.Empty;
+            var savedCheckpoint = CheckpointManager.Instance.LoadCheckpoint(goalId);
+            if (savedCheckpoint != null)
+            {
+                context.Logger($"[Checkpoint Recovery] Phát hiện Checkpoint cũ! Đang khôi phục trạng thái cho {savedCheckpoint.Nodes.Count} node...");
+                foreach (var savedNode in savedCheckpoint.Nodes)
+                {
+                    var activeNode = _nodes.FirstOrDefault(n => n.Id == savedNode.Id);
+                    if (activeNode != null)
+                    {
+                        activeNode.State = savedNode.State;
+                        activeNode.RetryCount = savedNode.RetryCount;
+                    }
+                }
+            }
+
             foreach (var node in executionOrder)
             {
+                // Nếu node đã được đánh dấu hoàn thành từ Checkpoint cũ, ta có quyền bỏ qua (Skipped)
+                if (node.State == TaskState.Completed)
+                {
+                    context.Logger($"[Workflow Runtime] Node [{node.Id}] đã hoàn thành từ Checkpoint trước. Bỏ qua chạy lại.");
+                    continue;
+                }
+
                 context.Logger($"\n--------------------------------------------------");
                 context.Logger($"[Workflow Node] Bắt đầu xử lý Node [{node.Id}]: '{node.Name}'");
                 context.Logger($"--------------------------------------------------");
@@ -79,7 +107,7 @@ namespace OfflineAgent.Core.Runtime
                 // Kiểm tra xem các node phụ thuộc trước đó có hoàn thành hay không
                 if (node.DependsOn.Any(depId => _nodes.First(n => n.Id == depId).State != TaskState.Completed))
                 {
-                    context.Logger($"[Workflow Runtime] Bỏ qua Node [{node.Id}] vì các node phụ thuộc chưa hoàn thành.");
+                    context.Logger($"[Workflow Runtime] Đánh dấu Node [{node.Id}] là Bị hủy (Cancelled) vì phụ thuộc thất bại.");
                     node.State = TaskState.Cancelled;
                     continue;
                 }
@@ -110,7 +138,8 @@ namespace OfflineAgent.Core.Runtime
                     var authResult = await _securityGuard.AuthorizeToolExecutionAsync(tool, context);
                     if (!authResult.IsAuthorized)
                     {
-                        node.State = TaskState.Failed;
+                        // Đánh dấu Blocked (P1)
+                        node.State = TaskState.Blocked;
                         break;
                     }
 
@@ -164,7 +193,6 @@ namespace OfflineAgent.Core.Runtime
                     });
 
                     // 3. CACHE INVALIDATION
-                    // Giải phóng cache của UI Tree ngay lập tức sau khi tool thực thi xong để tránh đọc tree cũ
                     _stateEngine.Invalidate();
 
                     // Cập nhật WorldState thô ngay lập tức
@@ -185,7 +213,7 @@ namespace OfflineAgent.Core.Runtime
                     // Tách biệt Artifact Store vật lý (PNG/XML) ra khỏi RAM
                     string screenshotPath = ArtifactStore.Instance.SaveScreenshot(node.Id, Guid.NewGuid().ToString(), stateFrame.ScreenshotUrl);
                     string xmlPath = ArtifactStore.Instance.SaveUiTree(node.Id, stateFrame.UiTreeXml);
-                    ArtifactStore.Instance.SaveExecutionLog(node.Id, $"Hoàn thành bước. Screenshot lưu tại '{screenshotPath}', XML lưu tại '{xmlPath}'");
+                    ArtifactStore.Instance.SaveExecutionLog(node.Id, $"Hoàn thành bước. Screenshot: '{screenshotPath}', XML: '{xmlPath}'");
 
                     var afterState = new WorldState.WorldState
                     {
@@ -225,18 +253,36 @@ namespace OfflineAgent.Core.Runtime
 
                     context.Logger($"[Verifier Result] Success: {verification.Success}, Độ tin cậy: {verification.Confidence:P0}");
 
+                    // PERSISTENT EXECUTION JOURNAL (P1)
+                    // Ghi lại giao dịch chuẩn xác dạng JSONL
+                    ExecutionJournal.Instance.RecordEntry(new JournalEntry
+                    {
+                        GoalId = goalId,
+                        TaskId = node.Id,
+                        ToolName = node.ToolName,
+                        InputArgs = node.Arguments,
+                        OutputResult = toolResult.Output,
+                        Status = verification.Success ? "SUCCESS" : "FAILED",
+                        Timestamp = DateTime.Now
+                    });
+
                     if (verification.Success && verification.Confidence >= 0.7f)
                     {
                         nodeSucceeded = true;
                         node.State = TaskState.Completed;
                         _worldState.Execution.TaskHistory.Push(node.Name);
+
+                        // Lưu checkpoint lưu trữ tiến trình an toàn
+                        CheckpointManager.Instance.SaveCheckpoint(goalId, goalText, _nodes);
                     }
                     else
                     {
                         node.RetryCount++;
                         if (node.RetryCount > maxRetries)
                         {
-                            // Khởi chạy Human-In-The-Loop approval
+                            // Đánh dấu WaitingApproval (P1)
+                            node.State = TaskState.WaitingApproval;
+
                             EventBus.Instance.Publish(new AgentEvent
                             {
                                 Type = AgentEventType.ApprovalRequested,
@@ -252,16 +298,21 @@ namespace OfflineAgent.Core.Runtime
                                     context.Logger("[HITL] Đã phê duyệt hoàn thành thủ công.");
                                     nodeSucceeded = true;
                                     node.State = TaskState.Completed;
+                                    
+                                    // Lưu checkpoint sau khi được phê duyệt
+                                    CheckpointManager.Instance.SaveCheckpoint(goalId, goalText, _nodes);
                                 }
                                 else
                                 {
                                     node.State = TaskState.Failed;
+                                    CheckpointManager.Instance.SaveCheckpoint(goalId, goalText, _nodes);
                                     break;
                                 }
                             }
                             else
                             {
                                 node.State = TaskState.Failed;
+                                CheckpointManager.Instance.SaveCheckpoint(goalId, goalText, _nodes);
                                 break;
                             }
                         }
@@ -279,13 +330,15 @@ namespace OfflineAgent.Core.Runtime
                     }
                 }
 
-                if (node.State == TaskState.Failed || node.State == TaskState.Timeout)
+                if (node.State == TaskState.Failed || node.State == TaskState.Timeout || node.State == TaskState.Blocked)
                 {
                     context.Logger($"\n[Workflow Runtime] >>> TIẾN TRÌNH DAG THẤT BẠI TẠI NODE [{node.Id}]. DỪNG KHẨN CẤP <<<");
                     return false;
                 }
             }
 
+            // Xóa sạch Checkpoint sau khi quy trình DAG hoàn tất 100%
+            CheckpointManager.Instance.ClearCheckpoint(goalId);
             return true;
         }
 
