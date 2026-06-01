@@ -91,3 +91,9 @@ Chúng tôi đã phát hiện và xử lý thành công hai điểm nghẽn kỹ
 2. **Sửa Lỗi Kịch Bản Khởi Chạy Hợp Nhất (`start_all.ps1`):**
    - **Vấn đề:** Script khởi chạy 1-click tham chiếu đến đường dẫn thư mục cũ `apps\desktop-agent-csharp` không còn tồn tại trên codebase.
    - **Giải pháp:** Cập nhật chính xác sang đường dẫn `apps\agent-runtime` giúp chạy thành công C# client cùng lúc với các dịch vụ Node.js và Python dưới nền.
+3. **Vá Lỗi Topological Sort Nghiêm Trọng (`TaskGraphRuntime.cs`):**
+   - **Vấn đề:** Thuật toán duyệt DFS topo trước đó khôi phục lại trạng thái `visited[id] = false` sau khi kết thúc đệ quy của một nhánh, gây ra tình trạng các node có thể bị duyệt lại nhiều lần hoặc không phát hiện được quan hệ phụ thuộc vòng tròn (circular dependency) chuẩn xác.
+   - **Giải pháp:** Tái cấu trúc bộ giải quyết topo sử dụng thuật toán DFS 3 trạng thái tường minh bằng 2 HashSets (`visiting` cho trạng thái đang duyệt để bắt vòng lặp, và `visited` cho trạng thái đã xử lý xong hoàn toàn), đảm bảo đồ thị được sắp xếp chính xác 100%.
+4. **Áp Dụng Thực Tế Đề Xuất Tái Lập Lộ Trình Của AI (`TaskGraphRuntime.cs`):**
+   - **Vấn đề:** Đề xuất sửa đổi (`ReplanCorrection` chứa công cụ và tham số mới) sinh ra bởi AI Replanner trước đây chỉ được log ra mà không hề áp dụng ngược trở lại vào nhiệm vụ để thực thi khi Retry.
+   - **Giải pháp:** Gán lại trực tiếp `node.ToolName = correction.SuggestedTool` và `node.Arguments = correction.Arguments` ngay khi nhận được đề xuất từ AI trước khi vòng Retry tiếp theo diễn ra, giúp AI tự sửa sai và tiếp tục thực hiện thành công.

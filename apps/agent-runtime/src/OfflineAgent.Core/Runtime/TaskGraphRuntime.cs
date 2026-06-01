@@ -155,7 +155,7 @@ namespace OfflineAgent.Core.Runtime
                         Payload = new Dictionary<string, object> { { "Arguments", node.Arguments } }
                     });
 
-                    ToolResponse toolResult = null;
+                    ToolResponse toolResult = new ToolResponse { IsSuccess = false, Output = "Chưa thực thi." };
                     try
                     {
                         // Kích hoạt cơ chế Timeout bằng cách bọc Task.WhenAny
@@ -326,6 +326,13 @@ namespace OfflineAgent.Core.Runtime
                                 ToolCatalog.Instance.GetCatalogSchemaJson(),
                                 context
                             );
+
+                            if (correction != null && !string.IsNullOrEmpty(correction.SuggestedTool))
+                            {
+                                context.Logger($"[Workflow Runtime] [Replanner Application] AI de xuat tai lap ke hoach. Cap nhat cong cu sang '{correction.SuggestedTool}' voi tham so moi.");
+                                node.ToolName = correction.SuggestedTool;
+                                node.Arguments = correction.Arguments;
+                            }
                         }
                     }
                 }
@@ -357,40 +364,45 @@ namespace OfflineAgent.Core.Runtime
 
         /// <summary>
         /// Sắp xếp Topo giải quan hệ phụ thuộc để xác lập lộ trình thực thi đúng đắn nhất.
+        /// Sử dụng thuật toán DFS 3 trạng thái (Unvisited, Visiting, Visited) để phát hiện vòng lặp chuẩn xác.
         /// </summary>
         private List<TaskNode> SolveTopologicalSort()
         {
             var sorted = new List<TaskNode>();
-            var visited = new Dictionary<string, bool>();
+            var visiting = new HashSet<string>();
+            var visited = new HashSet<string>();
 
             foreach (var node in _nodes)
             {
-                VisitNode(node.Id, visited, sorted);
+                VisitNode(node.Id, visiting, visited, sorted);
             }
 
             return sorted;
         }
 
-        private void VisitNode(string id, Dictionary<string, bool> visited, List<TaskNode> sorted)
+        private void VisitNode(string id, HashSet<string> visiting, HashSet<string> visited, List<TaskNode> sorted)
         {
-            if (visited.TryGetValue(id, out var inProgress))
+            // Nếu node đã được xử lý xong hoàn toàn, bỏ qua để tránh trùng lặp
+            if (visited.Contains(id)) return;
+
+            // Nếu node đang nằm trong nhánh đệ quy hiện tại -> Phát hiện vòng lặp
+            if (visiting.Contains(id))
             {
-                if (inProgress)
-                {
-                    throw new InvalidOperationException("[Workflow Runtime] Phát hiện quan hệ phụ thuộc vòng tròn (Circular Dependency)!");
-                }
-                return;
+                throw new InvalidOperationException($"[Workflow Runtime] Phat hien quan he phu thuoc vong tron (Circular Dependency) lien quan den Node [{id}]!");
             }
 
-            visited[id] = true;
+            // Đánh dấu là đang thăm (Visiting)
+            visiting.Add(id);
 
             var node = _nodes.First(n => n.Id == id);
             foreach (var depId in node.DependsOn)
             {
-                VisitNode(depId, visited, sorted);
+                VisitNode(depId, visiting, visited, sorted);
             }
 
-            visited[id] = false;
+            // Đã xử lý xong: Chuyển từ Visiting sang Visited và thêm vào danh sách kết quả
+            visiting.Remove(id);
+            visited.Add(id);
             sorted.Add(node);
         }
     }
