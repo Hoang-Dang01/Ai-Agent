@@ -63,8 +63,7 @@
 │       └── package.json
 │
 ├── solutions/           # [AGENT IMPLEMENTATIONS] Các ứng dụng Agent hoàn chỉnh chạy trên nền tảng
-│   ├── dino-cv-agent/   # Agent thị giác máy tính chơi game Dino
-│   └── minecraft-agent/ # Agent tự hành AFK / điều khiển trong game Minecraft
+│   └── dino-cv-agent/   # Agent thị giác máy tính chơi game Dino
 │
 ├── infra/               # [HẠ TẦNG & GIÁM SÁT MẠNG]
 │   ├── nginx/           # Reverse Proxy config (API Gateway, Rate Limit, CORS)

@@ -76,7 +76,6 @@ $verificationTargets = @(
     # Cac giai phap Agent va thanh phan khac
     @{ Path = "solutions"; Type = "Directory"; Desc = "[Agent Implementations] Cac Agent hoan chinh chay tren nen tang" },
     @{ Path = "solutions\dino-cv-agent"; Type = "Directory"; Desc = "Agent thi giac may tinh choi game Chrome Dino" },
-    @{ Path = "solutions\minecraft-agent"; Type = "Directory"; Desc = "Agent tu hanh AFK / khai thac trong Minecraft" },
     @{ Path = "infra"; Type = "Directory"; Desc = "[DevOps va Observability] Cau hinh Nginx, Prometheus, Grafana" },
     @{ Path = "docker"; Type = "Directory"; Desc = "Cau hinh Docker Compose cho cac moi truong chay" },
     @{ Path = "scripts"; Type = "Directory"; Desc = "Kich ban tu dong hoa van hanh, cai dat va kiem nghiem" },
