@@ -11,6 +11,9 @@ namespace OfflineAgent.Core.WorldState
     public class WorldStateEngine
     {
         private readonly WindowAutomationHelper _automationHelper;
+        private string _cachedUiTree = string.Empty;
+        private DateTime _lastCacheTime = DateTime.MinValue;
+        private readonly TimeSpan _cacheDuration = TimeSpan.FromSeconds(5);
 
         public WorldStateEngine(WindowAutomationHelper automationHelper)
         {
@@ -54,6 +57,11 @@ namespace OfflineAgent.Core.WorldState
 
         private string CaptureActiveWindowUiTree()
         {
+            if (DateTime.Now - _lastCacheTime < _cacheDuration && !string.IsNullOrEmpty(_cachedUiTree))
+            {
+                return _cachedUiTree;
+            }
+
             try
             {
                 // Lấy tiến trình Notepad làm ví dụ đại diện, hoặc tiến trình active hiện hành
@@ -71,13 +79,17 @@ namespace OfflineAgent.Core.WorldState
                         ? $"<TextBox Name='{editElement.Name}' AutomationId='{editElement.AutomationId}' Class='{editElement.ClassName}' />" 
                         : "";
 
-                    return $"<Window Title='{window.Title}' AutomationId='{window.AutomationId}'>\n" +
-                           $"  <MenuBar Name='System'>\n" +
-                           $"    <MenuItem Name='File' />\n" +
-                           $"    <MenuItem Name='Edit' />\n" +
-                           $"  </MenuBar>\n" +
-                           $"  {editNode}\n" +
-                           $"</Window>";
+                    string xml = $"<Window Title='{window.Title}' AutomationId='{window.AutomationId}'>\n" +
+                                 $"  <MenuBar Name='System'>\n" +
+                                 $"    <MenuItem Name='File' />\n" +
+                                 $"    <MenuItem Name='Edit' />\n" +
+                                 $"  </MenuBar>\n" +
+                                 $"  {editNode}\n" +
+                                 $"</Window>";
+
+                    _cachedUiTree = xml;
+                    _lastCacheTime = DateTime.Now;
+                    return xml;
                 }
             }
             catch

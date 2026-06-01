@@ -5,9 +5,11 @@ using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using OfflineAgent.Core.Plugins;
 using OfflineAgent.Core.Security;
+using OfflineAgent.Core.ToolRegistry;
 
 namespace OfflineAgent.Core.Tools
 {
+    [ToolParameter("target", "string", "Tên hiển thị của nút bấm hoặc menu item cần nhấp chuột.", true)]
     public class ClickTool : ITool
     {
         public string Name => "ClickTool";

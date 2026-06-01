@@ -54,12 +54,42 @@ namespace OfflineAgent.Core.ToolRegistry
         /// </summary>
         public string GetCatalogSchemaJson()
         {
-            var catalog = _tools.Values.Select(t => new
-            {
-                name = t.Name,
-                description = t.Description,
-                requiredCapabilities = t.RequiredCapabilities.Select(c => c.ToString()).ToList()
-            });
+            var catalog = _tools.Values.Select(t => {
+                var toolType = t.GetType();
+                var paramAttributes = Attribute.GetCustomAttributes(toolType, typeof(ToolParameterAttribute))
+                                               .Cast<ToolParameterAttribute>()
+                                               .ToList();
+
+                var properties = new Dictionary<string, object>();
+                var required = new List<string>();
+
+                foreach (var attr in paramAttributes)
+                {
+                    properties[attr.Name] = new
+                    {
+                        type = attr.Type,
+                        description = attr.Description
+                    };
+
+                    if (attr.IsRequired)
+                    {
+                        required.Add(attr.Name);
+                    }
+                }
+
+                return new
+                {
+                    name = t.Name,
+                    description = t.Description,
+                    requiredCapabilities = t.RequiredCapabilities.Select(c => c.ToString()).ToList(),
+                    parameters = new
+                    {
+                        type = "object",
+                        properties = properties,
+                        required = required
+                    }
+                };
+            }).ToList();
 
             return JsonSerializer.Serialize(catalog, new JsonSerializerOptions { WriteIndented = true });
         }

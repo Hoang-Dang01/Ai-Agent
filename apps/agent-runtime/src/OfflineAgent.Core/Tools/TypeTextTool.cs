@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using OfflineAgent.Core.Plugins;
 using OfflineAgent.Core.Security;
+using OfflineAgent.Core.ToolRegistry;
 
 namespace OfflineAgent.Core.Tools
 {
+    [ToolParameter("text", "string", "Văn bản cần gõ hoặc điền vào Notepad.", true)]
     public class TypeTextTool : ITool
     {
         public string Name => "TypeTextTool";

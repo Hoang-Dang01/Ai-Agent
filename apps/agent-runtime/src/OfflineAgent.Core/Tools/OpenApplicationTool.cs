@@ -4,9 +4,11 @@ using System.IO;
 using System.Threading.Tasks;
 using OfflineAgent.Core.Plugins;
 using OfflineAgent.Core.Security;
+using OfflineAgent.Core.ToolRegistry;
 
 namespace OfflineAgent.Core.Tools
 {
+    [ToolParameter("exePath", "string", "Đường dẫn vật lý đến file thực thi (.exe) của ứng dụng.", true)]
     public class OpenApplicationTool : ITool
     {
         public string Name => "OpenApplicationTool";

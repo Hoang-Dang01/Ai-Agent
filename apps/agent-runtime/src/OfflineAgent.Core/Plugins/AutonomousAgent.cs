@@ -6,18 +6,19 @@ using OfflineAgent.Core.ToolRegistry;
 using OfflineAgent.Core.WorldState;
 using OfflineAgent.Core.Security;
 using OfflineAgent.Core.Reflection;
+using OfflineAgent.Core.Events;
 
 namespace OfflineAgent.Core.Plugins
 {
     // ==========================================
-    // 1. DỰ ÁN PLUGIN: AGENT TỰ HÀNH ĐỘC LẬP (HARDENED)
+    // 1. DỰ ÁN PLUGIN: AGENT TỰ HÀNH ĐỘC LẬP (ADVANCED HARDENED)
     // ==========================================
     public class AutonomousAgent : IAgentPlugin
     {
         public string Id => "autonomous-agent";
         public string Name => "Autonomous Operator Agent";
         public string Description => "Nền tảng Agent tự hành toàn diện tích hợp Hệ thống Công cụ chuẩn hóa, Trạng thái thế giới và Bảo mật đặc quyền.";
-        public string Version => "4.0.0";
+        public string Version => "4.2.0";
 
         public List<IAgentCommand> GetCommands()
         {
@@ -29,10 +30,10 @@ namespace OfflineAgent.Core.Plugins
 
         public string GetSystemInstructions()
         {
-            return @"# CHUẨN MỰC BẢO MẬT & VẬN HÀNH TỰ HÀNH V4.0
+            return @"# CHUẨN MỰC BẢO MẬT & VẬN HÀNH TỰ HÀNH V4.2
 - **Capability Guard**: Bắt buộc thẩm định quyền (CapabilitySecurityGuard) trước khi chạy bất kỳ công cụ nào.
-- **World State Engine**: Thu thập dữ liệu XML UI tree và screenshot frame tự động thông qua WorldStateEngine.
-- **Reflection Engine**: Triển khai chu trình đối chứng 5 bước Execute -> Observe -> Verify -> Critic -> Replan hoàn chỉnh phân tách ranh giới Rule và LLM.";
+- **World State Delta**: Tính toán sự khác biệt trạng thái (StateDeltaEngine) để giảm tải token và tối ưu hóa nhận thức.
+- **Decoupled Telemetry**: Publish toàn bộ hoạt động thông qua EventBus trung tâm.";
         }
     }
 
@@ -50,8 +51,16 @@ namespace OfflineAgent.Core.Plugins
 
         public async Task ExecuteAsync(AgentContext context)
         {
-            context.Logger("[Runtime] Khởi chạy Động cơ Agent Tự Hành độc lập (V4.0 - Hardened)...");
+            context.Logger("[Runtime] Khởi chạy Động cơ Agent Tự Hành độc lập (V4.2 - Delta & Event Bus)...");
             await Task.Delay(500);
+
+            // Đăng ký lắng nghe sự kiện trên Bus viễn thông (Decoupled Telemetry)
+            EventBus.Instance.Subscribe(AgentEventType.ToolCalled, ev => 
+                Console.WriteLine($"[Telemetry BUS] [ToolCalled] Source: {ev.Source} | {ev.Message}")
+            );
+            EventBus.Instance.Subscribe(AgentEventType.StateChanged, ev => 
+                Console.WriteLine($"[Telemetry BUS] [StateChanged] Trạng thái OS có sự thay đổi vật lý.")
+            );
 
             // Khởi tạo các Phân hệ Cốt lõi (The 4 Pillars)
             var toolCatalog = ToolCatalog.Instance;
@@ -63,6 +72,7 @@ namespace OfflineAgent.Core.Plugins
                 Security.AgentCapability.ReadFiles
             });
             var stateEngine = new WorldStateEngine(context.AutomationHelper);
+            var deltaEngine = new StateDeltaEngine();
             var reflectionEngine = new ReflectionEngine();
 
             // Bước 1: Tiếp nhận Goal từ người dùng
@@ -78,6 +88,14 @@ namespace OfflineAgent.Core.Plugins
 
             _worldState.Goal.CurrentGoal = userGoal;
             _worldState.LastUpdated = DateTime.Now;
+
+            // Phát đi sự kiện bắt đầu tiến trình
+            EventBus.Instance.Publish(new AgentEvent
+            {
+                Type = AgentEventType.TaskStarted,
+                Source = "AutonomousAgent",
+                Message = $"Bắt đầu chạy Goal: '{_worldState.Goal.CurrentGoal}'"
+            });
 
             context.Logger($"\n[WorldState: Goal] Mục tiêu lớn: '{_worldState.Goal.CurrentGoal}'");
             await Task.Delay(500);
@@ -147,9 +165,34 @@ namespace OfflineAgent.Core.Plugins
                         break;
                     }
 
-                    // 2. EXECUTE (Gọi thực thi công cụ vật lý đã được bảo vệ)
-                    context.Logger($"[Execution] Khởi chạy công cụ '{tool.Name}'...");
+                    // Sao lưu trạng thái thô trước khi chạy Tool để so sánh Delta
+                    var beforeState = new WorldState.WorldState
+                    {
+                        Environment = new EnvironmentState
+                        {
+                            ActiveWindow = _worldState.Environment.ActiveWindow,
+                            CurrentApplication = _worldState.Environment.CurrentApplication,
+                            OpenWindows = new List<string>(_worldState.Environment.OpenWindows)
+                        }
+                    };
+
+                    // 2. EXECUTE & EVENTS (Phát sự kiện bắt đầu gọi công cụ vật lý)
+                    EventBus.Instance.Publish(new AgentEvent
+                    {
+                        Type = AgentEventType.ToolCalled,
+                        Source = "AutonomousAgent",
+                        Message = $"Khởi chạy công cụ '{tool.Name}'",
+                        Payload = new Dictionary<string, object> { { "Arguments", node.Arguments } }
+                    });
+
                     var toolResult = await tool.ExecuteAsync(node.Arguments, context);
+
+                    EventBus.Instance.Publish(new AgentEvent
+                    {
+                        Type = toolResult.IsSuccess ? AgentEventType.ToolSucceeded : AgentEventType.ToolFailed,
+                        Source = "AutonomousAgent",
+                        Message = toolResult.IsSuccess ? $"Thực thi {tool.Name} thành công." : $"Thực thi {tool.Name} thất bại."
+                    });
 
                     // Cập nhật WorldState thô ngay lập tức sau hành động
                     if (toolResult.IsSuccess)
@@ -165,10 +208,48 @@ namespace OfflineAgent.Core.Plugins
                     // 3. OBSERVE & SNAPSHOT (Thu thập WorldState Frame thông qua WorldStateEngine)
                     context.Logger("[Reflection: Observer] Engine đang chụp lại ảnh trạng thái môi trường Host OS...");
                     var stateFrame = stateEngine.CaptureStateFrame(node.Id, Guid.NewGuid().ToString());
-                    context.Logger($"[Observer Frame] ID: {stateFrame.Id}, Các cửa sổ phát hiện: {stateFrame.OpenWindows.Count} tiến trình.");
+                    
+                    // Sao lưu trạng thái mới sau khi quét
+                    var afterState = new WorldState.WorldState
+                    {
+                        Environment = new EnvironmentState
+                        {
+                            ActiveWindow = _worldState.Environment.ActiveWindow,
+                            CurrentApplication = _worldState.Environment.CurrentApplication,
+                            OpenWindows = stateFrame.OpenWindows
+                        }
+                    };
 
-                    // 4. VERIFY (Xác minh cứng bằng Rule-Based Verifier thông qua ReflectionEngine)
-                    context.Logger("[Reflection: Verifier] Đang kiểm chứng kết quả bằng Rule-Based Verifier...");
+                    // 4. STATE DELTA (Tính toán Delta biến chuyển trạng thái vật lý)
+                    context.Logger("[Reflection: Delta Engine] Đang tính toán sai khác trạng thái môi trường...");
+                    var stateDelta = deltaEngine.ComputeDelta(beforeState, afterState);
+                    
+                    if (stateDelta.HasChanges)
+                    {
+                        if (stateDelta.ActiveWindowChanged)
+                            context.Logger($"  • Cửa sổ thay đổi: '{stateDelta.ActiveWindowFrom}' -> '{stateDelta.ActiveWindowTo}'");
+                        if (stateDelta.CurrentApplicationChanged)
+                            context.Logger($"  • Tiến trình đổi tiêu điểm: '{stateDelta.CurrentApplicationFrom}' -> '{stateDelta.CurrentApplicationTo}'");
+                        if (stateDelta.WindowsAdded.Any())
+                            context.Logger($"  • Xuất hiện tiến trình mới: {string.Join(", ", stateDelta.WindowsAdded)}");
+                        if (stateDelta.WindowsRemoved.Any())
+                            context.Logger($"  • Đóng tiến trình: {string.Join(", ", stateDelta.WindowsRemoved)}");
+
+                        // Báo cáo viễn thông về sự thay đổi trạng thái
+                        EventBus.Instance.Publish(new AgentEvent
+                        {
+                            Type = AgentEventType.StateChanged,
+                            Source = "AutonomousAgent",
+                            Message = "Phát hiện biến chuyển trạng thái Windows."
+                        });
+                    }
+                    else
+                    {
+                        context.Logger("  • Trạng thái vật lý của hệ điều hành không đổi.");
+                    }
+
+                    // 5. VERIFY (Xác minh bằng Verifier thông qua ReflectionEngine)
+                    context.Logger("[Reflection: Verifier] Đang thực thi luật xác minh cứng...");
                     string activeWindow = _worldState.Environment.ActiveWindow;
                     string currentApp = _worldState.Environment.CurrentApplication;
 
@@ -180,6 +261,13 @@ namespace OfflineAgent.Core.Plugins
                         node.Arguments
                     );
                     context.Logger($"[Verifier Result] Success: {verification.Success}, Độ tin cậy: {verification.Confidence:P0}, Chi tiết: {verification.Reason}");
+
+                    EventBus.Instance.Publish(new AgentEvent
+                    {
+                        Type = AgentEventType.ReflectionTriggered,
+                        Source = "AutonomousAgent",
+                        Message = $"Tác vụ Verifier hoàn tất cho {tool.Name}."
+                    });
 
                     if (verification.Success && verification.Confidence >= 0.7f)
                     {
@@ -195,8 +283,15 @@ namespace OfflineAgent.Core.Plugins
 
                         if (retries > maxRetries)
                         {
-                            // Kích hoạt Human Approval (HITL) vì độ tin cậy quá thấp sau nhiều lần gỡ lỗi thất bại
-                            context.Logger("[Safety: AskUser] Báo động đỏ! Tự sửa lỗi thất bại nhiều lần. Chuyển sang xin ý kiến con người (HITL)...");
+                            // Kích hoạt Human Approval (HITL) vì độ tin cậy quá thấp
+                            context.Logger("[Safety: AskUser] Báo động đỏ! Gỡ lỗi thất bại nhiều lần. Tạm dừng xin cấp phép (HITL)...");
+                            EventBus.Instance.Publish(new AgentEvent
+                            {
+                                Type = AgentEventType.ApprovalRequested,
+                                Source = "AutonomousAgent",
+                                Message = "Chờ người dùng cấp phép thủ công."
+                            });
+
                             if (context.PromptUser != null)
                             {
                                 string approval = context.PromptUser("Mục tiêu chưa đạt được. Bạn có đồng ý đánh dấu hoàn thành thủ công để bỏ qua bước không? (y/n):", "Human Approval Required");
@@ -220,7 +315,7 @@ namespace OfflineAgent.Core.Plugins
                         }
                         else
                         {
-                            // 5. CRITIC & REPLAN (LLM-based: AI chẩn đoán lỗi chuyên sâu và thiết lập đường khắc phục)
+                            // 6. CRITIC & REPLAN (LLM-based)
                             string catalogSchema = toolCatalog.GetCatalogSchemaJson();
                             var correction = await reflectionEngine.DiagnoseAndReplanAsync(
                                 _worldState.Goal.CurrentGoal,
