@@ -79,3 +79,15 @@ dotnet build apps/agent-runtime/src/OfflineAgent.sln
   2. `TaskGraphRuntime` sắp xếp topo giải quyết phụ thuộc DAG thành công và bọc cơ chế Timeout/Retry.
   3. `ArtifactStore` ghi nhận ảnh chụp màn hình PNG (`artifacts/screenshots/`) và UI XML (`artifacts/ui-trees/`) xuống ổ cứng, giải phóng bộ nhớ RAM.
   4. Lưu trữ transaction vào nhật ký JSONL chuyên dụng (`artifacts/logs/journal.jsonl`) phục vụ Trace/Replay.
+
+---
+
+## 🛠️ 4. Các Tinh Chỉnh & Vá Lỗi Gần Nhất (Nâng Cấp Độ Trưởng Thành)
+
+Chúng tôi đã phát hiện và xử lý thành công hai điểm nghẽn kỹ thuật quan trọng trong đợt kiểm tra này:
+1. **Loại bỏ Mock Cứng trong Phân Hệ Reflection:**
+   - **Vấn đề:** `ReflectionEngine.cs` trước đó chỉ trả về một phương án đề xuất `OpenApplicationTool` hardcode mặc định khi AI tái lập lộ trình.
+   - **Giải pháp:** Cập nhật cơ chế trích xuất JSON động trong C# để parse trực tiếp kết quả sinh từ mô hình Qwen ONNX cục bộ, đồng thời giữ nguyên cơ chế **Fallback an toàn** nếu AI trả về định dạng sai để giữ luồng hệ thống hoạt động ổn định tuyệt đối.
+2. **Sửa Lỗi Kịch Bản Khởi Chạy Hợp Nhất (`start_all.ps1`):**
+   - **Vấn đề:** Script khởi chạy 1-click tham chiếu đến đường dẫn thư mục cũ `apps\desktop-agent-csharp` không còn tồn tại trên codebase.
+   - **Giải pháp:** Cập nhật chính xác sang đường dẫn `apps\agent-runtime` giúp chạy thành công C# client cùng lúc với các dịch vụ Node.js và Python dưới nền.

@@ -48,10 +48,10 @@ if (Test-Path "apps\frontend") {
 }
 
 # 4. Khởi chạy C# Desktop Runtime Client (Bàn tay tự động hóa FlaUI)
-if (Test-Path "apps\desktop-agent-csharp") {
+if (Test-Path "apps\agent-runtime") {
     Write-Host "[4/4] Đang khởi động C# Desktop Operator Runtime (WPF UI/Client)..." -ForegroundColor Green
     $jobs += Start-Job -ScriptBlock {
-        Set-Location "c:\Git cua tui\Ai-Agent\apps\desktop-agent-csharp\src"
+        Set-Location "c:\Git cua tui\Ai-Agent\apps\agent-runtime\src"
         dotnet run --project OfflineAgent.UI\OfflineAgent.UI.csproj
     } -Name "CSharp-Client"
 }

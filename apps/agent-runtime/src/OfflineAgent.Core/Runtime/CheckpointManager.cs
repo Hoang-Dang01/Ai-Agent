@@ -77,7 +77,7 @@ namespace OfflineAgent.Core.Runtime
         /// <summary>
         /// Tra cứu và khôi phục đồ thị nhiệm vụ từ Checkpoint cũ dựa trên Goal ID.
         /// </summary>
-        public CheckpointData LoadCheckpoint(string goalId)
+        public CheckpointData? LoadCheckpoint(string goalId)
         {
             if (string.IsNullOrEmpty(goalId)) return null;
 

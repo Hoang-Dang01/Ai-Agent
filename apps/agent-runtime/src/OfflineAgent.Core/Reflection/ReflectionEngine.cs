@@ -89,13 +89,79 @@ namespace OfflineAgent.Core.Reflection
             string correctionText = await context.AskLocalAi(replanQuery);
             context.Logger($"[Replanner AI Proposes]: {correctionText}");
 
-            // Trả về phương án khắc phục mặc định
+            // Trích xuất JSON từ phản hồi sinh bởi AI và thực hiện giải tuần tự hóa động
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(correctionText))
+                {
+                    string jsonText = ExtractJson(correctionText);
+                    var options = new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    };
+                    var proposal = System.Text.Json.JsonSerializer.Deserialize<ReplanCorrection>(jsonText, options);
+                    if (proposal != null && !string.IsNullOrEmpty(proposal.SuggestedTool))
+                    {
+                        context.Logger($"[Reflection: Replanner] Đề xuất tái lập lộ trình từ AI được parse thành công: '{proposal.SuggestedTool}'");
+                        return proposal;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                context.Logger($"[Reflection: Replanner Warning] Không thể giải tuần tự hóa phản hồi AI JSON: {ex.Message}. Sử dụng phương án an toàn mặc định.");
+            }
+
+            // Phương án an toàn mặc định (Fallback) để đảm bảo độ ổn định tuyệt đối của hệ thống
             return new ReplanCorrection
             {
                 SuggestedTool = "OpenApplicationTool",
                 Arguments = new Dictionary<string, object> { { "exePath", "notepad.exe" } },
                 Reason = "Tự động khởi động lại ứng dụng Notepad để khôi phục tiêu điểm sạch."
             };
+        }
+
+        /// <summary>
+        /// Trích xuất khối JSON hợp lệ từ chuỗi văn bản tự do của LLM (hỗ trợ Markdown block hoặc chuỗi trần).
+        /// </summary>
+        private string ExtractJson(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return "{}";
+            
+            // Tìm kiếm thẻ Code Block Markdown
+            int startIndex = text.IndexOf("```json");
+            if (startIndex != -1)
+            {
+                startIndex += 7;
+                int endIndex = text.IndexOf("```", startIndex);
+                if (endIndex != -1)
+                {
+                    return text.Substring(startIndex, endIndex - startIndex).Trim();
+                }
+            }
+            else
+            {
+                startIndex = text.IndexOf("```");
+                if (startIndex != -1)
+                {
+                    startIndex += 3;
+                    int endIndex = text.IndexOf("```", startIndex);
+                    if (endIndex != -1)
+                    {
+                        return text.Substring(startIndex, endIndex - startIndex).Trim();
+                    }
+                }
+            }
+
+            // Trích xuất khối đối tượng JSON nằm giữa dấu ngoặc nhọn đầu tiên và cuối cùng
+            int firstBrace = text.IndexOf('{');
+            int lastBrace = text.LastIndexOf('}');
+            if (firstBrace != -1 && lastBrace != -1 && lastBrace > firstBrace)
+            {
+                return text.Substring(firstBrace, lastBrace - firstBrace + 1);
+            }
+
+            return text.Trim();
         }
     }
 }

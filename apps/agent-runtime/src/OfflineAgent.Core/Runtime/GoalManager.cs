@@ -29,7 +29,7 @@ namespace OfflineAgent.Core.Runtime
         private static readonly Lazy<GoalManager> _instance = new Lazy<GoalManager>(() => new GoalManager());
         public static GoalManager Instance => _instance.Value;
 
-        public GoalRuntime ActiveGoal { get; private set; }
+        public GoalRuntime? ActiveGoal { get; private set; }
 
         private GoalManager()
         {
