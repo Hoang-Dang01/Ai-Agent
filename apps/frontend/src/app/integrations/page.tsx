@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Link2, KeyRound, Webhook, ShieldCheck, Plus, CheckCircle2, XCircle, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { useLanguage } from "@/contexts/language-context";
+import { ProtectedRoute } from "@/components/auth/protected-route";
 
 export default function IntegrationsPage() {
   const { vibeMode, lang } = useLanguage();
@@ -48,7 +49,8 @@ export default function IntegrationsPage() {
   ];
 
   return (
-    <div className="flex-1 p-8 relative overflow-hidden flex flex-col h-full">
+    <ProtectedRoute>
+      <div className="flex-1 p-8 relative overflow-hidden flex flex-col h-full">
       {/* Background Cinematic */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none z-0"></div>
       
@@ -186,6 +188,7 @@ export default function IntegrationsPage() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </ProtectedRoute>
   );
 }

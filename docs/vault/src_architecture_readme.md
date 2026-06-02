@@ -176,3 +176,47 @@ dotnet restore OfflineAgent.sln
 # Khởi chạy WPF Client
 dotnet run --project OfflineAgent.UI\OfflineAgent.UI.csproj
 ```
+
+---
+
+## 🏗️ 4. Enterprise Architecture Upgrades Addendum (Phase 13 Refactoring)
+
+Để định hình dự án tiến hóa thành một **AI Platform** nhiều năm tuổi thay vì một ứng dụng MVP ngắn hạn, kiến trúc lõi được thiết lập theo lộ trình nâng cấp Domain-Driven Design (DDD) và Module hóa sâu:
+
+### 1. Module hóa Tầng Nhận thức (Python Backend-AI Domain-Driven Design)
+Để tránh phình to và hỗn loạn technical layers khi quy mô code tăng lên hàng chục nghìn dòng, cấu trúc `backend-ai` định hướng chuyển dịch từ cấu trúc phân lớp kỹ thuật (`routers/`, `services/`) sang phân rã theo miền nghiệp vụ AI (Domain-Driven Design):
+```text
+apps/backend-ai/app/
+├── planner/       # Router, schemas và logic lập kế hoạch AI Planner
+├── rag/           # Router, schemas và logic nạp, truy vấn vector pgvector
+├── graph/         # Router, schemas và logic trích xuất đồ thị GraphRAG RPGM
+├── reflection/    # Router, schemas và logic verifier/critic/replanner
+├── vision/        # Logic phân tích và nhận diện hình ảnh máy tính
+└── shared/        # Cơ sở dữ liệu và event bus dùng chung cho toàn bộ domain
+```
+
+### 2. Module hóa Tầng Điều phối (Node.js Orchestrator Domain-Driven Design)
+Tương tự, các layers phẳng của Orchestrator (`controllers/`, `services/`, `middlewares/`) định hướng chuyển đổi sang cấu trúc module cô lập theo nghiệp vụ lõi để dễ kiểm thử cô lập và nâng cấp:
+```text
+apps/orchestrator/src/
+├── auth/          # Authentication middlewares và login/signup controllers
+├── goal/          # Goal creation, DAG tasking, và HITL approval gate logic
+├── payment/       # Stripe payment checkout, webhook verifiers, offline grace policy
+├── workflow/      # BullMQ queue, connection, và C# task runner workers
+└── shared/        # Database services, logger configs, và shared types
+```
+
+### 3. Phân rã Lõi Host Runtime (C# Host Runtime Assembly Splitting)
+Dự án C# `agent-runtime` hiện tại lưu trữ toàn bộ logic bên trong `OfflineAgent.Core/`. Khi hệ thống tích hợp thêm nhiều khả năng tự hành nâng cao (Voice, Browser automations, Advanced Memory pools), lõi C# Core định hướng chia nhỏ thành nhiều Assemblies/Projects C# độc lập để gỡ lỗi và phân định đặc quyền an toàn:
+- `OfflineAgent.Automation`: Chuyên biệt hóa FlaUI desktop automations.
+- `OfflineAgent.Runtime`: Điều khiển luồng, Goal DAG, và Checkpoint manager.
+- `OfflineAgent.Reflection`: Rule-based verifiers và Local ONNX Model interfaces.
+- `OfflineAgent.Security`: Lớp gác cổng CapabilitySecurityGuard kiểm duyệt an toàn.
+- `OfflineAgent.Vision`: Module thị giác máy tính OpenCV và YOLOv8.
+
+### 4. Hợp nhất Hạ tầng Triển khai (Unified Deployment Artifacts)
+Toàn bộ các tài nguyên phục vụ triển khai sản xuất, kiểm tra sức khỏe và biến môi trường được quy hoạch đồng nhất về một điểm thay vì phân tán:
+- [infra/](file:///c:/Git%20cua%20tui/Ai-Agent/infra/):
+  - `nginx/`: Cổng Reverse Proxy API Gateway.
+  - `observability/`: Giám sát hạ tầng (Prometheus, Grafana, Loki).
+  - `deployment/`: Chứa các hồ sơ môi trường bảo mật (`production.env`, `staging.env`) và tệp tin healcheck hạ tầng tự động.

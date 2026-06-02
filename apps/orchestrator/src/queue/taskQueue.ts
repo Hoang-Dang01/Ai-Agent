@@ -26,7 +26,7 @@ export async function enqueueTask(
       data: {
         goalId,
         title,
-        status: 'PENDING',
+        status: 'QUEUED',
         payload: payload,
         dependencies: {
           connect: dependencies.map((depId) => ({ id: depId })),

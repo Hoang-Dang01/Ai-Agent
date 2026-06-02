@@ -14,17 +14,7 @@
 │   │
 │   ├── agent-runtime/   # [LÕI HOST RUNTIME CORE - C# .NET 9] Hệ điều hành tác nhân (Agent OS)
 │   │   └── src/          # Thư mục bọc mã nguồn chính của solution C#
-│   │       ├── OfflineAgent.Core/ # Lõi logic tương tác Windows
-│   │       │   ├── Automation/   # Bộ điều khiển FlaUI tương tác UI Windows
-│   │       │   ├── Events/       # Telemetry Event Bus phát sự kiện nội bộ
-│   │       │   ├── Plugins/      # Chứa định nghĩa AgentContext và SalesPlugin
-│   │       │   ├── Reflection/   # Bộ thẩm định Critic & Replanner chẩn đoán sửa lỗi
-│   │       │   ├── Runtime/      # Bộ điều phối Workflow DAG, Goal & Checkpoints
-│   │       │   ├── Security/     # Bộ kiểm duyệt đặc quyền (CapabilitySecurity.cs)
-│   │       │   ├── Storage/      # Lưu trữ Artifacts vật lý (PNG/XML) ra ổ đĩa
-│   │       │   ├── ToolRegistry/ # Danh mục công cụ chuẩn hóa (ToolCatalog.cs)
-│   │       │   ├── Tools/        # Hệ thống công cụ vật lý (OpenApplication, Click, TypeText)
-│   │       │   └── Vision/       # Nhúng mô hình thị giác cục bộ (LocalVisionModel)
+│   │       ├── OfflineAgent.Core/ # Lõi logic tương tác Windows (FlaUI, Events, Tools)
 │   │       ├── OfflineAgent.UI/   # Giao diện WPF điều hành tại máy trạm
 │   │       └── OfflineAgent.sln
 │   │
@@ -36,17 +26,13 @@
 │   │       ├── middlewares/  # auth.middleware.ts, rateLimiter.middleware.ts
 │   │       ├── queue/        # connection.ts, taskQueue.ts, taskWorker.ts (BullMQ)
 │   │       ├── services/     # db.service.ts, world-state.service.ts (quản lý trạng thái môi trường)
-│   │       └── types/        # shared-types.ts (bản sao cục bộ contract để decoupling build layer lúc dev)
+│   │       └── types/        # shared-types.ts (contracts DTO)
 │   │
 │   ├── backend-ai/      # [DỊCH VỤ NHẬN THỨC - Python FastAPI] Động cơ AI kép
 │   │   └── app/          # Thư mục bọc mã nguồn chính FastAPI
 │   │       ├── main.py   # Tệp chạy chính cung cấp REST API cho Reflection
 │   │       ├── routers/  # Định tuyến Endpoints API (reflection.py)
-│   │       └── services/ # Các động cơ dịch vụ trí tuệ AI cục bộ
-│   │           ├── planner/      # Lập kế hoạch AI (Qwen ONNX / local LLM xuất DAG Task Graph)
-│   │           ├── memory/       # RAG pipeline, LangChain, pgvector, embeddings
-│   │           ├── vision/       # YOLOv8 UI, VLM Qwen2-VL phân tích ngữ cảnh hình ảnh
-│   │           └── reflection/   # Bộ đối chứng nhận thức (verifier, critic, replanner)
+│   │       └── services/ # Các động cơ dịch vụ trí tuệ AI cục bộ (planner, memory, vision)
 │   │
 │   └── frontend/        # [CONTROL DECK UI - Next.js 15] Giao diện buồng lái quan sát & can thiệp
 │       └── src/
@@ -55,24 +41,26 @@
 │           ├── components/model-lab/ # Thử nghiệm Qwen ONNX, verifier cục bộ
 │           └── components/ui/        # Các thành phần giao diện dùng chung (buttons, inputs...)
 │
+├── knowledge/           # [TẦNG TRI THỨC NGHIỆP VỤ - RAG SOURCE] SOPs & Prompts của các phòng ban
+│   └── plugins/         # Kỹ năng và tài liệu của các phòng ban chuyên môn
+│
+├── legacy/              # [DỰ ÁN CŨ - LEGACY PROTOTYPES]
+│   └── gitdoc/          # Phiên bản cũ phục vụ lưu trữ tham khảo
+│
 ├── packages/            # [TẦNG CHIA SẺ DỮ LIỆU & HỢP ĐỒNG - DRY]
 │   │
 │   ├── contracts/       # [POLYGLOT SCHEMAS] Schema JSON dùng chung đa ngôn ngữ
-│   │   ├── task.schema.json
-│   │   ├── world-state.schema.json
-│   │   ├── tool-call.schema.json
-│   │   └── reflection.schema.json
-│   │
 │   └── shared-types/    # Thư viện kiểu TypeScript dùng chung cho Frontend & Orchestrator
-│       ├── index.ts
-│       └── package.json
+│
+├── research/            # [PHÒNG THÍ NGHIỆM THỬ NGHIỆM]
+│   ├── dino-cv-bot/     # Thử nghiệm học máy chơi Chrome Dino
+│   └── test_*.py        # Các tệp test event_bus, graph_rag, planner cô lập
 │
 ├── solutions/           # [AGENT IMPLEMENTATIONS] Các ứng dụng Agent hoàn chỉnh chạy trên nền tảng
 │   └── dino-cv-agent/   # Agent thị giác máy tính chơi game Dino
 │
 ├── infra/               # [HẠ TẦNG & GIÁM SÁT MẠNG]
 │   ├── nginx/           # Reverse Proxy config (API Gateway, Rate Limit, CORS)
-│   ├── postgres/        # Init scripts cho DB pgvector
 │   └── observability/   # Cấu hình Prometheus, Grafana, Loki
 │
 ├── docker/              # [ĐIỀU PHỐI DOCKER COMPOSE]

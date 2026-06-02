@@ -4,6 +4,8 @@ import "./globals.css";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { LanguageProvider } from "@/contexts/language-context";
+import { SocketProvider } from "@/contexts/socket.context";
+import { AuthProvider } from "@/contexts/auth.context";
 import { CinematicBackground } from "@/components/ui/cinematic-background";
 
 const geistSans = Geist({
@@ -63,14 +65,18 @@ export default function RootLayout({
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${caveat.variable} ${patrickHand.variable} ${quicksand.variable} ${nunito.variable} ${rajdhani.variable} ${chakraPetch.variable}`}>
       <body className="antialiased bg-[#02040A] text-slate-300 font-sans selection:bg-cyan-500/30">
         <LanguageProvider>
-          <CinematicBackground />
-          <div className="flex h-screen overflow-hidden relative z-0">
-            <Sidebar />
-            <main className="flex-1 flex flex-col min-w-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-900/10 via-transparent to-transparent">
-              <Header />
-              {children}
-            </main>
-          </div>
+          <AuthProvider>
+            <SocketProvider>
+              <CinematicBackground />
+              <div className="flex h-screen overflow-hidden relative z-0">
+                <Sidebar />
+                <main className="flex-1 flex flex-col min-w-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-900/10 via-transparent to-transparent">
+                  <Header />
+                  {children}
+                </main>
+              </div>
+            </SocketProvider>
+          </AuthProvider>
         </LanguageProvider>
       </body>
     </html>

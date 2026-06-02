@@ -82,20 +82,19 @@ export default function ModelLabPage() {
           <h2 className="text-slate-300 font-semibold text-lg flex items-center gap-2 mb-2">
             <Brain className="w-5 h-5 text-purple-400" /> Các Bài Học
           </h2>
-          
+
           <div className="flex flex-col gap-3 flex-1 overflow-y-auto pr-2 custom-scrollbar">
             {ALGORITHM_REGISTRY.map((algo) => {
               const isActive = activeAlgoId === algo.id;
-              
+
               return (
-                <div 
+                <div
                   key={algo.id}
                   onClick={() => setActiveAlgoId(algo.id)}
-                  className={`p-4 rounded-xl border cursor-pointer transition-all relative overflow-hidden group ${
-                    isActive 
-                    ? `bg-${algo.color}-500/10 border-${algo.color}-500/30 shadow-[0_0_15px_rgba(var(--tw-colors-${algo.color}-500),0.1)]` 
-                    : `bg-[#0F141F] border-slate-800 hover:border-slate-600`
-                  }`}
+                  className={`p-4 rounded-xl border cursor-pointer transition-all relative overflow-hidden group ${isActive
+                      ? `bg-${algo.color}-500/10 border-${algo.color}-500/30 shadow-[0_0_15px_rgba(var(--tw-colors-${algo.color}-500),0.1)]`
+                      : `bg-[#0F141F] border-slate-800 hover:border-slate-600`
+                    }`}
                 >
                   {isActive && <div className={`absolute left-0 top-0 w-1 h-full bg-${algo.color}-400`}></div>}
                   <h3 className={`font-bold text-md mb-1 transition-colors ${isActive ? 'text-white' : 'text-slate-300 group-hover:text-white'}`}>

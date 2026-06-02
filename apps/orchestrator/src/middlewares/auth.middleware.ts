@@ -27,14 +27,19 @@ export function authMiddleware(
 
   try {
     const decoded = jwt.verify(token, env.JWT_SECRET) as {
-      id: string;
+      sub?: string;
+      id?: string;
       email: string;
     };
 
-    req.user = decoded;
+    req.user = {
+      id: decoded.sub || decoded.id || '',
+      email: decoded.email,
+    };
     next();
   } catch (error) {
     logger.error(error, '[Auth Middleware] JWT token verification failed:');
     res.status(403).json({ error: 'Access Denied: Invalid or expired token.' });
   }
+
 }

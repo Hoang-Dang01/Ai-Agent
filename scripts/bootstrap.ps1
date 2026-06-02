@@ -60,5 +60,12 @@ if (Test-Path "bots") {
     }
 }
 
+# 4. Check and install n8n globally if missing
+if (-not (Get-Command n8n -ErrorAction SilentlyContinue)) {
+    Write-Host "====================================="
+    Write-Host "📦 n8n not found. Installing n8n globally..." -ForegroundColor Green
+    npm install -g n8n
+}
+
 Write-Host "====================================="
 Write-Host "✅ Bootstrap complete! Ready for development." -ForegroundColor Cyan

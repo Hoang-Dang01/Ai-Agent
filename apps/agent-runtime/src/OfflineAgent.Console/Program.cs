@@ -2,8 +2,17 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Text.Json;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using OfflineAgent.Core.Automation;
 using OfflineAgent.Core.Plugins;
+using OfflineAgent.Core.Runtime;
+using OfflineAgent.Core.Events;
+using OfflineAgent.Core.Security;
+using OfflineAgent.Core.WorldState;
+using OfflineAgent.Core.Reflection;
+using OfflineAgent.Core.ToolRegistry;
 
 namespace OfflineAgent.ConsoleApp
 {
@@ -14,6 +23,13 @@ namespace OfflineAgent.ConsoleApp
             // Thiết lập mã hóa UTF-8 để in tiếng Việt chuẩn trong console Windows
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             Console.InputEncoding = System.Text.Encoding.UTF8;
+
+            if (args.Length >= 2 && args[0] == "--workflow")
+            {
+                string workflowPath = string.Join(" ", args.Skip(1));
+                ExecuteWorkflowFile(workflowPath).Wait();
+                return;
+            }
 
             while (true)
             {
@@ -207,9 +223,11 @@ namespace OfflineAgent.ConsoleApp
             {
                 Path.Combine(rootDir, "plugins"),
                 Path.Combine(rootDir, "..", "..", "..", "..", "plugins"),
+                Path.Combine(rootDir, "..", "..", "..", "..", "knowledge", "plugins"),
                 Path.Combine(rootDir, "..", "..", "..", "..", "knowledge-work-plugins"),
                 Path.Combine(rootDir, "..", "..", "..", "..", "src", "knowledge-work-plugins"),
                 Path.Combine(rootDir, "..", "..", "..", "..", "..", "plugins"),
+                Path.Combine(rootDir, "..", "..", "..", "..", "..", "knowledge", "plugins"),
                 Path.Combine(rootDir, "..", "..", "..", "..", "..", "knowledge-work-plugins"),
                 Path.Combine(rootDir, "..", "..", "..", "..", "..", "src", "knowledge-work-plugins")
             };
@@ -388,6 +406,155 @@ namespace OfflineAgent.ConsoleApp
             Console.WriteLine("Lưu ý: Tri thức này sẽ được nạp thẳng vào RAM làm System Instructions.");
             Console.WriteLine("Bấm phím bất kỳ để quay lại menu phòng ban...");
             Console.ReadKey();
+        }
+
+        private static async Task ExecuteWorkflowFile(string filePath)
+        {
+            try
+            {
+                if (!File.Exists(filePath))
+                {
+                    Console.WriteLine(JsonSerializer.Serialize(new { type = "error", message = $"Workflow file not found: {filePath}" }));
+                    Environment.Exit(1);
+                }
+
+                string jsonContent = File.ReadAllText(filePath);
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var taskNodes = JsonSerializer.Deserialize<List<TaskNode>>(jsonContent, options);
+
+                if (taskNodes == null || taskNodes.Count == 0)
+                {
+                    Console.WriteLine(JsonSerializer.Serialize(new { type = "error", message = "Workflow file is empty or invalid." }));
+                    Environment.Exit(1);
+                }
+
+                // Register telemetry subscriptions
+                EventBus.Instance.Subscribe(AgentEventType.ToolCalled, ev => {
+                    var payloadArgs = ev.Payload != null && ev.Payload.ContainsKey("Arguments") ? ev.Payload["Arguments"] : null;
+                    Console.WriteLine(JsonSerializer.Serialize(new {
+                        type = "telemetry",
+                        @event = "ToolCalled",
+                        message = ev.Message,
+                        payload = new { Arguments = payloadArgs }
+                    }));
+                });
+
+                EventBus.Instance.Subscribe(AgentEventType.ToolSucceeded, ev => {
+                    Console.WriteLine(JsonSerializer.Serialize(new {
+                        type = "telemetry",
+                        @event = "ToolSucceeded",
+                        message = ev.Message
+                    }));
+                });
+
+                EventBus.Instance.Subscribe(AgentEventType.ToolFailed, ev => {
+                    Console.WriteLine(JsonSerializer.Serialize(new {
+                        type = "telemetry",
+                        @event = "ToolFailed",
+                        message = ev.Message
+                    }));
+                });
+
+                EventBus.Instance.Subscribe(AgentEventType.StateChanged, ev => {
+                    Console.WriteLine(JsonSerializer.Serialize(new {
+                        type = "telemetry",
+                        @event = "StateChanged",
+                        message = ev.Message
+                    }));
+                });
+
+                EventBus.Instance.Subscribe(AgentEventType.ApprovalRequested, ev => {
+                    Console.WriteLine(JsonSerializer.Serialize(new {
+                        type = "telemetry",
+                        @event = "ApprovalRequested",
+                        message = ev.Message
+                    }));
+                });
+
+                // Khởi tạo các Phân hệ Cốt lõi
+                var securityGuard = new CapabilitySecurityGuard(new List<AgentCapability>
+                {
+                    AgentCapability.LaunchApps,
+                    AgentCapability.KeyboardInput,
+                    AgentCapability.MouseControl,
+                    AgentCapability.ReadFiles,
+                    AgentCapability.WriteFiles
+                });
+
+                using (var automationHelper = new WindowAutomationHelper())
+                {
+                    var stateEngine = new WorldStateEngine(automationHelper);
+                    var deltaEngine = new StateDeltaEngine();
+                    var reflectionEngine = new ReflectionEngine();
+                    var worldState = new OfflineAgent.Core.WorldState.WorldState();
+
+                    // Cổng ghi nhận log nghiệp vụ (wrap as JSON log)
+                    Action<string> logger = message => {
+                        Console.WriteLine(JsonSerializer.Serialize(new { type = "log", message = message }));
+                    };
+
+                    // Hàm đại diện cho cổng gọi suy luận LLM/VLM cục bộ
+                    Func<string, Task<string>> askLocalAi = prompt => Task.FromResult("Offline AI Answer Placeholder");
+
+                    var context = new AgentContext(automationHelper, logger, askLocalAi);
+
+                    // Cổng yêu cầu phê duyệt/dữ liệu đầu vào từ người dùng (HITL)
+                    context.PromptUser = (prompt, title) => {
+                        Console.WriteLine(JsonSerializer.Serialize(new { type = "prompt", prompt = prompt, title = title }));
+                        // Block and read from standard input
+                        string? response = Console.ReadLine();
+                        return response ?? "n";
+                    };
+
+                    // Khởi tạo Goal thông qua GoalManager
+                    string firstGoalText = taskNodes.FirstOrDefault()?.Name ?? "Automated Workflow";
+                    var goalRuntime = GoalManager.Instance.StartGoal(firstGoalText);
+                    worldState.Goal.CurrentGoal = firstGoalText;
+                    worldState.LastUpdated = DateTime.Now;
+
+                    var dagRuntime = new TaskGraphRuntime(
+                        taskNodes,
+                        securityGuard,
+                        stateEngine,
+                        deltaEngine,
+                        reflectionEngine,
+                        worldState
+                    );
+
+                    bool success = await dagRuntime.ExecuteWorkflowAsync(context);
+
+                    GoalManager.Instance.CompleteGoal(success, success ? "Hoàn thành toàn bộ đồ thị nhiệm vụ." : "Nhiệm vụ trong đồ thị bị lỗi.");
+
+                    // Stream final node states for DB updates
+                    foreach (var node in taskNodes)
+                    {
+                        Console.WriteLine(JsonSerializer.Serialize(new {
+                            type = "node_state",
+                            taskId = node.Id,
+                            state = node.State.ToString(),
+                            retryCount = node.RetryCount
+                        }));
+                    }
+
+                    // Print final result
+                    Console.WriteLine(JsonSerializer.Serialize(new {
+                        type = "workflow_complete",
+                        success = success
+                    }));
+
+                    Environment.Exit(success ? 0 : 1);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Write C# exception crash trace to stderr as per robustness guidelines
+                Console.Error.WriteLine(JsonSerializer.Serialize(new {
+                    type = "crash",
+                    message = ex.Message,
+                    stackTrace = ex.StackTrace
+                }));
+                Environment.Exit(1);
+            }
         }
     }
 }

@@ -9,14 +9,34 @@ datasource db {
   extensions = [vector]
 }
 
+enum TaskStatus {
+  QUEUED
+  DISPATCHED
+  ACKNOWLEDGED
+  EXECUTING
+  RECOVERING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum AttemptStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+  ABORTED
+  TIMED_OUT
+}
+
 model User {
-  id        String     @id @default(uuid())
-  email     String     @unique
-  password  String
-  sessions  Session[]
-  goals     UserGoal[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id           String            @id @default(uuid())
+  email        String            @unique
+  password     String
+  sessions     Session[]
+  goals        UserGoal[]
+  subscription UserSubscription?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
 }
 
 model Session {
@@ -41,23 +61,78 @@ model UserGoal {
 }
 
 model AITask {
-  id               String            @id @default(uuid())
-  goalId           String
-  goal             UserGoal          @relation(fields: [goalId], references: [id], onDelete: Cascade)
-  title            String
-  status           String            // PENDING, PROCESSING, COMPLETED, FAILED
-  payload          Json?             // Inputs/parameters
-  result           Json?             // Outputs
-  error            String?
-  toolExecutions   ToolExecution[]
-  worldStateFrames WorldStateFrame[]
+  id                String                 @id @default(uuid())
+  goalId            String
+  goal              UserGoal               @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  title             String
+  status            TaskStatus             @default(QUEUED)
+  payload           Json?                  // Inputs/parameters
+  result            Json?                  // Outputs
+  error             String?
+  toolExecutions    ToolExecution[]
+  worldStateFrames  WorldStateFrame[]
   
   // self-relation for DAG dependencies
-  dependencies     AITask[]          @relation("TaskDependencies")
-  dependents       AITask[]          @relation("TaskDependencies")
+  dependencies      AITask[]               @relation("TaskDependencies")
+  dependents        AITask[]               @relation("TaskDependencies")
 
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  // --- Lịch sử thực thi retry ---
+  attempts          TaskExecutionAttempt[]
+
+  // --- PHASE K: Workflow State Recovery & Distributed Leases ---
+  executionEpoch    Int                    @default(1) @map("execution_epoch")
+  lastHeartbeatAt   DateTime?              @map("last_heartbeat_at")
+  leaseExpiresAt    DateTime?              @map("lease_expires_at") // Hạn lease tường minh
+  fencingToken      BigInt?                @map("fencing_token")    // Sinh từ monotonic global sequence
+  runtimePid        Int?                   @map("runtime_pid")
+  runtimeMachine    String?                @map("runtime_machine")
+  workerInstanceId  String?                @map("worker_instance_id")
+  runtimeInstanceId String?                @map("runtime_instance_id")
+
+  // --- PHASE K: Dead Letter Queue & Retry Policy ---
+  retryCount        Int                    @default(0) @map("retry_count")
+  maxRetry          Int                    @default(5) @map("max_retry")
+  deadLetteredAt    DateTime?              @map("dead_lettered_at")
+  dlqReason         String?                @map("dlq_reason")
+  lastError         String?                @map("last_error")
+
+  // --- PHASE N: Execution Journal & Rollback Preparation ---
+  rollbackMetadata  Json?                  @map("rollback_metadata")
+  rollbackPossible  Boolean?               @map("rollback_possible")
+
+  // --- PHASE O: Idempotency & Deterministic Execution ---
+  serviceName       String                 @default("orchestrator") @map("service_name") // Phân vùng dịch vụ
+  idempotencyKey    String?                @map("idempotency_key")
+  executionFingerprint String?             @map("execution_fingerprint")
+
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+
+  @@unique([serviceName, idempotencyKey]) // Độc bản có scope phân vùng dịch vụ
+  @@index([status, leaseExpiresAt]) // Composite Index cho Recovery Engine
+  @@index([executionFingerprint])
+}
+
+model TaskExecutionAttempt {
+  id                String        @id @default(uuid())
+  taskId            String        @map("task_id")
+  task              AITask        @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  
+  executionEpoch    Int           @map("execution_epoch")
+  workerInstanceId  String?       @map("worker_instance_id")
+  runtimeInstanceId String?       @map("runtime_instance_id")
+  runtimePid        Int?          @map("runtime_pid")
+  runtimeMachine    String?       @map("runtime_machine")
+
+  startedAt         DateTime      @default(now()) @map("started_at")
+  endedAt           DateTime?     @map("ended_at")
+
+  status            AttemptStatus // Enum gác cổng an toàn
+  result            Json?
+  error             String?
+
+  @@unique([taskId, executionEpoch]) // Bảo đảm độc bản lịch sử theo epoch của từng task
+  @@map("task_execution_attempts")
 }
 
 model ToolExecution {
@@ -91,4 +166,72 @@ model Document {
   vector    Unsupported("vector")? // Supports generic pgvector column
   createdAt DateTime               @default(now())
   updatedAt DateTime               @updatedAt
+}
+
+model ChatHistory {
+  id         String   @id @default(uuid())
+  sessionId  String   @map("session_id")
+  senderType String   @map("sender_type")
+  agentType  String?  @map("agent_type")
+  message    String
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("chat_history")
+}
+
+model UserSubscription {
+  id                 String    @id @default(uuid())
+  userId             String    @unique
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeCustomerId   String?   @unique @map("stripe_customer_id")
+  stripePriceId      String?   @map("stripe_price_id")
+  stripeStatus       String?   @map("stripe_status") 
+  currentPeriodEnd   DateTime? @map("current_period_end")
+  lastVerifiedAt     DateTime  @default(now()) @map("last_verified_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  @@map("user_subscriptions")
+}
+
+model AITelemetryTrace {
+  id               String   @id @default(uuid())
+  traceId          String   @map("trace_id") // Correlation ID dùng chung cho OTEL / Langfuse
+  spanId           String?  @map("span_id")  // OTEL Span ID
+  parentSpanId     String?  @map("parent_span_id")
+  goalId           String?  @map("goal_id")
+  taskId           String?  @map("task_id")
+  traceType        String   @map("trace_type") // 'PLANNER' | 'CRITIC' | 'REPLANNER' | 'AGENT_DECISION'
+  status           String   @default("SUCCESS") // 'SUCCESS' | 'FAILURE' | 'TIMEOUT' | 'CANCELLED'
+  promptText       String   @map("prompt_text") @db.Text
+  responseText     String?  @map("response_text") @db.Text
+  promptHash       String?  @map("prompt_hash")
+  inputTokens      Int?     @map("input_tokens")
+  outputTokens     Int?     @map("output_tokens")
+  estimatedCostUsd Decimal? @map("estimated_cost_usd") @db.Decimal(10, 6) // Chi phí tính theo Dollar
+  latencyMs        Int?     @map("latency_ms")
+  errorMessage     String?  @map("error_message") @db.Text
+  isTruncated      Boolean  @default(false) @map("is_truncated")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@index([goalId])
+  @@index([traceId])
+  @@index([createdAt])
+  @@index([status])
+  @@map("ai_telemetry_traces")
+}
+
+model OutboxEvent {
+  id            String    @id @default(uuid())
+  aggregateType String    @map("aggregate_type")
+  aggregateId   String    @map("aggregate_id")
+  eventType     String    @map("event_type")
+  payload       Json
+  claimedAt     DateTime? @map("claimed_at")
+  claimedBy     String?   @map("claimed_by")
+  publishedAt   DateTime? @map("published_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@index([publishedAt, claimedAt, createdAt])
+  @@map("outbox_events")
 }

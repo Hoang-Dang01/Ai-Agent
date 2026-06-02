@@ -20,3 +20,22 @@ export const apiRateLimiter = rateLimit({
     });
   },
 });
+
+// Create a highly restrictive Redis-backed rate limiter for signup and login endpoints
+export const authRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour window
+  max: 5, // Capped at 5 sign-up/login attempts per hour per unique client IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  store: new RedisStore({
+    // @ts-ignore
+    sendCommand: (...args: string[]) => redisConnection.call(args[0], ...args.slice(1)),
+  }),
+  handler: (req, res) => {
+    logger.warn({ ip: req.ip, path: req.path }, '[Rate Limiter] Auth brute-force rate limit exceeded');
+    res.status(429).json({
+      error: 'Too Many Requests: Strict authentication rate limit exceeded. Please try again after 1 hour.',
+    });
+  },
+});
+

@@ -1,65 +1,57 @@
 # ==================================================================
-# 🚀 KỊCH BẢN KHỞI CHẠY HỢP NHẤT 1-CLICK (START ALL SERVICES LAUNCHER)
-# Dự án: Vibe Ecosystem 2026
-# Thư mục: c:\Git cua tui\Ai-Agent
+# START ALL SERVICES LAUNCHER - 1-CLICK UNIFIED LAUNCHER
+# Project: Vibe Ecosystem 2026
+# Path: c:\Git cua tui\Ai-Agent
 # ==================================================================
 
 Clear-Host
 Write-Host "==================================================================" -ForegroundColor Cyan
 Write-Host "         OFFLINE AI AGENT ECOSYSTEM - 1-CLICK UNIFIED LAUNCHER" -ForegroundColor Cyan
 Write-Host "==================================================================" -ForegroundColor Cyan
-Write-Host "[Launcher] Đang khởi chạy toàn bộ 4 phân hệ trong hệ sinh thái hợp nhất..." -ForegroundColor Yellow
+Write-Host "[Launcher] Starting all 4 subsystems in persistent background mode..." -ForegroundColor Yellow
 
-$jobs = @()
-
-# 1. Khởi chạy Python Cognitive Core (Bộ não & RAG - Port 8000)
+# 1. Start Python Cognitive Core (Brain & RAG - Port 8000)
 if (Test-Path "apps\backend-ai") {
-    Write-Host "[1/4] Đang khởi động Python Cognitive Core (FastAPI)..." -ForegroundColor Green
-    $jobs += Start-Job -ScriptBlock {
-        Set-Location "c:\Git cua tui\Ai-Agent\apps\backend-ai"
-        if (Test-Path ".venv") {
-            # Sử dụng môi trường ảo venv cục bộ nếu có
-            .venv\Scripts\uvicorn main:app --port 8000 --reload
-        } else {
-            uvicorn main:app --port 8000 --reload
-        }
-    } -Name "Python-Core"
+    Write-Host "[1/4] Starting Python Cognitive Core (FastAPI)..." -ForegroundColor Green
+    if (Test-Path "apps\backend-ai\.venv") {
+        Start-Process "cmd.exe" -ArgumentList "/c .venv\Scripts\uvicorn.exe main:app --port 8000 --reload" -WorkingDirectory "apps\backend-ai" -WindowStyle Hidden
+    } else {
+        Start-Process "cmd.exe" -ArgumentList "/c uvicorn main:app --port 8000 --reload" -WorkingDirectory "apps\backend-ai" -WindowStyle Hidden
+    }
     Start-Sleep -Seconds 2
 }
 
-# 2. Khởi chạy Node.js AI Orchestrator (Nhạc trưởng điều phối - Port 3000)
+# 2. Start Node.js AI Orchestrator (Orchestrator - Port 4000)
 if (Test-Path "apps\orchestrator") {
-    Write-Host "[2/4] Đang khởi động Node.js AI Orchestrator..." -ForegroundColor Green
-    $jobs += Start-Job -ScriptBlock {
-        Set-Location "c:\Git cua tui\Ai-Agent\apps\orchestrator"
-        node server.js
-    } -Name "Node-Orchestrator"
+    Write-Host "[2/4] Starting Node.js AI Orchestrator (dist/server.js)..." -ForegroundColor Green
+    Start-Process "cmd.exe" -ArgumentList "/c node dist/server.js" -WorkingDirectory "apps\orchestrator" -WindowStyle Hidden
     Start-Sleep -Seconds 2
 }
 
-# 3. Khởi chạy TypeScript Frontend (Next.js Dashboard - Port 4000 hoặc Default)
+# 3. Start TypeScript Frontend (Next.js Dashboard - Port 3000)
 if (Test-Path "apps\frontend") {
-    Write-Host "[3/4] Đang khởi động Next.js Web Dashboard..." -ForegroundColor Green
-    $jobs += Start-Job -ScriptBlock {
-        Set-Location "c:\Git cua tui\Ai-Agent\apps\frontend"
-        npm run dev
-    } -Name "Web-Dashboard"
+    Write-Host "[3/4] Starting Next.js Web Dashboard..." -ForegroundColor Green
+    Start-Process "cmd.exe" -ArgumentList "/c npm run dev" -WorkingDirectory "apps\frontend" -WindowStyle Hidden
     Start-Sleep -Seconds 2
 }
 
-# 4. Khởi chạy C# Desktop Runtime Client (Bàn tay tự động hóa FlaUI)
+# 4. Start C# Desktop Runtime Client (FlaUI Automation)
 if (Test-Path "apps\agent-runtime") {
-    Write-Host "[4/4] Đang khởi động C# Desktop Operator Runtime (WPF UI/Client)..." -ForegroundColor Green
-    $jobs += Start-Job -ScriptBlock {
-        Set-Location "c:\Git cua tui\Ai-Agent\apps\agent-runtime\src"
-        dotnet run --project OfflineAgent.UI\OfflineAgent.UI.csproj
-    } -Name "CSharp-Client"
+    Write-Host "[4/5] Starting C# Desktop Operator Runtime (WPF UI/Client)..." -ForegroundColor Green
+    Start-Process "cmd.exe" -ArgumentList "/c dotnet run --project OfflineAgent.UI\OfflineAgent.UI.csproj" -WorkingDirectory "apps\agent-runtime\src" -WindowStyle Hidden
+}
+
+# 5. Start n8n Workflow Server (Port 5678)
+if (Get-Command n8n -ErrorAction SilentlyContinue) {
+    Write-Host "[5/5] Starting local n8n automation engine (n8n start)..." -ForegroundColor Green
+    Start-Process "cmd.exe" -ArgumentList "/c n8n start" -WindowStyle Hidden
 }
 
 Write-Host "`n==================================================================" -ForegroundColor Cyan
-Write-Host "✅ TẤT CẢ CÁC DỊCH VỤ ĐÃ ĐƯỢC KHỞI CHẠY THÀNH CÔNG DƯỚI NỀN!" -ForegroundColor Green
-Write-Host "👉 Web UI: http://localhost:4000 (hoặc cổng cấu hình Next.js)" -ForegroundColor White
-Write-Host "👉 AI Server: http://localhost:8000" -ForegroundColor White
-Write-Host "👉 Orchestrator Gateway: http://localhost:3000" -ForegroundColor White
+Write-Host "SUCCESS: ALL SERVICES HAVE BEEN LAUNCHED IN THE BACKGROUND!" -ForegroundColor Green
+Write-Host "-> Web UI: http://localhost:3000" -ForegroundColor White
+Write-Host "-> AI Server: http://localhost:8000" -ForegroundColor White
+Write-Host "-> Orchestrator Gateway: http://localhost:4000" -ForegroundColor White
+Write-Host "-> n8n Automation Engine: http://localhost:5678" -ForegroundColor White
 Write-Host "==================================================================" -ForegroundColor Cyan
-Write-Host "Gõ 'Get-Job' để kiểm tra trạng thái hoặc 'Stop-Job *' để tắt tất cả các dịch vụ." -ForegroundColor Yellow
+Write-Host "You can now open the Web UI at http://localhost:3000" -ForegroundColor Yellow

@@ -11,6 +11,7 @@ import { PreferencesModal } from "@/components/dashboard/preferences-modal";
 
 export function Sidebar() {
   const pathname = usePathname();
+  if (pathname === "/login") return null;
   const { t } = useLanguage();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isPrefOpen, setIsPrefOpen] = useState(false);

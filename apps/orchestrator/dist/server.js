@@ -46,6 +46,7 @@ const db_service_1 = require("./src/services/db.service");
 const taskQueue_1 = require("./src/queue/taskQueue");
 const auth_middleware_1 = require("./src/middlewares/auth.middleware");
 const rateLimiter_middleware_1 = require("./src/middlewares/rateLimiter.middleware");
+const goal_controller_1 = require("./src/controllers/goal.controller");
 // Boot background BullMQ worker
 require("./src/queue/taskWorker");
 const app = (0, express_1.default)();
@@ -63,6 +64,38 @@ global.io = io;
 // 1. Unprotected / Healthcheck endpoint
 app.get('/health', (req, res) => {
     res.json({ status: 'OK', environment: env_1.env.NODE_ENV, timestamp: new Date() });
+});
+// 1.5. REST API endpoint to retrieve the most recent active Goal and all of its AITasks
+app.get('/api/goals/active', async (req, res) => {
+    try {
+        const activeGoal = await db_service_1.dbService.client.userGoal.findFirst({
+            orderBy: { createdAt: 'desc' },
+            include: {
+                tasks: {
+                    orderBy: { createdAt: 'asc' },
+                }
+            }
+        });
+        if (!activeGoal) {
+            return res.json({ status: 'NONE', goal: null });
+        }
+        res.json({
+            status: 'OK',
+            goal: activeGoal
+        });
+    }
+    catch (error) {
+        logger_1.logger.error(error, '[Server Error] Failed to fetch active goal:');
+        res.status(500).json({ error: 'Failed to fetch active goal.' });
+    }
+});
+// 1.8. Plan generation REST route (bridges to Python Cognitive Planner)
+app.post('/api/goals/plan', rateLimiter_middleware_1.apiRateLimiter, async (req, res) => {
+    await (0, goal_controller_1.createGoalPlan)(req, res);
+});
+// 1.9. Plan approval REST route (shifts statuses to active and triggers BullMQ)
+app.post('/api/goals/:goalId/approve', rateLimiter_middleware_1.apiRateLimiter, async (req, res) => {
+    await (0, goal_controller_1.approveGoalPlan)(req, res);
 });
 // 2. Protected & Rate Limited Endpoint to enqueue tasks
 // Mounts Redis-backed rate limiter and JWT authentication middleware
@@ -83,6 +116,21 @@ app.post('/api/tasks', rateLimiter_middleware_1.apiRateLimiter, auth_middleware_
 // 3. WebSockets Real-time connection handling
 io.on('connection', (socket) => {
     logger_1.logger.info(`[Socket.io] Client connected: ${socket.id}`);
+    socket.on('hitl_response', (data) => {
+        logger_1.logger.info(`[Socket.io] Received HITL response for goal ${data.goalId}: approved=${data.approved}`);
+        const active = global.activeProcesses?.get(data.goalId);
+        if (active && active.child) {
+            if (active.clearHitlTimeout) {
+                active.clearHitlTimeout();
+            }
+            const answer = data.approved ? 'y\n' : 'n\n';
+            active.child.stdin.write(answer);
+            logger_1.logger.info(`[Socket.io] Piped answer "${answer.trim()}" to C# standard input.`);
+        }
+        else {
+            logger_1.logger.warn(`[Socket.io] No active C# process found for goal ${data.goalId}`);
+        }
+    });
     socket.on('disconnect', () => {
         logger_1.logger.info(`[Socket.io] Client disconnected: ${socket.id}`);
     });

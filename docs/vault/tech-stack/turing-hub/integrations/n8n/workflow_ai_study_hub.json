@@ -125,14 +125,14 @@
         "operation": "insert",
         "schema": "public",
         "table": "chat_history",
-        "columns": "session_id, user_message, ai_response, agent_name",
+        "columns": "session_id, sender_type, agent_type, message",
         "dataMode": "define",
         "valuesToSend": {
           "values": [
             { "column": "session_id", "value": "={{ $('Webhook (Frontend)').item.json.body.sessionId }}" },
-            { "column": "user_message", "value": "={{ $('Webhook (Frontend)').item.json.body.message }}" },
-            { "column": "ai_response", "value": "={{ $json.output }}" },
-            { "column": "agent_name", "value": "={{ $('Webhook (Frontend)').item.json.body.agent }}" }
+            { "column": "sender_type", "value": "ai" },
+            { "column": "agent_type", "value": "={{ $('Webhook (Frontend)').item.json.body.agent }}" },
+            { "column": "message", "value": "={{ $json.output }}" }
           ]
         }
       },

@@ -153,6 +153,7 @@ export default function EngineDetailPage({ params }: { params: Promise<{ id: str
                 </div>
               )}
             </div>
+          </div>
         </div>
       </div>
     </div>

@@ -2,8 +2,11 @@
 import { Activity, Cpu, Database, Search, Bell, Sun, Globe } from "lucide-react";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/contexts/language-context";
+import { usePathname } from "next/navigation";
 
 export function Header() {
+  const pathname = usePathname();
+  if (pathname === "/login") return null;
   const { lang, toggleLang, t, vibeMode, toggleVibeMode } = useLanguage();
 
   return (

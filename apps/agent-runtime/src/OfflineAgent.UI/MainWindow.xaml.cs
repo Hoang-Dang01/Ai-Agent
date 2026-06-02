@@ -37,9 +37,11 @@ namespace OfflineAgent.UI
             {
                 Path.Combine(rootDir, "plugins"),
                 Path.Combine(rootDir, "..", "..", "..", "..", "plugins"),
+                Path.Combine(rootDir, "..", "..", "..", "..", "knowledge", "plugins"),
                 Path.Combine(rootDir, "..", "..", "..", "..", "knowledge-work-plugins"),
                 Path.Combine(rootDir, "..", "..", "..", "..", "src", "knowledge-work-plugins"),
                 Path.Combine(rootDir, "..", "..", "..", "..", "..", "plugins"),
+                Path.Combine(rootDir, "..", "..", "..", "..", "..", "knowledge", "plugins"),
                 Path.Combine(rootDir, "..", "..", "..", "..", "..", "knowledge-work-plugins"),
                 Path.Combine(rootDir, "..", "..", "..", "..", "..", "src", "knowledge-work-plugins")
             };
