@@ -130,15 +130,25 @@ async function runTests() {
       await TaskStateRepository.updateWithFence(fencingTask.id, 15, { title: 'Late outdated split-brain write' });
     } catch (err: any) {
       workerABlocked = true;
-      assert(err.message.includes('Fencing rejection'), 'Repository threw fencing rejection error.');
+      assert(err.message.includes('Fencing rejection'), 'Stale Worker A late write with fencingToken 15 successfully rejected.');
     }
-    assert(workerABlocked === true, 'Worker A late write with fencingToken 15 successfully rejected.');
+    assert(workerABlocked === true, 'Worker A write was blocked.');
 
-    // Simulated Worker B writes with updated fencing token 17
-    await TaskStateRepository.updateWithFence(fencingTask.id, 17, { title: 'Valid updated write' });
+    // Simulated Worker C tries to write with a forged newer fencing token 17 (without obtaining lease first)
+    let workerCBlocked = false;
+    try {
+      await TaskStateRepository.updateWithFence(fencingTask.id, 17, { title: 'Forged split-brain write' });
+    } catch (err: any) {
+      workerCBlocked = true;
+      assert(err.message.includes('Fencing rejection'), 'Forged Worker C write with newer fencingToken 17 successfully rejected.');
+    }
+    assert(workerCBlocked === true, 'Worker C write was blocked.');
+
+    // Simulated Worker B writes with correct, current fencing token 16 (Owner of active lease)
+    await TaskStateRepository.updateWithFence(fencingTask.id, 16, { title: 'Valid updated write' });
     const fetchedFenced = await client.aITask.findUnique({ where: { id: fencingTask.id } });
-    assert(fetchedFenced.title === 'Valid updated write', 'Worker B write with fencingToken 17 approved successfully.');
-    assert(fetchedFenced.fencingToken === BigInt(17), `Database fencingToken successfully incremented to 17.`);
+    assert(fetchedFenced.title === 'Valid updated write', 'Worker B write with current fencingToken 16 approved successfully.');
+    assert(fetchedFenced.fencingToken === BigInt(16), 'Database fencingToken remains unmodified at 16 (fencing token immutability is guaranteed).');
 
     // ----------------------------------------------------
     // TEST 4: Relational attempts Uniqueness

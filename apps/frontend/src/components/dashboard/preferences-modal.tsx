@@ -207,6 +207,7 @@ export function PreferencesModal({ isOpen, onClose }: { isOpen: boolean; onClose
                               <option value="nunito">Nunito (Hiện đại, mềm mại)</option>
                               <option value="inter">Inter (Giao diện UI chuẩn)</option>
                               <option value="roboto">Roboto (Cổ điển)</option>
+                              <option value="feixen">Studio Feixen Sans (Swiss Minimalist)</option>
                             </select>
                           </div>
                           <div>

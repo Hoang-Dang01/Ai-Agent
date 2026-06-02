@@ -4,6 +4,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
 import asyncio
+from app.utils.logging_context import setup_logging
+from app.middlewares.tracing_middleware import StructuredTracingMiddleware
+
+# Configure logging FIRST
+setup_logging()
 from contextlib import asynccontextmanager
 from app.database import engine, Base
 from app.routers import reflection, rag, graph, planner
@@ -53,6 +58,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount Structured JSON Tracing Middleware
+app.add_middleware(StructuredTracingMiddleware)
 
 # Đăng ký các router nghiệp vụ
 app.include_router(reflection.router)

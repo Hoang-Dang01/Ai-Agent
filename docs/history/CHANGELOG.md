@@ -203,6 +203,27 @@ File này lưu lại lịch sử thay đổi của dự án. Không chỉ ghi L�
   - *Lý do (Why):* Ngăn chặn tình trạng xếp chồng nhiều luồng ghi heartbeat đồng thời lên nhau khi kết nối mạng/cơ sở dữ liệu bị chậm hoặc trễ.
 - **Verified:** Cập nhật bộ chaos recovery test suite và biên dịch TypeScript thành công 100% không phát sinh lỗi.
 
+### SRE Fencing Token Concurrency Test Alignment (02-06-2026)
+- **Fixed:** Tái cấu trúc và hiệu chỉnh bộ kiểm thử `apps/orchestrator/src/test/task-persistence.test.ts`.
+  - *What:* Loại bỏ assertion cũ (kiểu greater-token-wins) đòi hỏi worker tự nâng fencing token trong DB từ 16 lên 17 qua cổng `updateWithFence()`. Tích hợp bộ 3 test kiểm duyệt phân tầng: chặn đứng stale worker (15 vs 16), chặn đứng forged newer worker (17 vs 16), và phê chuẩn duy nhất current lease owner (16 vs 16) đồng thời bảo đảm tính bất biến (immutability) của fencing token trong DB.
+  - *Why (TẠI SAO):* Đảm bảo tính nhất quán tối cao của kiến trúc **exact-match lease fencing**. Việc cho phép worker tự động nhảy token hoặc ghi đè token trong các lệnh ghi thường (`updateWithFence`) sẽ phá hỏng hoàn toàn cơ chế bảo vệ lease; bất kỳ caller nào biết taskId đều có thể giả mạo token lớn hơn để chiếm quyền ghi mà không cần thông qua bước tranh chấp CAS (`updateWithCAS(generateFence=true)`) hợp lệ.
+  - *Tradeoff:* Việc bảo vệ token bất biến đồng nghĩa worker không thể tự động nâng token khi đang chạy. Điều này hoàn toàn đúng vì việc nâng token là đặc quyền duy nhất của database sequencer trong quá trình CAS claim/recovery.
+  - *Impact:* Loại bỏ hoàn toàn mâu thuẫn giữa mã nguồn repository và kịch bản test. Cả hai suite kiểm thử `task-persistence.test.ts` và `task-chaos-recovery.test.ts` cùng trình biên dịch TypeScript đều đạt tỷ lệ thành công 100% (0 errors/failures).
+
+### Phase AI-H1: Structured Tracing & Distributed Observability (02-06-2026)
+- **Added:** Thiết lập hạ tầng tracing và log JSON cấu trúc trong `apps/backend-ai`.
+  - *What:*
+    - Xây dựng `logging_context.py` quản lý thread/async-safe `ContextVars` (requestId, parentRequestId, taskId, workflowId, executionEpoch, timeoutMs) và helper `build_trace_headers()`.
+    - Triển khai `StructuredJsonFormatter` định dạng logs thành chuỗi JSON tiêu chuẩn, tích hợp phiên bản `1.0.0`, định danh `backend-ai` service, và chừa sẵn 2 trường `traceId`/`spanId` cho OpenTelemetry.
+    - Cấu hình an toàn `logging.config.dictConfig` dưới nút `"root"` thay vì override handlers thủ công của uvicorn/fastapi.
+    - Xây dựng `StructuredTracingMiddleware` bắt correlation context, ghi nhận latency qua monotonic clock (`time.perf_counter()`), tự động liên kết `workflowId` rỗng sang `requestId`, lưu `request.state.request_id` và bắt exception qua `logger.exception()`.
+    - Propagate toàn bộ tracing headers từ Express orchestrator `goal.controller.ts` xuống FastAPI planner call.
+  - *Why (TẠI SAO):* Giúp hệ thống đạt tiêu chuẩn vận hành doanh nghiệp (observability-first). Khi scale-out với hàng nghìn task DAG chạy song song, việc thiếu correlation trace chain sẽ biến file log thành một đống hỗn tạp không thể truy vết. Tracing context và JSON format giúp lập trình viên lọc log tức thì trên ELK/Loki.
+  - *Tradeoff:* Cấu hình dictConfig yêu cầu khai báo rõ ràng các loggers của uvicorn/fastapi, bù lại triệt tiêu 100% tình huống log bị lặp hoặc mất định dạng uvicorn trên console.
+  - *Verified:*
+    - Xây dựng suite test `test_log_schema.py` xác minh thành công 100% định dạng JSON, OTel field reservations và mapping context.
+    - Xây dựng suite stress test `test_concurrency_isolation.py` kiểm duyệt 100% tính cô lập (isolation) của `ContextVars` dưới tải 100 requests song song (0 leaks).
+
 
 
 

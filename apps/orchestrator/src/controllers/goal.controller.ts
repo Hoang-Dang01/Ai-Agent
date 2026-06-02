@@ -41,8 +41,27 @@ export async function createGoalPlan(req: AuthenticatedRequest, res: Response): 
     const backendUrl = process.env.BACKEND_AI_URL || 'http://localhost:8000';
     logger.info(`[Goal Controller] Querying Python Cognitive Planner for goal: "${goal}"`);
     
-    // Call Python Planner API
-    const response = await axios.post(`${backendUrl}/api/plan/generate`, { goal });
+    // Extract tracing contexts or default fallback
+    const correlationId = (req.headers['x-request-id'] as string) || randomUUID();
+    const parentRequestId = req.headers['x-parent-request-id'] as string || undefined;
+    const taskId = req.headers['x-task-id'] as string || undefined;
+    const workflowId = req.headers['x-workflow-id'] as string || undefined;
+    const epoch = req.headers['x-execution-epoch'] as string || undefined;
+
+    // Call Python Planner API propagating standard SRE tracing context
+    const response = await axios.post(
+      `${backendUrl}/api/plan/generate`, 
+      { goal },
+      {
+        headers: {
+          'X-Request-ID': correlationId,
+          ...(parentRequestId && { 'X-Parent-Request-ID': parentRequestId }),
+          ...(taskId && { 'X-Task-ID': taskId }),
+          ...(workflowId && { 'X-Workflow-ID': workflowId }),
+          ...(epoch && { 'X-Execution-Epoch': epoch })
+        }
+      }
+    );
     const planData = response.data; // Expected format: { goal: string, tasks: Array<...> }
 
     // Pre-create or fetch active userId
