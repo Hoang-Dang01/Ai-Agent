@@ -54,6 +54,10 @@ const payment_controller_1 = require("./src/controllers/payment.controller");
 const outbox_publisher_1 = require("./src/services/outbox-publisher");
 const lease_reaper_service_1 = require("./src/services/lease-reaper.service");
 const telemetry_retention_job_1 = require("./src/jobs/telemetry-retention.job");
+const multer_1 = __importDefault(require("multer"));
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
+const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 // Boot background BullMQ worker
 const taskWorker_1 = require("./src/queue/taskWorker");
 const app = (0, express_1.default)();
@@ -208,6 +212,7 @@ app.post('/api/study-hub/chat', rateLimiter_middleware_1.apiRateLimiter, auth_mi
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s hard ceiling timeout
         let aiMessage = '';
+        let aiSources = null;
         let responseOk = false;
         try {
             const n8nRes = await fetch(env_1.env.N8N_WEBHOOK_URL, {
@@ -220,19 +225,43 @@ app.post('/api/study-hub/chat', rateLimiter_middleware_1.apiRateLimiter, auth_mi
             if (n8nRes.ok) {
                 const data = await n8nRes.json();
                 aiMessage = data.output || data.response || 'No response returned from workflow.';
+                aiSources = data.sources || null;
                 responseOk = true;
             }
             else {
-                logger_1.logger.error(`[Orchestrator Gateway] n8n responded with status ${n8nRes.status}`);
-                aiMessage = 'Failed to communicate with local automation workflows. n8n returned a server error.';
+                logger_1.logger.warn(`[Orchestrator Gateway] n8n responded with status ${n8nRes.status}. Attempting direct Python RAG fallback.`);
             }
         }
         catch (fetchErr) {
             clearTimeout(timeoutId);
-            logger_1.logger.error(fetchErr, '[Orchestrator Gateway] n8n fetch request failed or timed out:');
-            aiMessage = 'Failed to communicate with local automation workflows. Connection timed out or n8n is offline.';
+            logger_1.logger.warn(fetchErr, '[Orchestrator Gateway] n8n fetch request failed or timed out. Attempting direct Python RAG fallback.');
         }
-        // 3. Persist AI Response (or Fallback System Error response) to PostgreSQL
+        // Direct Fallback strictly for Study Hub Q&A route
+        if (!responseOk) {
+            try {
+                logger_1.logger.info(`[Orchestrator Fallback] Querying Python AI Engine RAG chat directly at: ${env_1.env.AI_ENGINE_URL}/api/rag/chat/`);
+                const pythonRes = await fetch(`${env_1.env.AI_ENGINE_URL}/api/rag/chat/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: message })
+                });
+                if (pythonRes.ok) {
+                    const data = await pythonRes.json();
+                    aiMessage = data.response || 'No response from direct RAG.';
+                    aiSources = data.sources || null;
+                    responseOk = true;
+                }
+                else {
+                    logger_1.logger.error(`[Orchestrator Fallback] Python AI Engine RAG responded with status ${pythonRes.status}`);
+                    aiMessage = 'Failed to communicate with RAG engine. Python service returned an error.';
+                }
+            }
+            catch (fallbackErr) {
+                logger_1.logger.error(fallbackErr, '[Orchestrator Fallback] Direct Python RAG query failed:');
+                aiMessage = 'Failed to communicate with RAG engine. Python service is offline or timed out.';
+            }
+        }
+        // 3. Persist AI Response (or Fallback System Error response) to PostgreSQL with relational citations
         const savedAiMsg = await db_service_1.dbService.client.chatHistory.create({
             data: {
                 sessionId,
@@ -240,12 +269,23 @@ app.post('/api/study-hub/chat', rateLimiter_middleware_1.apiRateLimiter, auth_mi
                 senderType: 'ai',
                 agentType: responseOk ? agentType : 'system_error',
                 message: aiMessage,
+                citations: aiSources && Array.isArray(aiSources) ? {
+                    create: aiSources.map((src) => ({
+                        documentId: src.document_id || src.documentId || '',
+                        title: src.title || '',
+                        similarity: typeof src.similarity === 'number' ? src.similarity : null
+                    }))
+                } : undefined
             },
+            include: {
+                citations: true
+            }
         });
         res.json({
             status: 'OK',
             output: savedAiMsg.message,
             message: savedAiMsg,
+            sources: savedAiMsg.citations
         });
     }
     catch (error) {
@@ -267,6 +307,7 @@ app.get('/api/study-hub/history/:sessionId', auth_middleware_1.authMiddleware, a
         }
         const chatLogs = await db_service_1.dbService.client.chatHistory.findMany({
             where: { sessionId, userId: req.user.id },
+            include: { citations: true },
             orderBy: { createdAt: 'asc' },
         });
         res.json({
@@ -277,6 +318,81 @@ app.get('/api/study-hub/history/:sessionId', auth_middleware_1.authMiddleware, a
     catch (error) {
         logger_1.logger.error(error, `[Server Error] Failed to retrieve chat history for session ${req.params.sessionId}:`);
         res.status(500).json({ error: 'Failed to retrieve chat history.' });
+    }
+});
+// 1.13.5. Document Ingestion Agent Upload Proxy
+const uploadDir = path_1.default.join(__dirname, 'temp');
+if (!fs_1.default.existsSync(uploadDir)) {
+    fs_1.default.mkdirSync(uploadDir, { recursive: true });
+}
+const uploadLimiter = (0, express_rate_limit_1.default)({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 5,
+    message: { error: 'Too many uploads. Limit is 5 files per minute.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: (req) => process.env.NODE_ENV === 'test' // bypass for test runs
+});
+const upload = (0, multer_1.default)({
+    dest: uploadDir,
+    limits: { fileSize: 50 * 1024 * 1024 } // 50MB
+});
+app.post('/api/document-agent/upload', auth_middleware_1.authMiddleware, uploadLimiter, (req, res, next) => {
+    upload.single('file')(req, res, (err) => {
+        if (err) {
+            if (err instanceof multer_1.default.MulterError && err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(413).json({ error: 'Payload Too Large: File size exceeds the 50MB limit.' });
+            }
+            return res.status(400).json({ error: err.message || 'File upload error.' });
+        }
+        next();
+    });
+}, async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded.' });
+    }
+    try {
+        const formData = new FormData();
+        const fileBuffer = await fs_1.default.promises.readFile(req.file.path);
+        const fileBlob = new Blob([fileBuffer]);
+        formData.append('file', fileBlob, req.file.originalname);
+        if (req.body.commitMessage) {
+            formData.append('commit_message', req.body.commitMessage);
+        }
+        // Forward to Python AI Engine /api/document-agent/upload/
+        const response = await fetch(`${env_1.env.AI_ENGINE_URL}/api/document-agent/upload/`, {
+            method: 'POST',
+            body: formData,
+        });
+        if (!response.ok) {
+            let errorMessage = 'Failed to parse document.';
+            try {
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    const errorData = await response.json();
+                    errorMessage = errorData.detail || errorData.error || errorMessage;
+                }
+                else {
+                    errorMessage = await response.text() || errorMessage;
+                }
+            }
+            catch (parseErr) {
+                logger_1.logger.warn(parseErr, '[Orchestrator Gateway] Failed to parse error response from Python AI engine');
+            }
+            return res.status(response.status).json({ error: errorMessage });
+        }
+        const data = await response.json();
+        res.status(201).json(data);
+    }
+    catch (error) {
+        logger_1.logger.error(error, '[Server Error] DocumentAgent upload failed:');
+        res.status(500).json({ error: 'Failed to process document upload.' });
+    }
+    finally {
+        // Always delete temp file to prevent disk leaks
+        fs_1.default.promises.unlink(req.file.path).catch(err => {
+            logger_1.logger.error(err, `[Server Error] Failed to delete temp file at ${req.file.path}`);
+        });
     }
 });
 // 1.14. Stripe Payment Gateway & Webhooks Web portals

@@ -16,6 +16,10 @@ import { createCheckoutSession, handleStripeWebhook, getSubscriptionStatus } fro
 import { OutboxPublisher } from './src/services/outbox-publisher';
 import { LeaseReaperService } from './src/services/lease-reaper.service';
 import { startTelemetryRetentionScheduler, stopTelemetryRetentionScheduler } from './src/jobs/telemetry-retention.job';
+import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
+import rateLimit from 'express-rate-limit';
 
 
 // Boot background BullMQ worker
@@ -317,6 +321,91 @@ app.get('/api/study-hub/history/:sessionId', authMiddleware as any, async (req: 
     res.status(500).json({ error: 'Failed to retrieve chat history.' });
   }
 });
+
+// 1.13.5. Document Ingestion Agent Upload Proxy
+const uploadDir = path.join(__dirname, 'temp');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const uploadLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 5,
+  message: { error: 'Too many uploads. Limit is 5 files per minute.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => process.env.NODE_ENV === 'test' // bypass for test runs
+});
+
+const upload = multer({ 
+  dest: uploadDir,
+  limits: { fileSize: 50 * 1024 * 1024 } // 50MB
+});
+
+app.post(
+  '/api/document-agent/upload', 
+  authMiddleware as any, 
+  uploadLimiter,
+  (req: any, res: any, next: any) => {
+    upload.single('file')(req, res, (err: any) => {
+      if (err) {
+        if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(413).json({ error: 'Payload Too Large: File size exceeds the 50MB limit.' });
+        }
+        return res.status(400).json({ error: err.message || 'File upload error.' });
+      }
+      next();
+    });
+  },
+  async (req: any, res: any) => {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded.' });
+    }
+
+    try {
+      const formData = new FormData();
+      const fileBuffer = await fs.promises.readFile(req.file.path);
+      const fileBlob = new Blob([fileBuffer]);
+      formData.append('file', fileBlob, req.file.originalname);
+      if (req.body.commitMessage) {
+        formData.append('commit_message', req.body.commitMessage);
+      }
+
+      // Forward to Python AI Engine /api/document-agent/upload/
+      const response = await fetch(`${env.AI_ENGINE_URL}/api/document-agent/upload/`, {
+        method: 'POST',
+        body: formData as any,
+      });
+
+      if (!response.ok) {
+        let errorMessage = 'Failed to parse document.';
+        try {
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const errorData = await response.json() as any;
+            errorMessage = errorData.detail || errorData.error || errorMessage;
+          } else {
+            errorMessage = await response.text() || errorMessage;
+          }
+        } catch (parseErr) {
+          logger.warn(parseErr, '[Orchestrator Gateway] Failed to parse error response from Python AI engine');
+        }
+        return res.status(response.status).json({ error: errorMessage });
+      }
+
+      const data = await response.json();
+      res.status(201).json(data);
+    } catch (error: any) {
+      logger.error(error, '[Server Error] DocumentAgent upload failed:');
+      res.status(500).json({ error: 'Failed to process document upload.' });
+    } finally {
+      // Always delete temp file to prevent disk leaks
+      fs.promises.unlink(req.file.path).catch(err => {
+        logger.error(err, `[Server Error] Failed to delete temp file at ${req.file.path}`);
+      });
+    }
+  }
+);
 
 // 1.14. Stripe Payment Gateway & Webhooks Web portals
 app.post('/api/payment/checkout', apiRateLimiter, authMiddleware as any, async (req: any, res: any) => {

@@ -4,6 +4,23 @@ File này lưu lại lịch sử thay đổi của dự án. Không chỉ ghi L�
 
 ## [Unreleased] - Ngày bắt đầu chuẩn hóa
 
+### Phase K1: Document Ingestion Agent (MarkItDown Integration) - 04-06-2026
+- **Added:** Local file upload parser in Node.js orchestrator [server.ts](file:///c:/Git%20cua%20tui/Ai-Agent/apps/orchestrator/server.ts) using DiskStorage Multer and dedicated rate limiter.
+  - *Lý do (Why):* Avoids NodeJS RAM exhaustion under concurrent heavy uploads and secures endpoint boundaries from spam DOS attacks.
+- **Fixed:** Robust error status proxying in Node.js Gateway.
+  - *Lý do (Why):* Prevents downstream Python error pages (like `413 Payload Too Large` text or HTML) from causing JSON parse crashes and turning into a generic `500 Server Error` on the gateway. Downstream HTTP status codes are now accurately preserved and returned to the client.
+- **Added:** MIME guess verification using the `filetype` package in Python service [document_ingestion.py](file:///c:/Git%20cua%20tui/Ai-Agent/apps/backend-ai/app/services/document_ingestion.py).
+  - *Lý do (Why):* Rejects spoofed files (e.g. executable MZ masquerading with `.pdf` extension) based on magic byte signatures.
+- **Added:** Document status state machine using strict ORM Enum (`PENDING`, `PROCESSING`, `INDEXED`, `FAILED`) in Python backend [models.py](file:///c:/Git%20cua%20tui/Ai-Agent/apps/backend-ai/app/models.py).
+  - *Lý do (Why):* Enables clean asynchronous progress tracking for UI indicators and dashboard tables.
+- **Added:** Filesystem caching path (`storage_path` in `Document` model) in [document_ingestion.py](file:///c:/Git%20cua%20tui/Ai-Agent/apps/backend-ai/app/services/document_ingestion.py).
+  - *Lý do (Why):* Offloads converted markdown output from Postgres `Text` columns to local filesystem files, avoiding TOAST table performance bloat in PostgreSQL.
+- **Added:** SHA-256 content hash deduplication checks in Python backend [document_agent.py](file:///c:/Git%20cua%20tui/Ai-Agent/apps/backend-ai/app/routers/document_agent.py).
+  - *Lý do (Why):* Reuses pre-computed embeddings and GraphRAG indices on identical byte inputs, saving LLM cost and CPU time.
+- **Added:** `JobDispatcher` interface class in [job_dispatcher.py](file:///c:/Git%20cua%20tui/Ai-Agent/apps/backend-ai/app/services/job_dispatcher.py).
+  - *Lý do (Why):* Decouples the FastAPI endpoint logic from the async queue mechanism, allowing easy replacement with Redis/Celery queue workers in future phases.
+- **Added:** Automated integration test suites `apps/orchestrator/src/test/document-upload.test.ts` and `research/test_document_agent.py` verifying E2E ingestion life-cycle, limits, and rate limit blocks.
+
 ### Phase F: Backend & Data Hardening (RAG Citations, Scoped Fallback & Schema Normalization) - 04-06-2026
 - **Added:** Normalized `ChatCitation` relation model in [schema.prisma](file:///c:/Git%20cua%20tui/Ai-Agent/apps/orchestrator/prisma/schema.prisma) and pushed changes to PostgreSQL via `npx prisma db push`.
   - *Lý do (Why):* Avoids the JSON array anti-pattern inside `ChatHistory` for persisting RAG sources. Normalization allows structured relational queries, avoids serialization issues, and guarantees data integrity.
