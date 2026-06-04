@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
+from sqlalchemy.orm import selectinload
 from typing import List
 from uuid import UUID
 
@@ -62,18 +63,15 @@ async def get_all_documents(db: AsyncSession = Depends(get_db)):
     """
     try:
         result = await db.execute(
-            select(models.Document).order_by(desc(models.Document.updated_at))
+            select(models.Document)
+            .options(selectinload(models.Document.versions))
+            .order_by(desc(models.Document.updated_at))
         )
         docs = result.scalars().all()
         
-        # Nạp động các phiên bản của tài liệu tương ứng
+        # Sắp xếp các phiên bản của mỗi tài liệu theo version_number tăng dần
         for doc in docs:
-            version_result = await db.execute(
-                select(models.Version)
-                .where(models.Version.document_id == doc.id)
-                .order_by(models.Version.version_number.asc())
-            )
-            doc.versions = version_result.scalars().all()
+            doc.versions.sort(key=lambda v: v.version_number)
             
         return docs
     except Exception as e:
@@ -85,20 +83,20 @@ async def get_document(document_id: UUID, db: AsyncSession = Depends(get_db)):
     """
     Lấy chi tiết một tài liệu kèm tất cả phiên bản.
     """
-    result = await db.execute(
-        select(models.Document).where(models.Document.id == document_id)
-    )
-    doc = result.scalars().first()
-    if not doc:
-        raise HTTPException(status_code=404, detail="Document not found")
-        
-    version_result = await db.execute(
-        select(models.Version)
-        .where(models.Version.document_id == doc.id)
-        .order_by(models.Version.version_number.asc())
-    )
-    doc.versions = version_result.scalars().all()
-    return doc
+    try:
+        result = await db.execute(
+            select(models.Document)
+            .where(models.Document.id == document_id)
+            .options(selectinload(models.Document.versions))
+        )
+        doc = result.scalars().first()
+        if not doc:
+            raise HTTPException(status_code=404, detail="Document not found")
+            
+        doc.versions.sort(key=lambda v: v.version_number)
+        return doc
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/documents/", response_model=schemas.DocumentResponse)
@@ -223,6 +221,15 @@ async def delete_document(document_id: UUID, db: AsyncSession = Depends(get_db))
             
         await db.delete(doc)
         await db.commit()
+        
+        # Clean up local markdown file to prevent disk leaks
+        import os
+        if doc.storage_path and os.path.exists(doc.storage_path):
+            try:
+                os.remove(doc.storage_path)
+            except Exception as fs_err:
+                print(f"[Warning] Failed to delete local storage file {doc.storage_path}: {fs_err}")
+                
         return {"status": "OK", "message": f"Document {document_id} and all related versions, embeddings, and graph nodes/edges deleted successfully."}
     except Exception as e:
         await db.rollback()

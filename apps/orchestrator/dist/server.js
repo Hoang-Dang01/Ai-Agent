@@ -352,9 +352,9 @@ app.post('/api/document-agent/upload', auth_middleware_1.authMiddleware, uploadL
         return res.status(400).json({ error: 'No file uploaded.' });
     }
     try {
-        const formData = new FormData();
+        const formData = new globalThis.FormData();
         const fileBuffer = await fs_1.default.promises.readFile(req.file.path);
-        const fileBlob = new Blob([fileBuffer]);
+        const fileBlob = new globalThis.Blob([fileBuffer]);
         formData.append('file', fileBlob, req.file.originalname);
         if (req.body.commitMessage) {
             formData.append('commit_message', req.body.commitMessage);

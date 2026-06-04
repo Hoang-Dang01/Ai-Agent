@@ -75,9 +75,9 @@ function createTestServer(port: number): http.Server {
       }
 
       try {
-        const formData = new FormData();
+        const formData = new (globalThis as any).FormData();
         const fileBuffer = await fs.promises.readFile(req.file.path);
-        const fileBlob = new Blob([fileBuffer]);
+        const fileBlob = new (globalThis as any).Blob([fileBuffer]);
         formData.append('file', fileBlob, req.file.originalname);
         if (req.body.commitMessage) {
           formData.append('commit_message', req.body.commitMessage);
@@ -177,8 +177,8 @@ async function runTests() {
       return originalFetch(url, options);
     };
 
-    const formData1 = new FormData();
-    formData1.append('file', new Blob([Buffer.from('Hello standard RAG text content.')]), 'test.txt');
+    const formData1 = new (globalThis as any).FormData();
+    formData1.append('file', new (globalThis as any).Blob([Buffer.from('Hello standard RAG text content.')]), 'test.txt');
     
     const res1 = await fetch(`http://localhost:${PORT}/api/document-agent/upload`, {
       method: 'POST',
@@ -197,8 +197,8 @@ async function runTests() {
     // ----------------------------------------------------
     console.log(`\n${YELLOW}[TEST AREA 2] File Size Limit Rejection${RESET}`);
     const largeBuffer = Buffer.alloc(1024 * 1024 + 100); // 1.0001 MB
-    const formData2 = new FormData();
-    formData2.append('file', new Blob([largeBuffer]), 'large.txt');
+    const formData2 = new (globalThis as any).FormData();
+    formData2.append('file', new (globalThis as any).Blob([largeBuffer]), 'large.txt');
 
     const res2 = await fetch(`http://localhost:${PORT}/api/document-agent/upload`, {
       method: 'POST',
@@ -221,8 +221,8 @@ async function runTests() {
     try {
       let limitHit = false;
       for (let i = 0; i < 7; i++) {
-        const fd = new FormData();
-        fd.append('file', new Blob([Buffer.from(`Spam file ${i}`)]), `spam_${i}.txt`);
+        const fd = new (globalThis as any).FormData();
+        fd.append('file', new (globalThis as any).Blob([Buffer.from(`Spam file ${i}`)]), `spam_${i}.txt`);
         
         const res = await fetch(`http://localhost:${PORT}/api/document-agent/upload`, {
           method: 'POST',

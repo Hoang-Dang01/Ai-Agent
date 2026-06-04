@@ -19,7 +19,19 @@ File này lưu lại lịch sử thay đổi của dự án. Không chỉ ghi L�
   - *Lý do (Why):* Reuses pre-computed embeddings and GraphRAG indices on identical byte inputs, saving LLM cost and CPU time.
 - **Added:** `JobDispatcher` interface class in [job_dispatcher.py](file:///c:/Git%20cua%20tui/Ai-Agent/apps/backend-ai/app/services/job_dispatcher.py).
   - *Lý do (Why):* Decouples the FastAPI endpoint logic from the async queue mechanism, allowing easy replacement with Redis/Celery queue workers in future phases.
-- **Added:** Automated integration test suites `apps/orchestrator/src/test/document-upload.test.ts` and `research/test_document_agent.py` verifying E2E ingestion life-cycle, limits, and rate limit blocks.
+- **Fixed:** Eager relationship loading in async transactions using `selectinload` in [document_agent.py](file:///c:/Git%20cua%20tui/Ai-Agent/apps/backend-ai/app/routers/document_agent.py) and [rag.py](file:///c:/Git%20cua%20tui/Ai-Agent/apps/backend-ai/app/routers/rag.py).
+  - *Lý do (Why):* Eliminates lazy-loading database requests that throw `MissingGreenlet` exceptions under FastAPI's async SQLAlchemy execution context.
+- **Fixed:** Database unique constraint race condition recovery.
+  - *Lý do (Why):* Catches SQLAlchemy `IntegrityError` during concurrent duplicate uploads, rolling back and eagerly returning the committed record. This guarantees that concurrent client requests succeed without user-facing failures.
+- **Fixed:** Disk space leak prevention on document removal in [rag.py](file:///c:/Git%20cua%20tui/Ai-Agent/apps/backend-ai/app/routers/rag.py).
+  - *Lý do (Why):* Automatically deletes the cached markdown file from the local disk when a document is cascade-deleted, preventing storage leaks.
+- **Fixed:** Pydantic model serialization completeness.
+  - *Lý do (Why):* Updated `DocumentResponse` in [schemas.py](file:///c:/Git%20cua%20tui/Ai-Agent/apps/backend-ai/app/schemas.py) to declare and expose all new metadata columns, resolving client-facing missing property issues.
+- **Added:** Automated integration test suites:
+  - `apps/orchestrator/src/test/document-upload.test.ts` verifying gateway upload streaming.
+  - `research/test_document_agent.py` checking core ingestion statuses.
+  - `research/test_production_ingestion.py` executing 20 concurrent stress-uploads and verifying dynamic PDF, DOCX, XLSX, and PPTX conversions.
+  - `research/test_e2e_production_pipeline.py` verifying E2E RAG flow (Upload -> Embed -> Search -> Chat -> Cascade Delete) using the real document `ba_report_local_agent.docx`.
 
 ### Phase F: Backend & Data Hardening (RAG Citations, Scoped Fallback & Schema Normalization) - 04-06-2026
 - **Added:** Normalized `ChatCitation` relation model in [schema.prisma](file:///c:/Git%20cua%20tui/Ai-Agent/apps/orchestrator/prisma/schema.prisma) and pushed changes to PostgreSQL via `npx prisma db push`.

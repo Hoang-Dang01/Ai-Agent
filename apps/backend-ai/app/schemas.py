@@ -25,6 +25,10 @@ class VersionResponse(BaseModel):
 class DocumentResponse(BaseModel):
     id: UUID
     title: str
+    status: str
+    content_hash: str
+    storage_path: Optional[str] = None
+    file_size: int
     created_at: datetime
     updated_at: datetime
     versions: Optional[List[VersionResponse]] = []

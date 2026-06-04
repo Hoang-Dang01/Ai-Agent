@@ -363,9 +363,9 @@ app.post(
     }
 
     try {
-      const formData = new FormData();
+      const formData = new (globalThis as any).FormData();
       const fileBuffer = await fs.promises.readFile(req.file.path);
-      const fileBlob = new Blob([fileBuffer]);
+      const fileBlob = new (globalThis as any).Blob([fileBuffer]);
       formData.append('file', fileBlob, req.file.originalname);
       if (req.body.commitMessage) {
         formData.append('commit_message', req.body.commitMessage);

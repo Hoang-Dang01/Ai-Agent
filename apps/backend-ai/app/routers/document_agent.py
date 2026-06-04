@@ -2,6 +2,8 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, File, UploadFile, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import selectinload
 from uuid import UUID
 
 from app.database import get_db
@@ -66,19 +68,15 @@ async def upload_document(
     
     # 2. Check Deduplication
     existing = await db.execute(
-        select(models.Document).where(models.Document.content_hash == content_hash)
+        select(models.Document)
+        .where(models.Document.content_hash == content_hash)
+        .options(selectinload(models.Document.versions))
     )
     db_doc = existing.scalars().first()
     if db_doc:
         logger.info(f"[DocumentAgent Telemetry] DOCUMENT_DEDUPLICATED: Reusing document ID {db_doc.id}")
-        
-        # Load associated versions to construct response
-        version_result = await db.execute(
-            select(models.Version)
-            .where(models.Version.document_id == db_doc.id)
-            .order_by(models.Version.version_number.desc())
-        )
-        db_doc.versions = version_result.scalars().all()
+        # Sort in memory since they are eagerly loaded
+        db_doc.versions.sort(key=lambda v: v.version_number, reverse=True)
         return db_doc
     
     # 3. Convert via MarkItDown
@@ -125,6 +123,10 @@ async def upload_document(
         return schemas.DocumentResponse(
             id=db_doc.id,
             title=db_doc.title,
+            status=db_doc.status,
+            content_hash=db_doc.content_hash,
+            storage_path=db_doc.storage_path,
+            file_size=db_doc.file_size,
             created_at=db_doc.created_at,
             updated_at=db_doc.updated_at,
             versions=[
@@ -139,6 +141,20 @@ async def upload_document(
         )
     except HTTPException as http_err:
         raise http_err
+    except IntegrityError:
+        await db.rollback()
+        # Query again to see if the record was inserted by a concurrent transaction
+        existing = await db.execute(
+            select(models.Document)
+            .where(models.Document.content_hash == content_hash)
+            .options(selectinload(models.Document.versions))
+        )
+        db_doc = existing.scalars().first()
+        if db_doc:
+            logger.info(f"[DocumentAgent Telemetry] CONCURRENT_UPLOAD_DEDUPLICATED: Recovered document ID {db_doc.id}")
+            db_doc.versions.sort(key=lambda v: v.version_number, reverse=True)
+            return db_doc
+        raise HTTPException(status_code=500, detail="Database integrity error during concurrent upload.")
     except Exception as e:
         await db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
