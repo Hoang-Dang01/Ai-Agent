@@ -18,11 +18,32 @@ namespace OfflineAgent.ConsoleApp
 {
     class Program
     {
+        private static WindowAutomationHelper? _activeAutomationHelper;
+
         static void Main(string[] args)
         {
+            // Đăng ký dọn dẹp khẩn cấp khi tiến trình kết thúc hoặc lỗi
+            AppDomain.CurrentDomain.ProcessExit += (s, e) => CurrentDomain_ProcessExit();
+            AppDomain.CurrentDomain.UnhandledException += (s, e) => CurrentDomain_UnhandledException(e);
+            Console.CancelKeyPress += (s, e) => Console_CancelKeyPress();
+
             // Thiết lập mã hóa UTF-8 để in tiếng Việt chuẩn trong console Windows
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             Console.InputEncoding = System.Text.Encoding.UTF8;
+
+            if (args.Length >= 2 && args[0] == "--generate-catalog")
+            {
+                string outputPath = args[1];
+                File.WriteAllText(outputPath, ToolCatalog.Instance.GetCatalogSchemaJson());
+                Console.WriteLine($"[ToolCatalog] Successfully generated tools catalog at: {outputPath}");
+                return;
+            }
+
+            if (args.Length >= 1 && args[0] == "--tools-catalog")
+            {
+                Console.WriteLine(ToolCatalog.Instance.GetCatalogSchemaJson());
+                return;
+            }
 
             if (args.Length >= 2 && args[0] == "--workflow")
             {
@@ -33,7 +54,7 @@ namespace OfflineAgent.ConsoleApp
 
             while (true)
             {
-                Console.Clear();
+                SafeClearConsole();
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("==================================================================");
                 Console.WriteLine("        OFFLINE C# AI AGENT RUNNER - CONTROL PANEL (NET 9.0)");
@@ -59,7 +80,7 @@ namespace OfflineAgent.ConsoleApp
                         break;
                     case "2":
                         Console.WriteLine("\n[Vision] YOLOv8 ONNX module is under development. Press any key to return...");
-                        Console.ReadKey();
+                        SafeReadKey();
                         break;
                     case "3":
                         ExecuteLocalLLM();
@@ -74,15 +95,76 @@ namespace OfflineAgent.ConsoleApp
                         return;
                     default:
                         Console.WriteLine("\nInvalid selection. Press any key to try again...");
-                        Console.ReadKey();
+                        SafeReadKey();
                         break;
                 }
             }
         }
 
+        private static void CurrentDomain_ProcessExit()
+        {
+            if (_activeAutomationHelper != null)
+            {
+                Console.WriteLine("[Emergency Cleanup] ProcessExit triggered. Disposing active automation helper...");
+                _activeAutomationHelper.Dispose();
+            }
+        }
+
+        private static void CurrentDomain_UnhandledException(UnhandledExceptionEventArgs e)
+        {
+            if (_activeAutomationHelper != null)
+            {
+                Console.WriteLine($"[Emergency Cleanup] UnhandledException triggered (IsTerminating: {e.IsTerminating}). Disposing helper...");
+                _activeAutomationHelper.Dispose();
+            }
+        }
+
+        private static void Console_CancelKeyPress()
+        {
+            if (_activeAutomationHelper != null)
+            {
+                Console.WriteLine("[Emergency Cleanup] CancelKeyPress (Ctrl+C) triggered. Disposing helper...");
+                _activeAutomationHelper.Dispose();
+            }
+        }
+
+        private static void SafeClearConsole()
+        {
+            try
+            {
+                if (!Console.IsOutputRedirected && !Console.IsInputRedirected)
+                {
+                    Console.Clear();
+                }
+            }
+            catch
+            {
+                // Ignore console clear errors in non-interactive/redirected environments
+            }
+        }
+
+        private static void SafeReadKey()
+        {
+            try
+            {
+                if (!Console.IsInputRedirected)
+                {
+                    Console.ReadKey();
+                }
+                else
+                {
+                    Console.ReadLine();
+                }
+            }
+            catch
+            {
+                try { Console.Read(); } catch { }
+            }
+        }
+
         private static void ExecuteFlaUITest()
         {
-            Console.Clear();
+            SafeClearConsole();
             Console.WriteLine("==================================================================");
             Console.WriteLine("   RUNNING FLAUI WINDOWS AUTOMATION TEST (NOTEPAD SCENARIOS)");
             Console.WriteLine("==================================================================");
@@ -90,6 +172,7 @@ namespace OfflineAgent.ConsoleApp
 
             using (var helper = new WindowAutomationHelper())
             {
+                _activeAutomationHelper = helper;
                 try
                 {
                     // Khởi chạy hoặc kết nối vào Notepad
@@ -123,15 +206,19 @@ namespace OfflineAgent.ConsoleApp
                     Console.WriteLine($"\n[Error] Test failed: {ex.Message}");
                     Console.ResetColor();
                 }
+                finally
+                {
+                    _activeAutomationHelper = null;
+                }
             }
 
             Console.WriteLine("\nPress any key to return to Main Menu...");
-            Console.ReadKey();
+            SafeReadKey();
         }
 
         private static void ExecuteLocalLLM()
         {
-            Console.Clear();
+            SafeClearConsole();
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("==================================================================");
             Console.WriteLine("    RUNNING LOCAL QWEN 2.5 ONNX GENERATIVE AI INFERENCE (C#)");
@@ -156,7 +243,7 @@ namespace OfflineAgent.ConsoleApp
                 Console.WriteLine("Đường dẫn tìm kiếm dự kiến: models\\Qwen2.5-1.5B-Instruct\\onnx\\");
                 Console.ResetColor();
                 Console.WriteLine("\nBấm phím bất kỳ để quay lại...");
-                Console.ReadKey();
+                SafeReadKey();
                 return;
             }
 
@@ -202,13 +289,13 @@ namespace OfflineAgent.ConsoleApp
                 Console.WriteLine($"[Error] Lỗi nạp hoặc suy luận mô hình GenAI: {ex.Message}");
                 Console.ResetColor();
                 Console.WriteLine("\nBấm phím bất kỳ để quay lại...");
-                Console.ReadKey();
+                SafeReadKey();
             }
         }
 
         private static void ExecutePluginsMenu()
         {
-            Console.Clear();
+            SafeClearConsole();
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("==================================================================");
             Console.WriteLine("    KNOWLEDGE WORK PLUGINS ENGINE - DEPLOYMENT CONSOLE");
@@ -267,7 +354,7 @@ namespace OfflineAgent.ConsoleApp
                 Console.WriteLine("\n[Engine] Không tìm thấy plugin hợp lệ nào trong thư mục. Vui lòng kiểm tra lại cấu hình.");
                 Console.ResetColor();
                 Console.WriteLine("Bấm phím bất kỳ để quay lại...");
-                Console.ReadKey();
+                SafeReadKey();
                 return;
             }
 
@@ -290,7 +377,7 @@ namespace OfflineAgent.ConsoleApp
             else
             {
                 Console.WriteLine("Lựa chọn không hợp lệ. Bấm phím bất kỳ để quay lại...");
-                Console.ReadKey();
+                SafeReadKey();
             }
         }
 
@@ -298,7 +385,7 @@ namespace OfflineAgent.ConsoleApp
         {
             while (true)
             {
-                Console.Clear();
+                SafeClearConsole();
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("==================================================================");
                 Console.WriteLine($"   PHÒNG BAN: {plugin.Manifest.Name.ToUpper()} ({plugin.Manifest.Version})");
@@ -353,14 +440,14 @@ namespace OfflineAgent.ConsoleApp
                 else
                 {
                     Console.WriteLine("Lựa chọn không hợp lệ. Bấm phím bất kỳ để thử lại...");
-                    Console.ReadKey();
+                    SafeReadKey();
                 }
             }
         }
 
         private static void RunSimulatedCommand(Plugin plugin, PluginCommand command)
         {
-            Console.Clear();
+            SafeClearConsole();
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("==================================================================");
             Console.WriteLine($"   MÔ PHỎNG LỆNH: {command.Name}");
@@ -405,7 +492,7 @@ namespace OfflineAgent.ConsoleApp
             Console.ResetColor();
             Console.WriteLine("Lưu ý: Tri thức này sẽ được nạp thẳng vào RAM làm System Instructions.");
             Console.WriteLine("Bấm phím bất kỳ để quay lại menu phòng ban...");
-            Console.ReadKey();
+            SafeReadKey();
         }
 
         private static async Task ExecuteWorkflowFile(string filePath)
@@ -471,6 +558,14 @@ namespace OfflineAgent.ConsoleApp
                     }));
                 });
 
+                EventBus.Instance.Subscribe(AgentEventType.StateRolledBack, ev => {
+                    Console.WriteLine(JsonSerializer.Serialize(new {
+                        type = "telemetry",
+                        @event = "StateRolledBack",
+                        message = ev.Message
+                    }));
+                });
+
                 // Khởi tạo các Phân hệ Cốt lõi
                 var securityGuard = new CapabilitySecurityGuard(new List<AgentCapability>
                 {
@@ -483,15 +578,18 @@ namespace OfflineAgent.ConsoleApp
 
                 using (var automationHelper = new WindowAutomationHelper())
                 {
-                    var stateEngine = new WorldStateEngine(automationHelper);
-                    var deltaEngine = new StateDeltaEngine();
-                    var reflectionEngine = new ReflectionEngine();
-                    var worldState = new OfflineAgent.Core.WorldState.WorldState();
+                    _activeAutomationHelper = automationHelper;
+                    try
+                    {
+                        var stateEngine = new WorldStateEngine(automationHelper);
+                        var deltaEngine = new StateDeltaEngine();
+                        var reflectionEngine = new ReflectionEngine();
+                        var worldState = new OfflineAgent.Core.WorldState.WorldState();
 
-                    // Cổng ghi nhận log nghiệp vụ (wrap as JSON log)
-                    Action<string> logger = message => {
-                        Console.WriteLine(JsonSerializer.Serialize(new { type = "log", message = message }));
-                    };
+                        // Cổng ghi nhận log nghiệp vụ (wrap as JSON log)
+                        Action<string> logger = message => {
+                            Console.WriteLine(JsonSerializer.Serialize(new { type = "log", message = message }));
+                        };
 
                     // Hàm đại diện cho cổng gọi suy luận LLM/VLM cục bộ
                     Func<string, Task<string>> askLocalAi = prompt => Task.FromResult("Offline AI Answer Placeholder");
@@ -536,13 +634,18 @@ namespace OfflineAgent.ConsoleApp
                         }));
                     }
 
-                    // Print final result
-                    Console.WriteLine(JsonSerializer.Serialize(new {
-                        type = "workflow_complete",
-                        success = success
-                    }));
+                        // Print final result
+                        Console.WriteLine(JsonSerializer.Serialize(new {
+                            type = "workflow_complete",
+                            success = success
+                        }));
 
-                    Environment.Exit(success ? 0 : 1);
+                        Environment.Exit(success ? 0 : 1);
+                    }
+                    finally
+                    {
+                        _activeAutomationHelper = null;
+                    }
                 }
             }
             catch (Exception ex)

@@ -42,6 +42,16 @@ class DbService {
             logger_1.logger.info('[DB Service] Ensuring pgvector extension is enabled...');
             await this.client.$executeRawUnsafe('CREATE EXTENSION IF NOT EXISTS vector;');
             logger_1.logger.info('[DB Service] pgvector extension checked/enabled successfully.');
+            // Initialize physical task_fencing_seq sequence
+            logger_1.logger.info('[DB Service] Ensuring task_fencing_seq sequence exists...');
+            await this.client.$executeRawUnsafe(`
+        CREATE SEQUENCE IF NOT EXISTS task_fencing_seq
+        AS BIGINT
+        START WITH 1
+        INCREMENT BY 1
+        NO CYCLE;
+      `);
+            logger_1.logger.info('[DB Service] task_fencing_seq sequence checked/enabled successfully.');
         }
         catch (error) {
             logger_1.logger.error(error, '[DB Service] Failed to initialize database connection:');

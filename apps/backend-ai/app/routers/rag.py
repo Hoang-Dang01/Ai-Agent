@@ -20,7 +20,7 @@ async def calculate_and_save_embedding(version_id: UUID, content: str):
     """
     Tính toán vector ẩn không đồng bộ (background task) để không gây block luồng chính HTTP.
     """
-    print(f"[RAG Background] Khởi động tính toán embedding cho Version: {version_id}...")
+    print(f"[RAG Background] Starting embedding calculation for Version: {version_id}...")
     async with AsyncSessionLocal() as db:
         try:
             vector = await rag_service.generate_embedding(content)
@@ -43,13 +43,13 @@ async def calculate_and_save_embedding(version_id: UUID, content: str):
                 db.add(db_embedding)
                 
             await db.commit()
-            print(f"[RAG Background] Hoàn tất và lưu trữ vector cho Version {version_id} thành công.")
+            print(f"[RAG Background] Completed and stored vector for Version {version_id} successfully.")
             
             # Đồng thời kích hoạt trích xuất GraphRAG Core không đồng bộ
             await graph_service.extract_and_save_graph(version_id, content)
         except Exception as e:
             await db.rollback()
-            print(f"[RAG Background] Lỗi tính toán vector cho Version {version_id}: {e}")
+            print(f"[RAG Background] Error calculating vector for Version {version_id}: {e}")
 
 # ==========================================
 # ENDPOINTS ĐIỀU HÀNH TÀI LIỆU RAG
@@ -132,11 +132,22 @@ async def create_document(
         )
         
         await db.commit()
-        await db.refresh(db_doc)
         
-        # Gán versions để khớp kiểu trả về
-        db_doc.versions = [db_version]
-        return db_doc
+        return schemas.DocumentResponse(
+            id=db_doc.id,
+            title=db_doc.title,
+            created_at=db_doc.created_at,
+            updated_at=db_doc.updated_at,
+            versions=[
+                schemas.VersionResponse(
+                    id=db_version.id,
+                    version_number=db_version.version_number,
+                    content=db_version.content,
+                    commit_message=db_version.commit_message,
+                    created_at=db_version.created_at
+                )
+            ]
+        )
     except Exception as e:
         await db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
@@ -191,6 +202,28 @@ async def append_version(
         await db.commit()
         await db.refresh(db_version)
         return db_version
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/documents/{document_id}")
+async def delete_document(document_id: UUID, db: AsyncSession = Depends(get_db)):
+    """
+    Xóa tài liệu và toàn bộ các phiên bản, cascade delete các thực thể/liên kết đồ thị tri thức
+    và vector nhúng tương ứng khỏi database.
+    """
+    try:
+        result = await db.execute(
+            select(models.Document).where(models.Document.id == document_id)
+        )
+        doc = result.scalars().first()
+        if not doc:
+            raise HTTPException(status_code=404, detail="Document not found")
+            
+        await db.delete(doc)
+        await db.commit()
+        return {"status": "OK", "message": f"Document {document_id} and all related versions, embeddings, and graph nodes/edges deleted successfully."}
     except Exception as e:
         await db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
@@ -270,7 +303,14 @@ async def chat_with_docs(chat: schemas.ChatQuery, db: AsyncSession = Depends(get
         
         return {
             "response": answer,
-            "sources": [{"title": r.title, "document_id": str(r.document_id)} for r in search_results]
+            "sources": [
+                {
+                    "title": r.title,
+                    "document_id": str(r.document_id),
+                    "similarity": float(r.similarity)
+                }
+                for r in search_results
+            ]
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

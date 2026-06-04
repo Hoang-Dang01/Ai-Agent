@@ -57,6 +57,7 @@ services:
       - ../apps/backend-ai:/app
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONUTF8=1
       - REDIS_URL=redis://redis:6379
       - DB_URL=postgresql://ai_admin:mysecretpassword@postgres:5432/ai_study_hub
     networks:

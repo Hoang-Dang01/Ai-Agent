@@ -1,0 +1,245 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": "2026.06.04.001",
+  "runtimeCommit": "abc123",
+  "generatedAt": "2026-06-04T09:52:27.9780548Z",
+  "tools": [
+    {
+      "name": "OpenApplicationTool",
+      "description": "Kh\u1EDFi ch\u1EA1y m\u1ED9t \u1EE9ng d\u1EE5ng m\u1EDBi ho\u1EB7c k\u1EBFt n\u1ED1i v\u00E0o ti\u1EBFn tr\u00ECnh \u0111ang ch\u1EA1y (V\u00ED d\u1EE5: notepad.exe).",
+      "requiredCapabilities": [
+        "LaunchApps"
+      ],
+      "preconditions": [
+        {
+          "SchemaVersion": 1,
+          "Predicate": "allowed",
+          "EntityType": "app_open",
+          "EntityIdParameter": null,
+          "TargetValue": true
+        }
+      ],
+      "effects": [
+        {
+          "SchemaVersion": 1,
+          "Predicate": "running",
+          "EntityType": "app",
+          "EntityIdParameter": "exePath",
+          "TargetValue": true
+        }
+      ],
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "exePath": {
+            "type": "string",
+            "description": "\u0110\u01B0\u1EDDng d\u1EABn v\u1EADt l\u00FD \u0111\u1EBFn file th\u1EF1c thi (.exe) c\u1EE7a \u1EE9ng d\u1EE5ng."
+          }
+        },
+        "required": [
+          "exePath"
+        ]
+      }
+    },
+    {
+      "name": "TypeTextTool",
+      "description": "G\u00F5 ph\u00EDm ho\u1EB7c \u0111i\u1EC1n v\u0103n b\u1EA3n v\u00E0o v\u00F9ng nh\u1EADp li\u1EC7u c\u1EE7a \u1EE9ng d\u1EE5ng hi\u1EC7n h\u00E0nh.",
+      "requiredCapabilities": [
+        "KeyboardInput"
+      ],
+      "preconditions": [
+        {
+          "SchemaVersion": 1,
+          "Predicate": "allowed",
+          "EntityType": "write",
+          "EntityIdParameter": null,
+          "TargetValue": true
+        }
+      ],
+      "effects": [
+        {
+          "SchemaVersion": 1,
+          "Predicate": "written",
+          "EntityType": "text",
+          "EntityIdParameter": null,
+          "TargetValue": true
+        }
+      ],
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "V\u0103n b\u1EA3n c\u1EA7n g\u00F5 ho\u1EB7c \u0111i\u1EC1n v\u00E0o Notepad."
+          }
+        },
+        "required": [
+          "text"
+        ]
+      }
+    },
+    {
+      "name": "ClickTool",
+      "description": "Di chuy\u1EC3n v\u00E0 click chu\u1ED9t v\u00E0o m\u1ED9t n\u00FAt ho\u1EB7c ph\u1EA7n t\u1EED giao di\u1EC7n theo t\u00EAn hi\u1EC3n th\u1ECB.",
+      "requiredCapabilities": [
+        "MouseControl"
+      ],
+      "preconditions": [],
+      "effects": [],
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "target": {
+            "type": "string",
+            "description": "T\u00EAn hi\u1EC3n th\u1ECB c\u1EE7a n\u00FAt b\u1EA5m ho\u1EB7c menu item c\u1EA7n nh\u1EA5p chu\u1ED9t."
+          }
+        },
+        "required": [
+          "target"
+        ]
+      }
+    },
+    {
+      "name": "ReadWindowTool",
+      "description": "\u0110\u1ECDc ti\u00EAu \u0111\u1EC1 v\u00E0 n\u1ED9i dung v\u0103n b\u1EA3n hi\u1EC7n h\u00E0nh trong c\u1EEDa s\u1ED5 \u0111\u1EC3 quan s\u00E1t (Observer).",
+      "requiredCapabilities": [
+        "ReadFiles"
+      ],
+      "preconditions": [
+        {
+          "SchemaVersion": 1,
+          "Predicate": "allowed",
+          "EntityType": "read",
+          "EntityIdParameter": null,
+          "TargetValue": true
+        }
+      ],
+      "effects": [
+        {
+          "SchemaVersion": 1,
+          "Predicate": "read",
+          "EntityType": "window",
+          "EntityIdParameter": null,
+          "TargetValue": true
+        }
+      ],
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "DeleteFileTool",
+      "description": "X\u00F3a m\u1ED9t file kh\u1ECFi h\u1EC7 th\u1ED1ng.",
+      "requiredCapabilities": [
+        "DeleteFiles"
+      ],
+      "preconditions": [
+        {
+          "SchemaVersion": 1,
+          "Predicate": "allowed",
+          "EntityType": "write",
+          "EntityIdParameter": null,
+          "TargetValue": true
+        }
+      ],
+      "effects": [
+        {
+          "SchemaVersion": 1,
+          "Predicate": "exists",
+          "EntityType": "file",
+          "EntityIdParameter": "path",
+          "TargetValue": false
+        }
+      ],
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "\u0110\u01B0\u1EDDng d\u1EABn file c\u1EA7n x\u00F3a."
+          }
+        },
+        "required": [
+          "path"
+        ]
+      }
+    },
+    {
+      "name": "ReadFileTool",
+      "description": "\u0110\u1ECDc n\u1ED9i dung m\u1ED9t file.",
+      "requiredCapabilities": [
+        "ReadFiles"
+      ],
+      "preconditions": [
+        {
+          "SchemaVersion": 1,
+          "Predicate": "allowed",
+          "EntityType": "read",
+          "EntityIdParameter": null,
+          "TargetValue": true
+        },
+        {
+          "SchemaVersion": 1,
+          "Predicate": "exists",
+          "EntityType": "file",
+          "EntityIdParameter": "path",
+          "TargetValue": true
+        }
+      ],
+      "effects": [],
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "\u0110\u01B0\u1EDDng d\u1EABn file c\u1EA7n \u0111\u1ECDc."
+          }
+        },
+        "required": [
+          "path"
+        ]
+      }
+    },
+    {
+      "name": "SendEmailTool",
+      "description": "G\u1EEDi email b\u00E1o c\u00E1o.",
+      "requiredCapabilities": [
+        "KeyboardInput"
+      ],
+      "preconditions": [
+        {
+          "SchemaVersion": 1,
+          "Predicate": "allowed",
+          "EntityType": "network",
+          "EntityIdParameter": null,
+          "TargetValue": true
+        }
+      ],
+      "effects": [],
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "\u0110\u1ECBa ch\u1EC9 email ng\u01B0\u1EDDi nh\u1EADn."
+          },
+          "subject": {
+            "type": "string",
+            "description": "Ti\u00EAu \u0111\u1EC1 email."
+          },
+          "body": {
+            "type": "string",
+            "description": "N\u1ED9i dung email."
+          }
+        },
+        "required": [
+          "email",
+          "subject",
+          "body"
+        ]
+      }
+    }
+  ]
+}

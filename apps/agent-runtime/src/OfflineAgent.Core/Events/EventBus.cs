@@ -11,7 +11,8 @@ namespace OfflineAgent.Core.Events
         ToolFailed,
         StateChanged,
         ReflectionTriggered,
-        ApprovalRequested
+        ApprovalRequested,
+        StateRolledBack
     }
 
     public class AgentEvent

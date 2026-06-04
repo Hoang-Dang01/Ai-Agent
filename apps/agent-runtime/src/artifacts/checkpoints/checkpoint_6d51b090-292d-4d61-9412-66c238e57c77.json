@@ -1,0 +1,29 @@
+{
+  "GoalId": "6d51b090-292d-4d61-9412-66c238e57c77",
+  "GoalText": "M\u1EDF Notepad",
+  "Nodes": [
+    {
+      "Id": "task_0",
+      "Name": "M\u1EDF Notepad",
+      "ToolName": "OpenApplicationTool",
+      "Arguments": {
+        "exePath": "notepad.exe"
+      },
+      "DependsOn": [],
+      "State": 2,
+      "RetryCount": 0
+    },
+    {
+      "Id": "task_1",
+      "Name": "\u0110\u1ECDc x\u00E1c minh v\u0103n b\u1EA3n",
+      "ToolName": "OpenApplicationTool",
+      "Arguments": {
+        "exePath": "invalid_app_name_12345.exe"
+      },
+      "DependsOn": [],
+      "State": 3,
+      "RetryCount": 3
+    }
+  ],
+  "SavedTime": "2026-06-04T09:35:38.0296151+07:00"
+}

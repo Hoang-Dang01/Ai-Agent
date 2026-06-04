@@ -47,6 +47,10 @@ exports.env = {
     JWT_SECRET: process.env.JWT_SECRET || 'replace_this_with_a_secure_jwt_secret_key_in_production',
     CORS_ORIGIN: process.env.CORS_ORIGIN || '*',
     AI_ENGINE_URL: process.env.AI_ENGINE_URL || 'http://localhost:8000',
+    N8N_WEBHOOK_URL: process.env.N8N_WEBHOOK_URL || 'http://localhost:5678/webhook/chat',
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || '',
+    STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || '',
+    STRIPE_PRICE_ID: process.env.STRIPE_PRICE_ID || '',
 };
 // Validate critical variables on startup
 const missingVars = [];

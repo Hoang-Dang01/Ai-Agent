@@ -1,15 +1,26 @@
 import uuid
+import enum
 from datetime import datetime
-from sqlalchemy import Column, String, Text, Integer, ForeignKey, DateTime, UniqueConstraint
+from sqlalchemy import Column, String, Text, Integer, ForeignKey, DateTime, UniqueConstraint, Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from pgvector.sqlalchemy import Vector
 from app.database import Base
 
+class DocumentStatus(str, enum.Enum):
+    PENDING = "PENDING"
+    PROCESSING = "PROCESSING"
+    INDEXED = "INDEXED"
+    FAILED = "FAILED"
+
 class Document(Base):
     __tablename__ = "documents"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title = Column(String(255), nullable=False)
+    status = Column(SQLEnum(DocumentStatus, name="document_status_enum"), nullable=False, default=DocumentStatus.PENDING)
+    content_hash = Column(String(64), unique=True, nullable=False)  # SHA-256 hash
+    storage_path = Column(String(512), nullable=True)  # Path to local MD file
+    file_size = Column(Integer, nullable=False, default=0)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
     updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
     versions = relationship("Version", back_populates="document", cascade="all, delete-orphan")

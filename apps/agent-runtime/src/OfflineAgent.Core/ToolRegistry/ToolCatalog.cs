@@ -21,6 +21,9 @@ namespace OfflineAgent.Core.ToolRegistry
             RegisterTool(new TypeTextTool());
             RegisterTool(new ClickTool());
             RegisterTool(new ReadWindowTool());
+            RegisterTool(new DeleteFileTool());
+            RegisterTool(new ReadFileTool());
+            RegisterTool(new SendEmailTool());
         }
 
         public void RegisterTool(ITool tool)
@@ -82,6 +85,8 @@ namespace OfflineAgent.Core.ToolRegistry
                     name = t.Name,
                     description = t.Description,
                     requiredCapabilities = t.RequiredCapabilities.Select(c => c.ToString()).ToList(),
+                    preconditions = t.Preconditions,
+                    effects = t.Effects,
                     parameters = new
                     {
                         type = "object",
@@ -91,7 +96,16 @@ namespace OfflineAgent.Core.ToolRegistry
                 };
             }).ToList();
 
-            return JsonSerializer.Serialize(catalog, new JsonSerializerOptions { WriteIndented = true });
+            var response = new
+            {
+                schemaVersion = 1,
+                catalogVersion = "2026.06.04.001",
+                runtimeCommit = "abc123",
+                generatedAt = DateTime.UtcNow.ToString("o"),
+                tools = catalog
+            };
+
+            return JsonSerializer.Serialize(response, new JsonSerializerOptions { WriteIndented = true });
         }
     }
 }

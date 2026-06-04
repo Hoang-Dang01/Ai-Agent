@@ -4,7 +4,8 @@ FROM python:3.12-slim AS builder
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    UV_SYSTEM_PYTHON=1
+    UV_SYSTEM_PYTHON=1 \
+    PYTHONUTF8=1
 
 # Install uv (The ultra-fast Python package installer and resolver)
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/

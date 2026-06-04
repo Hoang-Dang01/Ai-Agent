@@ -91,6 +91,13 @@ namespace OfflineAgent.Core.Runtime
                 }
             }
 
+            // Cấu hình giới hạn số lần Replan toàn cục
+            const int MaxReplanCeiling = 3;
+            int globalReplanCount = 0;
+
+            // Khởi tạo bản sao lưu trạng thái tốt gần nhất (rollback points)
+            var lastGoodWorldStateBackup = _worldState.Clone();
+
             foreach (var node in executionOrder)
             {
                 // Nếu node đã được đánh dấu hoàn thành từ Checkpoint cũ, ta có quyền bỏ qua (Skipped)
@@ -274,6 +281,9 @@ namespace OfflineAgent.Core.Runtime
 
                         // Lưu checkpoint lưu trữ tiến trình an toàn
                         CheckpointManager.Instance.SaveCheckpoint(goalId, goalText, _nodes);
+
+                        // Cập nhật bản sao lưu trạng thái tốt gần nhất
+                        lastGoodWorldStateBackup = _worldState.Clone();
                     }
                     else
                     {
@@ -301,6 +311,9 @@ namespace OfflineAgent.Core.Runtime
                                     
                                     // Lưu checkpoint sau khi được phê duyệt
                                     CheckpointManager.Instance.SaveCheckpoint(goalId, goalText, _nodes);
+
+                                    // Cập nhật bản sao lưu trạng thái tốt gần nhất
+                                    lastGoodWorldStateBackup = _worldState.Clone();
                                 }
                                 else
                                 {
@@ -318,7 +331,18 @@ namespace OfflineAgent.Core.Runtime
                         }
                         else
                         {
+                            // Kiểm tra xem đã vượt quá giới hạn Replan toàn cục chưa
+                            if (globalReplanCount >= MaxReplanCeiling)
+                            {
+                                context.Logger($"[Workflow Runtime Warning] Đã vượt ngưỡng replan tối đa cho phép ({MaxReplanCeiling}). Ngừng gọi AI và đánh dấu thất bại.");
+                                node.State = TaskState.Failed;
+                                CheckpointManager.Instance.SaveCheckpoint(goalId, goalText, _nodes);
+                                break;
+                            }
+
                             // Gọi Replanner tái cấu trúc
+                            globalReplanCount++;
+                            context.Logger($"[Workflow Runtime] [Replanner Call {globalReplanCount}/{MaxReplanCeiling}] Gọi AI đề xuất kịch bản sửa đổi...");
                             var correction = await _reflectionEngine.DiagnoseAndReplanAsync(
                                 _worldState.Goal.CurrentGoal,
                                 node.Name,
@@ -340,6 +364,18 @@ namespace OfflineAgent.Core.Runtime
                 if (node.State == TaskState.Failed || node.State == TaskState.Timeout || node.State == TaskState.Blocked)
                 {
                     context.Logger($"\n[Workflow Runtime] >>> TIẾN TRÌNH DAG THẤT BẠI TẠI NODE [{node.Id}]. DỪNG KHẨN CẤP <<<");
+
+                    // Thực hiện Rollback trạng thái WorldState về checkpoint tốt gần nhất
+                    context.Logger($"[State Recovery] Đang phục hồi WorldState về checkpoint tốt gần nhất...");
+                    RollbackWorldState(lastGoodWorldStateBackup);
+
+                    EventBus.Instance.Publish(new AgentEvent
+                    {
+                        Type = AgentEventType.StateRolledBack,
+                        Source = "TaskGraphRuntime",
+                        Message = $"Đã rollback WorldState cho Goal [{goalId}] về checkpoint thành công gần nhất."
+                    });
+
                     return false;
                 }
             }
@@ -404,6 +440,18 @@ namespace OfflineAgent.Core.Runtime
             visiting.Remove(id);
             visited.Add(id);
             sorted.Add(node);
+        }
+
+        private void RollbackWorldState(WorldState.WorldState targetState)
+        {
+            _worldState.Goal.CurrentGoal = targetState.Goal.CurrentGoal;
+            _worldState.Environment.ActiveWindow = targetState.Environment.ActiveWindow;
+            _worldState.Environment.CurrentApplication = targetState.Environment.CurrentApplication;
+            _worldState.Environment.OpenWindows = new List<string>(targetState.Environment.OpenWindows);
+            _worldState.Execution.CurrentTask = targetState.Execution.CurrentTask;
+            _worldState.Execution.TaskHistory = new Stack<string>(new Stack<string>(targetState.Execution.TaskHistory));
+            _worldState.Memory.Facts = new Dictionary<string, object>(targetState.Memory.Facts);
+            _worldState.LastUpdated = DateTime.Now;
         }
     }
 }

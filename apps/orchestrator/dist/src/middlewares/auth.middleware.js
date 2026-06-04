@@ -37,7 +37,8 @@ exports.authMiddleware = authMiddleware;
 const jwt = __importStar(require("jsonwebtoken"));
 const env_1 = require("../config/env");
 const logger_1 = require("../config/logger");
-function authMiddleware(req, res, next) {
+const db_service_1 = require("../services/db.service");
+async function authMiddleware(req, res, next) {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         logger_1.logger.warn({ path: req.path }, '[Auth Middleware] Missing or invalid authorization header');
@@ -46,8 +47,29 @@ function authMiddleware(req, res, next) {
     }
     const token = authHeader.split(' ')[1];
     try {
-        const decoded = jwt.verify(token, env_1.env.JWT_SECRET);
-        req.user = decoded;
+        const decoded = jwt.verify(token, env_1.env.JWT_SECRET, {
+            algorithms: ['HS256'],
+        });
+        const userId = decoded.sub || decoded.id;
+        if (!userId || !decoded.email || decoded.role !== 'authenticated') {
+            logger_1.logger.warn({ path: req.path, email: decoded.email, role: decoded.role }, '[Auth Middleware] Access Denied: Missing or invalid token claims.');
+            res.status(403).json({ error: 'Access Denied: Missing or invalid token claims.' });
+            return;
+        }
+        // Verify user still exists in database (Deleted User Protection)
+        const dbUser = await db_service_1.dbService.client.user.findUnique({
+            where: { id: userId },
+            select: { id: true }
+        });
+        if (!dbUser) {
+            logger_1.logger.warn({ userId, ip: req.ip, event: 'SECURITY_ACCESS_DENIED' }, '[Auth Middleware] Access Denied: User no longer exists in database.');
+            res.status(403).json({ error: 'Access Denied: User no longer exists.' });
+            return;
+        }
+        req.user = {
+            id: userId,
+            email: decoded.email,
+        };
         next();
     }
     catch (error) {

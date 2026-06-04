@@ -20,6 +20,9 @@ namespace OfflineAgent.Core.Tools
             AgentCapability.MouseControl 
         };
 
+        public List<ToolPredicate> Preconditions => new List<ToolPredicate>();
+        public List<ToolPredicate> Effects => new List<ToolPredicate>();
+
         public async Task<ToolResponse> ExecuteAsync(Dictionary<string, object> arguments, AgentContext context)
         {
             if (!arguments.TryGetValue("target", out var targetObj) || targetObj == null)
@@ -35,7 +38,7 @@ namespace OfflineAgent.Core.Tools
                 // Kết nối vào Notepad và click thử các menu hoặc nút bấm
                 var app = context.AutomationHelper.StartOrAttach("notepad.exe");
                 var window = context.AutomationHelper.GetMainWindow(app, 2000);
-                window.Focus();
+                context.AutomationHelper.EnsureWindowFocus(window);
 
                 // Sử dụng FlaUI quét cây giao diện để tìm Button có tên trùng khớp
                 var button = window.FindFirstDescendant(cf => cf.ByName(target).And(cf.ByControlType(ControlType.Button))) 

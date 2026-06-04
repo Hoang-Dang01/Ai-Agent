@@ -19,12 +19,27 @@ export const aiTasksWorker = new Worker(
     const { taskId, goalId, title } = job.data;
     logger.info(`[Worker] Starting physical execution for Job ID: ${job.id} | Task: "${title}"`);
 
-    // 1. Retrieve the task to get the expected execution epoch
+    // 1. Retrieve the task to get the expected execution epoch and goal ownership
     const task = await dbService.client.aITask.findUnique({
-      where: { id: taskId }
+      where: { id: taskId },
+      include: {
+        goal: {
+          select: {
+            userId: true
+          }
+        }
+      }
     });
     if (!task) {
       const errorMsg = `Task with ID '${taskId}' not found.`;
+      logger.error(errorMsg);
+      throw new Error(errorMsg);
+    }
+
+    const targetGoalId = task.goalId;
+    const userId = task.goal?.userId;
+    if (!userId) {
+      const errorMsg = `Goal owner (userId) not found for task ${taskId}.`;
       logger.error(errorMsg);
       throw new Error(errorMsg);
     }
@@ -61,13 +76,13 @@ export const aiTasksWorker = new Worker(
     const currentFence = claimedTask.fencingToken;
     const currentEpoch = claimedTask.executionEpoch; // Read the exact epoch under which we hold this lease
 
-    emitSocketEvent('task_progress', { taskId, status: 'EXECUTING', progress: 10 });
+    emitSocketEvent(userId, 'task_progress', { taskId, status: 'EXECUTING', progress: 10 });
 
     let heartbeatInterval: NodeJS.Timeout | null = null;
 
     // 2. Fetch all AITasks of this Goal to map the complete DAG graph
     const tasks = await dbService.client.aITask.findMany({
-      where: { goalId },
+      where: { goalId: targetGoalId },
       include: {
         dependencies: true,
       },
@@ -92,7 +107,7 @@ export const aiTasksWorker = new Worker(
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir, { recursive: true });
     }
-    const tempJsonPath = path.join(tempDir, `workflow_${goalId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.json`);
+    const tempJsonPath = path.join(tempDir, `workflow_${targetGoalId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.json`);
     fs.writeFileSync(tempJsonPath, JSON.stringify(workflowNodes, null, 2), 'utf8');
 
     logger.info(`[Worker] Generated unique workflow JSON: ${tempJsonPath}`);
@@ -120,7 +135,7 @@ export const aiTasksWorker = new Worker(
       const errorMsg = `C# Agent Console Executable not found. Path: ${exePath}`;
       logger.error(errorMsg);
       await TaskStateRepository.updateWithFence(taskId, currentFence, { status: 'FAILED', error: errorMsg }, undefined, undefined, currentEpoch);
-      emitSocketEvent('task_failed', { taskId, status: 'FAILED', error: errorMsg });
+      emitSocketEvent(userId, 'task_failed', { taskId, status: 'FAILED', error: errorMsg });
       // Cleanup temp file
       if (fs.existsSync(tempJsonPath)) {
         fs.unlinkSync(tempJsonPath);
@@ -138,7 +153,7 @@ export const aiTasksWorker = new Worker(
         if (heartbeatInterval) clearInterval(heartbeatInterval);
         if (processTimeout) clearTimeout(processTimeout);
         if (hitlTimeout) clearTimeout(hitlTimeout);
-        (global as any).activeProcesses.delete(goalId);
+        (global as any).activeProcesses.delete(targetGoalId);
         try {
           if (fs.existsSync(tempJsonPath)) {
             fs.unlinkSync(tempJsonPath);
@@ -152,6 +167,11 @@ export const aiTasksWorker = new Worker(
       try {
         logger.info(`[Worker] Spawning C# Agent Runner: "${exePath}"`);
         child = spawn(exePath, ['--workflow', tempJsonPath]);
+
+        // Swallow stdin errors to prevent EPIPE crashes
+        child.stdin.on('error', (err: any) => {
+          logger.error(`[Worker] child.stdin error event occurred: ${err.message}`);
+        });
 
         // Start Heartbeat Daemon (extends lease by 30s every 10s and verifies state remains EXECUTING)
         let runningHeartbeat = false;
@@ -207,7 +227,7 @@ export const aiTasksWorker = new Worker(
             hitlTimeout = null;
           }
         };
-        (global as any).activeProcesses.set(goalId, { child, clearHitlTimeout });
+        (global as any).activeProcesses.set(targetGoalId, { child, clearHitlTimeout });
 
         // Parse stdout stream line-by-line
         const rl = readline.createInterface({
@@ -229,7 +249,7 @@ export const aiTasksWorker = new Worker(
               logger.info(`[C# Agent Log] ${parsed.message}`);
             } else if (parsed.type === 'telemetry') {
               logger.info(`[C# Telemetry] ${parsed.event}: ${parsed.message}`);
-              emitSocketEvent('telemetry_event', { event: parsed.event, message: parsed.message, payload: parsed.payload });
+              emitSocketEvent(userId, 'telemetry_event', { event: parsed.event, message: parsed.message, payload: parsed.payload });
             } else if (parsed.type === 'node_state') {
               // C# States: Pending, Running, Completed, Failed, Retrying, Timeout, Cancelled, Blocked, WaitingApproval, Skipped
               // DB States: QUEUED, EXECUTING, COMPLETED, FAILED
@@ -273,7 +293,7 @@ export const aiTasksWorker = new Worker(
                   },
                 });
 
-                emitSocketEvent('world_state_frame', {
+                emitSocketEvent(userId, 'world_state_frame', {
                   taskId: parsed.taskId,
                   toolExecutionId: toolExec.id,
                   screenshotUrl,
@@ -282,20 +302,28 @@ export const aiTasksWorker = new Worker(
                 });
               }
 
-              emitSocketEvent('task_progress', { taskId: parsed.taskId, status: dbStatus, error: errorMsg, progress: dbStatus === 'COMPLETED' ? 100 : 50 });
+              emitSocketEvent(userId, 'task_progress', { taskId: parsed.taskId, status: dbStatus, error: errorMsg, progress: dbStatus === 'COMPLETED' ? 100 : 50 });
             } else if (parsed.type === 'prompt') {
               logger.warn(`[Worker] [HITL Gate] C# runtime requested approval: "${parsed.prompt}"`);
 
               // Update active task to notify that we are waiting for human intervention
               await TaskStateRepository.updateWithFence(taskId, currentFence, { status: 'EXECUTING' }, undefined, undefined, currentEpoch);
 
-              emitSocketEvent('hitl_request', { goalId, prompt: parsed.prompt, title: parsed.title });
+              emitSocketEvent(userId, 'hitl_request', { goalId: targetGoalId, prompt: parsed.prompt, title: parsed.title });
 
               // Deadlock Prevention: auto-decline HITL prompt if no user input after 60 seconds
               if (hitlTimeout) clearTimeout(hitlTimeout);
               hitlTimeout = setTimeout(() => {
                 logger.warn(`[Worker] [HITL Timeout] HITL prompt timed out after 60s. Auto-declining with 'n'...`);
-                child.stdin.write('n\n');
+                try {
+                  if (child.stdin && child.stdin.writable) {
+                    child.stdin.write('n\n');
+                  } else {
+                    logger.warn('[Worker] child.stdin is not writable on HITL timeout.');
+                  }
+                } catch (writeErr: any) {
+                  logger.error(`[Worker] Failed to write HITL timeout response to stdin: ${writeErr.message}`);
+                }
               }, 60000);
             }
           } catch (e) {
@@ -318,7 +346,7 @@ export const aiTasksWorker = new Worker(
               status: 'COMPLETED',
               result: resultPayload,
             }, undefined, undefined, currentEpoch);
-            emitSocketEvent('task_completed', { taskId, status: 'COMPLETED', result: resultPayload });
+            emitSocketEvent(userId, 'task_completed', { taskId, status: 'COMPLETED', result: resultPayload });
             resolve();
           } else {
             const errorMsg = `Workflow execution failed with exit code ${code}`;
@@ -326,7 +354,7 @@ export const aiTasksWorker = new Worker(
               status: 'FAILED',
               error: errorMsg,
             }, undefined, undefined, currentEpoch);
-            emitSocketEvent('task_failed', { taskId, status: 'FAILED', error: errorMsg });
+            emitSocketEvent(userId, 'task_failed', { taskId, status: 'FAILED', error: errorMsg });
             reject(new Error(errorMsg));
           }
         });
@@ -363,11 +391,11 @@ aiTasksWorker.on('completed', (job) => {
 /**
  * Socket.io broadcaster helper
  */
-function emitSocketEvent(event: string, data: any) {
+function emitSocketEvent(userId: string, event: string, data: any) {
   const io = (global as any).io;
   if (io) {
-    logger.debug({ event, data }, '[Worker] Broadcasting socket event');
-    io.emit(event, data);
+    logger.info(`[Worker] Emitting socket event "${event}" to room user_${userId}`);
+    io.to(`user_${userId}`).emit(event, data);
   } else {
     logger.warn('[Worker] Socket.io server instance is not registered globally.');
   }

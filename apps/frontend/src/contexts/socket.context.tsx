@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { useAuth } from './auth.context';
 
 interface SocketContextProps {
   socket: Socket | null;
@@ -21,13 +22,23 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isReconnecting, setIsReconnecting] = useState(false);
+  const { token } = useAuth();
 
   useEffect(() => {
+    if (!token) {
+      console.log('[Socket] No token found. Skipping connection.');
+      setSocket(null);
+      setIsConnected(false);
+      setIsReconnecting(false);
+      return;
+    }
+
     const orchestratorUrl = process.env.NEXT_PUBLIC_ORCHESTRATOR_URL || 'http://localhost:4000';
-    console.log(`[Socket] Connecting to Orchestrator at: ${orchestratorUrl}`);
+    console.log(`[Socket] Connecting to Orchestrator with token at: ${orchestratorUrl}`);
 
     const socketInstance = io(orchestratorUrl, {
       transports: ['websocket'],
+      auth: { token },
       autoConnect: true,
       reconnection: true,
       reconnectionAttempts: Infinity,
@@ -71,7 +82,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       console.log('[Socket] Cleaning up socket connection...');
       socketInstance.disconnect();
     };
-  }, []);
+  }, [token]);
 
   return (
     <SocketContext.Provider value={{ socket, isConnected, isReconnecting }}>

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from uuid import UUID
 from datetime import datetime
 
@@ -68,6 +68,12 @@ class ExtractedKnowledgeGraph(BaseModel):
 # PYDANTIC STRUCTURED SCHEMAS FOR PLANNER
 # ==========================================
 
+class ConstraintNode(BaseModel):
+    entityType: str = Field(description="The entity type being constrained, e.g. 'network', 'file', 'write', 'read'")
+    entityId: str = Field(default="default", description="The specific entity identifier, e.g. 'default' or a filename")
+    predicate: str = Field(description="The predicate name, e.g. 'allowed', 'exists'")
+    targetValue: Any = Field(description="The target value of the constraint (boolean, string, or other types)")
+
 class DAGTaskNode(BaseModel):
     id: str = Field(description="Unique node identifier, e.g. 'task_0', 'task_1'")
     title: str = Field(description="Human-readable title describing this task step, e.g. 'Mo Windows Notepad'")
@@ -78,3 +84,45 @@ class DAGTaskNode(BaseModel):
 class DAGTaskGraph(BaseModel):
     goal: str = Field(description="The primary target goal statement of the user")
     tasks: List[DAGTaskNode] = Field(description="List of task nodes forming a directed acyclic graph")
+    constraints: List[ConstraintNode] = Field(default_factory=list, description="Initial system constraints extracted from the goal")
+
+# ==========================================
+# PYDANTIC STRUCTURED SCHEMAS FOR TELEMETRY
+# ==========================================
+
+class AITelemetryBlock(BaseModel):
+    traceId: str = Field(description="Correlation ID shared with OTEL / Langfuse")
+    spanId: Optional[str] = Field(None, description="OTEL Span ID")
+    parentSpanId: Optional[str] = Field(None, description="Parent Span ID")
+    model: Optional[str] = Field(None, description="Model used for this request")
+    promptText: str = Field("", description="Raw prompt text, empty if archiving is disabled")
+    responseText: Optional[str] = Field(None, description="Raw response text, empty if archiving is disabled")
+    inputTokens: Optional[int] = Field(None, description="Number of input tokens")
+    outputTokens: Optional[int] = Field(None, description="Number of output tokens")
+    latencyMs: Optional[int] = Field(None, description="Latency in milliseconds")
+    status: str = Field("SUCCESS", description="SUCCESS or FAILED")
+    errorType: Optional[str] = Field(None, description="Sanitized error type: RATE_LIMIT | TIMEOUT | VALIDATION | PROVIDER_ERROR | UNKNOWN")
+    errorMessage: Optional[str] = Field(None, description="Sanitized error message")
+
+class GoalPlanningResponse(BaseModel):
+    graph: DAGTaskGraph
+    telemetry: AITelemetryBlock
+
+class CriticResponse(BaseModel):
+    rootCause: str
+    confidence: float
+    requiresReplanning: bool
+
+class ReplanResponse(BaseModel):
+    suggestedTool: str
+    arguments: Dict[str, Any]
+    reason: str
+
+class CriticTelemetryResponse(BaseModel):
+    critic: CriticResponse
+    telemetry: AITelemetryBlock
+
+class ReplanTelemetryResponse(BaseModel):
+    replan: ReplanResponse
+    telemetry: AITelemetryBlock
+

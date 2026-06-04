@@ -29,14 +29,15 @@ enum AttemptStatus {
 }
 
 model User {
-  id           String            @id @default(uuid())
-  email        String            @unique
-  password     String
-  sessions     Session[]
-  goals        UserGoal[]
-  subscription UserSubscription?
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  id            String            @id @default(uuid())
+  email         String            @unique
+  password      String
+  sessions      Session[]
+  goals         UserGoal[]
+  subscription  UserSubscription?
+  chatHistories ChatHistory[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 }
 
 model Session {
@@ -50,14 +51,15 @@ model Session {
 }
 
 model UserGoal {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  goal      String
-  status    String   // PENDING, ACTIVE, COMPLETED, FAILED
-  tasks     AITask[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String             @id @default(uuid())
+  userId          String
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goal            String
+  status          String             // PENDING, ACTIVE, COMPLETED, FAILED
+  tasks           AITask[]
+  telemetryTraces AITelemetryTrace[]
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
 }
 
 model AITask {
@@ -169,14 +171,29 @@ model Document {
 }
 
 model ChatHistory {
-  id         String   @id @default(uuid())
-  sessionId  String   @map("session_id")
-  senderType String   @map("sender_type")
-  agentType  String?  @map("agent_type")
+  id         String         @id @default(uuid())
+  sessionId  String         @map("session_id")
+  userId     String?        @map("user_id")
+  user       User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  senderType String         @map("sender_type")
+  agentType  String?        @map("agent_type")
   message    String
-  createdAt  DateTime @default(now()) @map("created_at")
+  createdAt  DateTime       @default(now()) @map("created_at")
+  citations  ChatCitation[]
 
   @@map("chat_history")
+}
+
+model ChatCitation {
+  id            String      @id @default(uuid())
+  chatHistoryId String      @map("chat_history_id")
+  documentId    String      @map("document_id")
+  title         String
+  similarity    Float?
+  createdAt     DateTime    @default(now()) @map("created_at")
+  chatHistory   ChatHistory @relation(fields: [chatHistoryId], references: [id], onDelete: Cascade)
+
+  @@map("chat_citations")
 }
 
 model UserSubscription {
@@ -195,24 +212,36 @@ model UserSubscription {
 }
 
 model AITelemetryTrace {
-  id               String   @id @default(uuid())
-  traceId          String   @map("trace_id") // Correlation ID dùng chung cho OTEL / Langfuse
-  spanId           String?  @map("span_id")  // OTEL Span ID
-  parentSpanId     String?  @map("parent_span_id")
-  goalId           String?  @map("goal_id")
-  taskId           String?  @map("task_id")
-  traceType        String   @map("trace_type") // 'PLANNER' | 'CRITIC' | 'REPLANNER' | 'AGENT_DECISION'
-  status           String   @default("SUCCESS") // 'SUCCESS' | 'FAILURE' | 'TIMEOUT' | 'CANCELLED'
-  promptText       String   @map("prompt_text") @db.Text
-  responseText     String?  @map("response_text") @db.Text
-  promptHash       String?  @map("prompt_hash")
-  inputTokens      Int?     @map("input_tokens")
-  outputTokens     Int?     @map("output_tokens")
-  estimatedCostUsd Decimal? @map("estimated_cost_usd") @db.Decimal(10, 6) // Chi phí tính theo Dollar
-  latencyMs        Int?     @map("latency_ms")
-  errorMessage     String?  @map("error_message") @db.Text
-  isTruncated      Boolean  @default(false) @map("is_truncated")
-  createdAt        DateTime @default(now()) @map("created_at")
+  id                      String    @id @default(uuid())
+  traceId                 String    @map("trace_id") // Correlation ID dùng chung cho OTEL / Langfuse
+  spanId                  String?   @map("span_id")  // OTEL Span ID
+  parentSpanId            String?   @map("parent_span_id")
+  goalId                  String?   @map("goal_id")
+  goal                    UserGoal? @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  taskId                  String?  @map("task_id")
+  traceType               String   @map("trace_type") // 'PLAN' | 'CRITIC' | 'REPLAN' | 'RAG_QUERY' | 'TOOL_SELECTION'
+  status                  String   @default("SUCCESS") // 'SUCCESS' | 'FAILED'
+  model                   String?  @map("model")
+  promptText              String   @map("prompt_text") @db.Text
+  responseText            String?  @map("response_text") @db.Text
+  promptHash              String?  @map("prompt_hash")
+  responseHash            String?  @map("response_hash")
+  inputTokens             Int?     @map("input_tokens")
+  outputTokens            Int?     @map("output_tokens")
+  
+  // Cost Materialization fields
+  calculatedInputCostUsd  Decimal? @map("calculated_input_cost_usd") @db.Decimal(10, 6)
+  calculatedOutputCostUsd Decimal? @map("calculated_output_cost_usd") @db.Decimal(10, 6)
+  estimatedCostUsd        Decimal? @map("estimated_cost_usd") @db.Decimal(10, 6) // Chi phí tính theo Dollar
+  
+  latencyMs               Int?     @map("latency_ms")
+  
+  // Sanitized Error Taxonomy fields
+  errorType               String?  @map("error_type") // 'RATE_LIMIT' | 'TIMEOUT' | 'VALIDATION' | 'PROVIDER_ERROR' | 'UNKNOWN'
+  errorMessage            String?  @map("error_message") @db.VarChar(512)
+  
+  isTruncated             Boolean  @default(false) @map("is_truncated")
+  createdAt               DateTime @default(now()) @map("created_at")
 
   @@index([goalId])
   @@index([traceId])

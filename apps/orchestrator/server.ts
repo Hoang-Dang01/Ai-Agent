@@ -2,6 +2,7 @@ import express from 'express';
 import * as http from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
+import * as jwt from 'jsonwebtoken';
 import { env } from './src/config/env';
 import { logger } from './src/config/logger';
 import { dbService } from './src/services/db.service';
@@ -14,6 +15,7 @@ import { eventBusService } from './src/services/event-bus.service';
 import { createCheckoutSession, handleStripeWebhook, getSubscriptionStatus } from './src/controllers/payment.controller';
 import { OutboxPublisher } from './src/services/outbox-publisher';
 import { LeaseReaperService } from './src/services/lease-reaper.service';
+import { startTelemetryRetentionScheduler, stopTelemetryRetentionScheduler } from './src/jobs/telemetry-retention.job';
 
 
 // Boot background BullMQ worker
@@ -35,6 +37,42 @@ const io = new Server(server, {
     origin: env.CORS_ORIGIN,
     methods: ['GET', 'POST'],
   },
+});
+
+io.use((socket, next) => {
+  const token = socket.handshake.auth?.token || socket.handshake.query?.token;
+  if (!token) {
+    logger.warn('[Socket.io] Handshake failed: Token missing');
+    return next(new Error('Authentication error: Token missing'));
+  }
+  try {
+    const decoded = jwt.verify(token, env.JWT_SECRET, { algorithms: ['HS256'] }) as { sub?: string; id?: string; exp?: number };
+    const userId = decoded.sub || decoded.id;
+    if (!userId) {
+      logger.warn('[Socket.io] Handshake failed: Invalid claims');
+      return next(new Error('Authentication error: Invalid claims'));
+    }
+
+    // Verify user still exists in database (Deleted User Protection)
+    dbService.client.user.findUnique({
+      where: { id: userId },
+      select: { id: true }
+    }).then(dbUser => {
+      if (!dbUser) {
+        logger.warn({ userId, event: 'SECURITY_ACCESS_DENIED' }, '[Socket.io] Handshake failed: User no longer exists in database.');
+        return next(new Error('Authentication error: User no longer exists.'));
+      }
+      (socket as any).userId = userId;
+      (socket as any).tokenExp = decoded.exp;
+      next();
+    }).catch(err => {
+      logger.error(err, '[Socket.io] Database verification failed during handshake');
+      return next(new Error('Authentication error: Internal error'));
+    });
+  } catch (err) {
+    logger.warn('[Socket.io] Handshake failed: Token invalid');
+    return next(new Error('Authentication error: Invalid token'));
+  }
 });
 
 // Stash Socket.io server globally so services and workers can broadcast events
@@ -59,6 +97,7 @@ app.post('/api/auth/login', authRateLimiter, async (req: any, res: any) => {
 app.get('/api/goals/active', authMiddleware as any, async (req: any, res: any) => {
   try {
     const activeGoal = await dbService.client.userGoal.findFirst({
+      where: { userId: req.user.id },
       orderBy: { createdAt: 'desc' },
       include: {
         tasks: {
@@ -84,8 +123,8 @@ app.get('/api/goals/active', authMiddleware as any, async (req: any, res: any) =
 // 1.6. REST API endpoint to retrieve a specific Goal by ID and all of its AITasks
 app.get('/api/goals/:goalId', authMiddleware as any, async (req: any, res: any) => {
   try {
-    const goal = await dbService.client.userGoal.findUnique({
-      where: { id: req.params.goalId },
+    const goal = await dbService.client.userGoal.findFirst({
+      where: { id: req.params.goalId, userId: req.user.id },
       include: {
         tasks: {
           orderBy: { createdAt: 'asc' },
@@ -94,6 +133,7 @@ app.get('/api/goals/:goalId', authMiddleware as any, async (req: any, res: any) 
     });
 
     if (!goal) {
+      logger.warn({ userId: req.user.id, resourceId: req.params.goalId, ip: req.ip, event: 'SECURITY_ACCESS_DENIED' }, '[Server API] Access Denied: Goal not found or unauthorized.');
       return res.status(404).json({ error: 'Goal not found' });
     }
 
@@ -139,10 +179,20 @@ app.post('/api/study-hub/chat', apiRateLimiter, authMiddleware as any, async (re
   const agentType = agent || 'general';
 
   try {
+    // Validate session ownership: check if session exists and belongs to user
+    const existingChat = await dbService.client.chatHistory.findFirst({
+      where: { sessionId }
+    });
+    if (existingChat && existingChat.userId && existingChat.userId !== req.user.id) {
+      logger.warn({ userId: req.user.id, resourceId: sessionId, ip: req.ip, event: 'SECURITY_ACCESS_DENIED', ownerId: existingChat.userId }, '[Chat Proxy] Access Denied: Session ID owned by another user.');
+      return res.status(403).json({ error: 'Access Denied: Session ID owned by another user.' });
+    }
+
     // 1. Persist User Message to chat_history table
     await dbService.client.chatHistory.create({
       data: {
         sessionId,
+        userId: req.user.id,
         senderType: 'user',
         agentType,
         message,
@@ -154,6 +204,7 @@ app.post('/api/study-hub/chat', apiRateLimiter, authMiddleware as any, async (re
     const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s hard ceiling timeout
 
     let aiMessage = '';
+    let aiSources: any[] | null = null;
     let responseOk = false;
 
     try {
@@ -169,31 +220,67 @@ app.post('/api/study-hub/chat', apiRateLimiter, authMiddleware as any, async (re
       if (n8nRes.ok) {
         const data = await n8nRes.json() as any;
         aiMessage = data.output || data.response || 'No response returned from workflow.';
+        aiSources = data.sources || null;
         responseOk = true;
       } else {
-        logger.error(`[Orchestrator Gateway] n8n responded with status ${n8nRes.status}`);
-        aiMessage = 'Failed to communicate with local automation workflows. n8n returned a server error.';
+        logger.warn(`[Orchestrator Gateway] n8n responded with status ${n8nRes.status}. Attempting direct Python RAG fallback.`);
       }
     } catch (fetchErr: any) {
       clearTimeout(timeoutId);
-      logger.error(fetchErr, '[Orchestrator Gateway] n8n fetch request failed or timed out:');
-      aiMessage = 'Failed to communicate with local automation workflows. Connection timed out or n8n is offline.';
+      logger.warn(fetchErr, '[Orchestrator Gateway] n8n fetch request failed or timed out. Attempting direct Python RAG fallback.');
     }
 
-    // 3. Persist AI Response (or Fallback System Error response) to PostgreSQL
+    // Direct Fallback strictly for Study Hub Q&A route
+    if (!responseOk) {
+      try {
+        logger.info(`[Orchestrator Fallback] Querying Python AI Engine RAG chat directly at: ${env.AI_ENGINE_URL}/api/rag/chat/`);
+        const pythonRes = await fetch(`${env.AI_ENGINE_URL}/api/rag/chat/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: message })
+        });
+        
+        if (pythonRes.ok) {
+          const data = await pythonRes.json() as any;
+          aiMessage = data.response || 'No response from direct RAG.';
+          aiSources = data.sources || null;
+          responseOk = true;
+        } else {
+          logger.error(`[Orchestrator Fallback] Python AI Engine RAG responded with status ${pythonRes.status}`);
+          aiMessage = 'Failed to communicate with RAG engine. Python service returned an error.';
+        }
+      } catch (fallbackErr: any) {
+        logger.error(fallbackErr, '[Orchestrator Fallback] Direct Python RAG query failed:');
+        aiMessage = 'Failed to communicate with RAG engine. Python service is offline or timed out.';
+      }
+    }
+
+    // 3. Persist AI Response (or Fallback System Error response) to PostgreSQL with relational citations
     const savedAiMsg = await dbService.client.chatHistory.create({
       data: {
         sessionId,
+        userId: req.user.id,
         senderType: 'ai',
         agentType: responseOk ? agentType : 'system_error',
         message: aiMessage,
+        citations: aiSources && Array.isArray(aiSources) ? {
+          create: aiSources.map((src: any) => ({
+            documentId: src.document_id || src.documentId || '',
+            title: src.title || '',
+            similarity: typeof src.similarity === 'number' ? src.similarity : null
+          }))
+        } : undefined
       },
+      include: {
+        citations: true
+      }
     });
 
     res.json({
       status: 'OK',
       output: savedAiMsg.message,
       message: savedAiMsg,
+      sources: savedAiMsg.citations
     });
   } catch (error: any) {
     logger.error(error, '[Server Error] Failed to process Study Hub Chat proxy:');
@@ -206,8 +293,18 @@ app.get('/api/study-hub/history/:sessionId', authMiddleware as any, async (req: 
   try {
     const { sessionId } = req.params;
 
+    // Validate session ownership: verify that if session history exists, it belongs to the authenticated user
+    const existingChat = await dbService.client.chatHistory.findFirst({
+      where: { sessionId }
+    });
+    if (existingChat && existingChat.userId && existingChat.userId !== req.user.id) {
+      logger.warn({ userId: req.user.id, resourceId: sessionId, ip: req.ip, event: 'SECURITY_ACCESS_DENIED', ownerId: existingChat.userId }, '[Chat History] Access Denied: Session ID owned by another user.');
+      return res.status(403).json({ error: 'Access Denied: Session ID owned by another user.' });
+    }
+
     const chatLogs = await dbService.client.chatHistory.findMany({
-      where: { sessionId },
+      where: { sessionId, userId: req.user.id },
+      include: { citations: true },
       orderBy: { createdAt: 'asc' },
     });
 
@@ -249,6 +346,15 @@ app.post(
         return res.status(400).json({ error: 'Missing required fields: goalId and title.' });
       }
 
+      // Enforce user goal ownership before enqueueing tasks
+      const goal = await dbService.client.userGoal.findFirst({
+        where: { id: goalId, userId: req.user.id }
+      });
+      if (!goal) {
+        logger.warn({ userId: req.user.id, resourceId: goalId, ip: req.ip, event: 'SECURITY_ACCESS_DENIED' }, '[Queue Service] Access Denied: Goal not found or unauthorized.');
+        return res.status(404).json({ error: 'Goal not found or unauthorized.' });
+      }
+
       const task = await enqueueTask(goalId, title, payload, dependencies);
       res.status(201).json(task);
     } catch (error: any) {
@@ -258,27 +364,213 @@ app.post(
   }
 );
 
+// --- AI Telemetry & Debugging Deck API endpoints ---
+
+// 1. Get telemetry summary statistics with P50/P95/P99 latency calculations
+app.get('/api/telemetry/stats', authMiddleware as any, async (req: any, res: any) => {
+  try {
+    const totalTraces = await dbService.client.aITelemetryTrace.count({
+      where: { goal: { userId: req.user.id } }
+    });
+    const successTraces = await dbService.client.aITelemetryTrace.count({
+      where: { status: 'SUCCESS', goal: { userId: req.user.id } }
+    });
+    const failedTraces = await dbService.client.aITelemetryTrace.count({
+      where: { status: 'FAILED', goal: { userId: req.user.id } }
+    });
+
+    const sumTokens = await dbService.client.aITelemetryTrace.aggregate({
+      where: { goal: { userId: req.user.id } },
+      _sum: {
+        inputTokens: true,
+        outputTokens: true
+      }
+    });
+
+    const sumCosts = await dbService.client.aITelemetryTrace.aggregate({
+      where: { goal: { userId: req.user.id } },
+      _sum: {
+        calculatedInputCostUsd: true,
+        calculatedOutputCostUsd: true,
+        estimatedCostUsd: true
+      }
+    });
+
+    // Compute P50, P95, and P99 percentiles for latency on SUCCESS calls using PostgreSQL PERCENTILE_CONT
+    const percentiles = await dbService.client.$queryRaw`
+      SELECT 
+        COALESCE(PERCENTILE_CONT(0.50) WITHIN GROUP (ORDER BY t.latency_ms), 0) AS p50,
+        COALESCE(PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY t.latency_ms), 0) AS p95,
+        COALESCE(PERCENTILE_CONT(0.99) WITHIN GROUP (ORDER BY t.latency_ms), 0) AS p99
+      FROM ai_telemetry_traces t
+      INNER JOIN "UserGoal" g ON t.goal_id = g.id
+      WHERE t.status = 'SUCCESS' AND t.latency_ms IS NOT NULL AND g."userId" = ${req.user.id};
+    ` as any[];
+
+    const p50 = percentiles[0]?.p50 || 0;
+    const p95 = percentiles[0]?.p95 || 0;
+    const p99 = percentiles[0]?.p99 || 0;
+
+    res.json({
+      status: 'OK',
+      stats: {
+        totalTraces,
+        successTraces,
+        failedTraces,
+        inputTokens: sumTokens._sum.inputTokens || 0,
+        outputTokens: sumTokens._sum.outputTokens || 0,
+        calculatedInputCostUsd: Number(sumCosts._sum.calculatedInputCostUsd || 0),
+        calculatedOutputCostUsd: Number(sumCosts._sum.calculatedOutputCostUsd || 0),
+        estimatedCostUsd: Number(sumCosts._sum.estimatedCostUsd || 0),
+        latencyPercentiles: {
+          p50,
+          p95,
+          p99
+        }
+      }
+    });
+  } catch (error: any) {
+    logger.error(error, '[Server Error] Failed to aggregate telemetry statistics:');
+    res.status(500).json({ error: 'Failed to retrieve telemetry stats.' });
+  }
+});
+
+// 2. Query/search telemetry traces supporting pagination and filtering
+app.get('/api/telemetry/traces', authMiddleware as any, async (req: any, res: any) => {
+  try {
+    const { status, traceType, model, limit = '20', offset = '0' } = req.query;
+    const parsedLimit = parseInt(limit as string, 10);
+    const parsedOffset = parseInt(offset as string, 10);
+
+    const traces = await dbService.client.aITelemetryTrace.findMany({
+      where: {
+        goal: { userId: req.user.id },
+        ...(status && { status: status as string }),
+        ...(traceType && { traceType: traceType as string }),
+        ...(model && { model: model as string })
+      },
+      orderBy: { createdAt: 'desc' },
+      take: parsedLimit,
+      skip: parsedOffset
+    });
+
+    const total = await dbService.client.aITelemetryTrace.count({
+      where: {
+        goal: { userId: req.user.id },
+        ...(status && { status: status as string }),
+        ...(traceType && { traceType: traceType as string }),
+        ...(model && { model: model as string })
+      }
+    });
+
+    res.json({
+      status: 'OK',
+      total,
+      limit: parsedLimit,
+      offset: parsedOffset,
+      traces
+    });
+  } catch (error: any) {
+    logger.error(error, '[Server Error] Failed to retrieve telemetry traces:');
+    res.status(500).json({ error: 'Failed to query telemetry traces.' });
+  }
+});
+
+// 3. Get trace details by ID and its child spans (reconstructing Call Tree)
+app.get('/api/telemetry/traces/:id', authMiddleware as any, async (req: any, res: any) => {
+  try {
+    const trace = await dbService.client.aITelemetryTrace.findFirst({
+      where: { id: req.params.id, goal: { userId: req.user.id } }
+    });
+
+    if (!trace) {
+      logger.warn({ userId: req.user.id, resourceId: req.params.id, ip: req.ip, event: 'SECURITY_ACCESS_DENIED' }, '[Telemetry API] Access Denied: Trace not found or unauthorized.');
+      return res.status(404).json({ error: 'Telemetry trace not found' });
+    }
+
+    let childSpans: any[] = [];
+    if (trace.spanId) {
+      childSpans = await dbService.client.aITelemetryTrace.findMany({
+        where: { parentSpanId: trace.spanId, goal: { userId: req.user.id } },
+        orderBy: { createdAt: 'asc' }
+      });
+    }
+
+    res.json({
+      status: 'OK',
+      trace,
+      childSpans
+    });
+  } catch (error: any) {
+    logger.error(error, `[Server Error] Failed to retrieve details for trace ${req.params.id}:`);
+    res.status(500).json({ error: 'Failed to retrieve trace details.' });
+  }
+});
+
 // 3. WebSockets Real-time connection handling
 io.on('connection', (socket) => {
-  logger.info(`[Socket.io] Client connected: ${socket.id}`);
+  const userId = (socket as any).userId;
+  const tokenExp = (socket as any).tokenExp;
+  socket.join(`user_${userId}`);
+  logger.info(`[Socket.io] Client connected: ${socket.id} (User: ${userId})`);
 
-  socket.on('hitl_response', (data: { goalId: string; approved: boolean }) => {
-    logger.info(`[Socket.io] Received HITL response for goal ${data.goalId}: approved=${data.approved}`);
+  let disconnectTimeout: NodeJS.Timeout | null = null;
+  if (tokenExp) {
+    const timeToExpire = tokenExp * 1000 - Date.now();
+    if (timeToExpire <= 0) {
+      logger.warn({ userId }, '[Socket.io] Socket disconnected immediately: Token expired.');
+      socket.disconnect(true);
+      return;
+    }
+    disconnectTimeout = setTimeout(() => {
+      logger.warn({ userId, event: 'SECURITY_ACCESS_DENIED' }, '[Socket.io] Socket force-disconnected: JWT expired.');
+      socket.disconnect(true);
+    }, timeToExpire);
+  }
+
+  socket.on('hitl_response', async (data: { goalId: string; approved: boolean }) => {
+    logger.info(`[Socket.io] Received HITL response for goal ${data.goalId} from user ${userId}: approved=${data.approved}`);
+    
+    // Authorize HITL response: ensure target goal belongs to this user
+    try {
+      const goal = await dbService.client.userGoal.findFirst({
+        where: { id: data.goalId, userId }
+      });
+      if (!goal) {
+        logger.warn({ userId, resourceId: data.goalId, ip: socket.handshake.address, event: 'SECURITY_ACCESS_DENIED' }, `[Socket.io] Unauthorized HITL response attempt by user ${userId} for goal ${data.goalId}`);
+        return;
+      }
+    } catch (dbErr) {
+      logger.error(dbErr, `[Socket.io] Database verification failed during HITL response for goal ${data.goalId}`);
+      return;
+    }
+
     const active = (global as any).activeProcesses?.get(data.goalId);
     if (active && active.child) {
       if (active.clearHitlTimeout) {
         active.clearHitlTimeout();
       }
       const answer = data.approved ? 'y\n' : 'n\n';
-      active.child.stdin.write(answer);
-      logger.info(`[Socket.io] Piped answer "${answer.trim()}" to C# standard input.`);
+      try {
+        if (active.child.stdin && active.child.stdin.writable) {
+          active.child.stdin.write(answer);
+          logger.info(`[Socket.io] Piped answer "${answer.trim()}" to C# standard input.`);
+        } else {
+          logger.warn(`[Socket.io] Stdin stream is not writable for goal ${data.goalId}. Process may have exited or timed out.`);
+        }
+      } catch (err: any) {
+        logger.error(err, `[Socket.io] Failed to write answer to C# stdin for goal ${data.goalId}:`);
+      }
     } else {
       logger.warn(`[Socket.io] No active C# process found for goal ${data.goalId}`);
     }
   });
 
   socket.on('disconnect', () => {
-    logger.info(`[Socket.io] Client disconnected: ${socket.id}`);
+    if (disconnectTimeout) {
+      clearTimeout(disconnectTimeout);
+    }
+    logger.info(`[Socket.io] Client disconnected: ${socket.id} (User: ${userId})`);
   });
 });
 
@@ -296,6 +588,9 @@ async function bootstrap() {
 
     // Connect to Redis Event Bus Pub/Sub
     await eventBusService.initialize();
+
+    // Start daily telemetry retention pruning scheduler
+    startTelemetryRetentionScheduler();
 
     server.listen(env.PORT, () => {
       logger.info('==================================================');
@@ -320,9 +615,30 @@ async function handleGracefulShutdown(signal: string) {
     await aiTasksWorker.close();
     logger.info('[Shutdown] BullMQ tasks worker closed.');
 
+    // 1.5. Terminate all active spawned processes to prevent orphan leaks
+    logger.info('[Shutdown] Terminating all active C# processes...');
+    const activeProcs = (global as any).activeProcesses;
+    if (activeProcs && activeProcs.size > 0) {
+      for (const [goalId, active] of activeProcs.entries()) {
+        try {
+          if (active.clearHitlTimeout) {
+            active.clearHitlTimeout();
+          }
+          if (active.child) {
+            logger.info(`[Shutdown] Killing process for goal ${goalId} (PID: ${active.child.pid})`);
+            active.child.kill('SIGKILL');
+          }
+        } catch (killErr: any) {
+          logger.error(`[Shutdown] Error killing child process for goal ${goalId}: ${killErr.message}`);
+        }
+      }
+      activeProcs.clear();
+    }
+
     // 2. Stop sweep & reaper daemons
     OutboxPublisher.stop();
     LeaseReaperService.stop();
+    stopTelemetryRetentionScheduler();
 
     // 3. Perform a final outbox flush to send pending events
     logger.info('[Shutdown] Performing final outbox flush sweep...');

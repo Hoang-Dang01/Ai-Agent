@@ -9,6 +9,7 @@ export const apiRateLimiter = rateLimit({
   max: 100, // Limit each IP to 100 requests per window
   standardHeaders: true, // Return standard rate limit info headers
   legacyHeaders: false, // Disable the X-RateLimit-* headers
+  skip: (req) => process.env.NODE_ENV === 'test',
   store: new RedisStore({
     // @ts-ignore
     sendCommand: (...args: string[]) => redisConnection.call(args[0], ...args.slice(1)),
@@ -27,6 +28,7 @@ export const authRateLimiter = rateLimit({
   max: 5, // Capped at 5 sign-up/login attempts per hour per unique client IP
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => process.env.NODE_ENV === 'test',
   store: new RedisStore({
     // @ts-ignore
     sendCommand: (...args: string[]) => redisConnection.call(args[0], ...args.slice(1)),

@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using FlaUI.Core;
@@ -12,6 +14,7 @@ namespace OfflineAgent.Core.Automation
     public class WindowAutomationHelper : IDisposable
     {
         private readonly UIA3Automation _automation;
+        private readonly List<Application> _trackedApplications = new List<Application>();
 
         public WindowAutomationHelper()
         {
@@ -35,7 +38,9 @@ namespace OfflineAgent.Core.Automation
             else
             {
                 Console.WriteLine($"[Automation] Starting new process: {exePathOrName}");
-                return Application.Launch(exePathOrName);
+                var app = Application.Launch(exePathOrName);
+                _trackedApplications.Add(app);
+                return app;
             }
         }
 
@@ -57,11 +62,51 @@ namespace OfflineAgent.Core.Automation
             throw new TimeoutException("[Automation] Timeout waiting for main window to load.");
         }
 
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
+
+        /// <summary>
+        /// Đảm bảo cửa sổ đích đang ở foreground và có tiêu điểm (focus).
+        /// Hỗ trợ phục hồi tiêu điểm nếu bị mất (Focus Loss).
+        /// </summary>
+        public void EnsureWindowFocus(Window window)
+        {
+            if (window == null) return;
+
+            try
+            {
+                IntPtr foregroundHwnd = GetForegroundWindow();
+                IntPtr targetHwnd = window.Properties.NativeWindowHandle.Value;
+                
+                // So sánh nếu cửa sổ hiện tại không phải là foreground window
+                if (foregroundHwnd != targetHwnd)
+                {
+                    Console.WriteLine($"[Automation] Focus lost! Bringing window '{window.Title}' back to foreground.");
+                    window.SetForeground();
+                    Thread.Sleep(200); // Đợi cửa sổ được vẽ/kích hoạt
+                    window.Focus();
+                    Thread.Sleep(100);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Automation Warning] Error ensuring focus: {ex.Message}. Attempting direct activation.");
+                try
+                {
+                    window.SetForeground();
+                    window.Focus();
+                }
+                catch { /* ignore */ }
+            }
+        }
+
         /// <summary>
         /// Tự động tìm kiếm vùng nhập liệu chính của Notepad (hỗ trợ cả Windows 10 và Windows 11) và điền văn bản.
         /// </summary>
         public void WriteToNotepad(Window window, string text)
         {
+            EnsureWindowFocus(window);
+
             // Windows 10 Notepad sử dụng lớp control là "Edit"
             // Windows 11 Notepad sử dụng control dạng Document hoặc lớp "RichEditD2DPT"
             var editElement = window.FindFirstDescendant(cf => cf.ByControlType(ControlType.Document)) 
@@ -70,7 +115,8 @@ namespace OfflineAgent.Core.Automation
             if (editElement != null)
             {
                 // Active cửa sổ lên trước khi nhập liệu để đảm bảo bắt tiêu điểm
-                window.Focus();
+                editElement.Focus();
+                Thread.Sleep(50);
                 
                 // Sử dụng ValuePattern để ghi chữ ngầm trực tiếp mà không cần di chuyển chuột
                 if (editElement.Patterns.Value.IsSupported)
@@ -93,10 +139,42 @@ namespace OfflineAgent.Core.Automation
         }
 
         /// <summary>
-        /// Giải phóng tài nguyên UI Automation
+        /// Giải phóng tài nguyên UI Automation và dọn dẹp các ứng dụng đã khởi chạy.
         /// </summary>
         public void Dispose()
         {
+            foreach (var app in _trackedApplications)
+            {
+                try
+                {
+                    if (app != null)
+                    {
+                        if (!app.HasExited)
+                        {
+                            Console.WriteLine($"[Automation Cleanup] Closing tracked application PID: {app.ProcessId}");
+                            app.Close();
+                            
+                            int waitTime = 0;
+                            while (!app.HasExited && waitTime < 1000)
+                            {
+                                Thread.Sleep(100);
+                                waitTime += 100;
+                            }
+                            
+                            if (!app.HasExited)
+                            {
+                                Console.WriteLine($"[Automation Cleanup] Force killing tracked application PID: {app.ProcessId}");
+                                app.Kill();
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[Automation Cleanup Warning] Error closing application: {ex.Message}");
+                }
+            }
+            _trackedApplications.Clear();
             _automation?.Dispose();
         }
     }

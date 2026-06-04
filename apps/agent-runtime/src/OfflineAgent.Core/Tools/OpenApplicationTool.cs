@@ -19,6 +19,16 @@ namespace OfflineAgent.Core.Tools
             AgentCapability.LaunchApps 
         };
 
+        public List<ToolPredicate> Preconditions => new List<ToolPredicate>
+        {
+            new ToolPredicate { Predicate = "allowed", EntityType = "app_open" }
+        };
+
+        public List<ToolPredicate> Effects => new List<ToolPredicate>
+        {
+            new ToolPredicate { Predicate = "running", EntityType = "app", EntityIdParameter = "exePath" }
+        };
+
         public async Task<ToolResponse> ExecuteAsync(Dictionary<string, object> arguments, AgentContext context)
         {
             if (!arguments.TryGetValue("exePath", out var pathObj) || pathObj == null)

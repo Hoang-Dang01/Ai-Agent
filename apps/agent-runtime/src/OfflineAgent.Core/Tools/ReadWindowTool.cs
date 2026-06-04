@@ -17,6 +17,16 @@ namespace OfflineAgent.Core.Tools
             AgentCapability.ReadFiles 
         };
 
+        public List<ToolPredicate> Preconditions => new List<ToolPredicate>
+        {
+            new ToolPredicate { Predicate = "allowed", EntityType = "read" }
+        };
+
+        public List<ToolPredicate> Effects => new List<ToolPredicate>
+        {
+            new ToolPredicate { Predicate = "read", EntityType = "window" }
+        };
+
         public async Task<ToolResponse> ExecuteAsync(Dictionary<string, object> arguments, AgentContext context)
         {
             context.Logger("[Tool: ReadWindowTool] Đang đọc trạng thái cửa sổ...");
@@ -25,6 +35,7 @@ namespace OfflineAgent.Core.Tools
             {
                 var app = context.AutomationHelper.StartOrAttach("notepad.exe");
                 var window = context.AutomationHelper.GetMainWindow(app, 2000);
+                context.AutomationHelper.EnsureWindowFocus(window);
 
                 var editElement = window.FindFirstDescendant(cf => cf.ByControlType(ControlType.Document)) 
                                   ?? window.FindFirstDescendant(cf => cf.ByClassName("Edit"));

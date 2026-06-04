@@ -18,6 +18,16 @@ namespace OfflineAgent.Core.Tools
             AgentCapability.KeyboardInput 
         };
 
+        public List<ToolPredicate> Preconditions => new List<ToolPredicate>
+        {
+            new ToolPredicate { Predicate = "allowed", EntityType = "write" }
+        };
+
+        public List<ToolPredicate> Effects => new List<ToolPredicate>
+        {
+            new ToolPredicate { Predicate = "written", EntityType = "text" }
+        };
+
         public async Task<ToolResponse> ExecuteAsync(Dictionary<string, object> arguments, AgentContext context)
         {
             if (!arguments.TryGetValue("text", out var textObj) || textObj == null)

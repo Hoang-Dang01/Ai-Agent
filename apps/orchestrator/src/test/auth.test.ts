@@ -161,7 +161,7 @@ async function runTests() {
     let nextCalled: any = false;
     const nextMock = () => { nextCalled = true; };
 
-    authMiddleware(validMidReq, validMidRes, nextMock);
+    await authMiddleware(validMidReq, validMidRes, nextMock);
     assert(nextCalled === true, 'Valid Bearer token allows passage (calls next())');
     assert(validMidReq.user?.id === testUserId, 'Middleware correctly parses and injects user ID claim');
     assert(validMidReq.user?.email === testEmail, 'Middleware correctly parses and injects email claim');
@@ -170,7 +170,7 @@ async function runTests() {
     const missingMidReq: any = { headers: {} };
     const missingMidRes = mockResponse();
     let nextCalledMissing: any = false;
-    authMiddleware(missingMidReq, missingMidRes, () => { nextCalledMissing = true; });
+    await authMiddleware(missingMidReq, missingMidRes, () => { nextCalledMissing = true; });
     assert(nextCalledMissing === false, 'Missing authorization header blocks passage');
     assert(missingMidRes.statusCode === 401, 'Missing token yields 401 Unauthorized');
 
@@ -178,7 +178,7 @@ async function runTests() {
     const badMidReq: any = { headers: { authorization: 'Bearer thisisafaketokenhere' } };
     const badMidRes = mockResponse();
     let nextCalledBad: any = false;
-    authMiddleware(badMidReq, badMidRes, () => { nextCalledBad = true; });
+    await authMiddleware(badMidReq, badMidRes, () => { nextCalledBad = true; });
     assert(nextCalledBad === false, 'Invalid token blocks passage');
     assert(badMidRes.statusCode === 403, 'Invalid token signature yields 403 Forbidden');
 
